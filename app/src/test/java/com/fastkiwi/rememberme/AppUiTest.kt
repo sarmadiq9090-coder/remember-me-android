@@ -122,6 +122,8 @@ class AppUiTest {
             rule.onNodeWithText("دواء الضغط", useUnmergedTree = true).assertExists()
             // DESIGN-SPEC §7.4: the section «اليوم» exactly once on Home in list view.
             rule.onAllNodesWithText("اليوم").assertCountEquals(1)
+            // TalkBack reads the FAB as one button named «تذكير جديد» (merged tree, not only drawn text).
+            rule.onNode(androidx.compose.ui.test.hasClickAction() and androidx.compose.ui.test.hasContentDescription("تذكير جديد")).assertExists()
             shot("01-home-ar")
             rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription("دفع الإيجار", substring = true))
             rule.onNodeWithText("القادمة").assertExists()

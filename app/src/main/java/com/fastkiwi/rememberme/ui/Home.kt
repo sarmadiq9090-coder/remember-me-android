@@ -371,13 +371,18 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            if (!searching && !selecting) ExtendedFloatingActionButton(
+            if (!searching && !selecting) {
+              val fabLabel = stringResource(R.string.new_reminder)
+              ExtendedFloatingActionButton(
                 onClick = { if (inCalendar) onNewOnDay(calSelected) else onQuickAdd() }, expanded = expanded,
-                // Collapsed to an icon while scrolling down: then the icon carries the label for TalkBack.
-                icon = { Icon(Ms.Add, if (expanded) null else stringResource(R.string.new_reminder)) },
+                // The button carries its name itself: the label inside it is not merged for TalkBack in this
+                // Material version (found by the black-box driver), and it is hidden while scrolling down.
+                modifier = Modifier.semantics { contentDescription = fabLabel },
+                icon = { Icon(Ms.Add, null) },
                 text = { Text(stringResource(R.string.new_reminder)) },
                 containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary,
-            )
+              )
+            }
         },
         floatingActionButtonPosition = FabPosition.Center,
         snackbarHost = { SnackbarHost(snackbar) },
