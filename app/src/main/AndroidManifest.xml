@@ -15,6 +15,15 @@
          A short service needs no type-specific permission. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- [quick] begin -->
+    <!-- Voice input (F-048) asks the phone's speech service; a query entry, not a permission (no RECORD_AUDIO). -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+    <!-- [quick] end -->
+
     <application
         android:name=".RememberMeApp"
         android:allowBackup="true"
@@ -41,8 +50,46 @@
                 <action android:name="com.fastkiwi.rememberme.NEW" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <!-- [quick] begin -->
+            <!-- Quick Add (shortcut «إضافة سريعة», widget «+», tile), shortcut «اليوم», tile long-press (F-122, F-123). -->
+            <intent-filter>
+                <action android:name="com.fastkiwi.rememberme.QUICK_ADD" />
+                <action android:name="com.fastkiwi.rememberme.TODAY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+            <!-- [quick] end -->
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- [quick] begin -->
+        <!-- Share text to «ذكرني» (F-049): opens the Quick Add preview, never saves by itself. -->
+        <activity
+            android:name=".ShareActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <!-- Quick Settings tile «تذكير جديد» (F-123): bound only by the system (binding permission, not a uses-permission). -->
+        <service
+            android:name=".tile.NewReminderTile"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_bell"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <!-- [quick] end -->
 
         <!-- The reminder screen: over the lock screen, screen on (D-005). -->
         <activity
