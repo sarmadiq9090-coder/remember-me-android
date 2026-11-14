@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcuts (F-122): new reminder (the editor), Quick Add, and Today (Home in the day view). -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut android:shortcutId="new" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/new_reminder">
         <intent android:action="com.fastkiwi.rememberme.NEW" android:targetPackage="com.fastkiwi.rememberme" android:targetClass="com.fastkiwi.rememberme.MainActivity" />
+    </shortcut>
+    <shortcut android:shortcutId="quick" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/shortcut_quick">
+        <intent android:action="com.fastkiwi.rememberme.QUICK_ADD" android:targetPackage="com.fastkiwi.rememberme" android:targetClass="com.fastkiwi.rememberme.MainActivity" />
+    </shortcut>
+    <shortcut android:shortcutId="today" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/today">
+        <intent android:action="com.fastkiwi.rememberme.TODAY" android:targetPackage="com.fastkiwi.rememberme" android:targetClass="com.fastkiwi.rememberme.MainActivity" />
     </shortcut>
 </shortcuts>

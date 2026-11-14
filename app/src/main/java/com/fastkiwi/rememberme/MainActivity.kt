@@ -69,6 +69,9 @@ sealed class Screen {
     data object Trash : Screen()
     data object About : Screen()
     data object AlarmTest : Screen()
+    // [quick] begin
+    data object Templates : Screen()
+    // [quick] end
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -79,6 +82,9 @@ sealed class Screen {
         Trash -> "trash"
         About -> "about"
         AlarmTest -> "alarmtest"
+        // [quick] begin
+        Templates -> "templates"
+        // [quick] end
     }
 
     companion object {
@@ -90,6 +96,9 @@ sealed class Screen {
             code == "trash" -> Trash
             code == "about" -> About
             code == "alarmtest" -> AlarmTest
+            // [quick] begin
+            code == "templates" -> Templates
+            // [quick] end
             else -> null
         }
     }
@@ -110,6 +119,18 @@ class MainActivity : AppCompatActivity() {
     private var reportText by mutableStateOf<String?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
+    // [quick] begin
+    /** The open Quick Add sheet (FAB, shortcut, widget «+», tile, share), or null. */
+    var quickAdd by mutableStateOf<com.fastkiwi.rememberme.ui.quick.QuickAddRequest?>(null)
+    /** Fields for the editor from a template or Quick Add's «خيارات أكثر»; the lead passes it to EditScreen. */
+    var editPrefill by mutableStateOf<com.fastkiwi.rememberme.core.TemplateFill?>(null)
+    /** Bumped by the launcher shortcut «اليوم»; the lead routes it to Home's day/agenda view. */
+    var todayRequest by mutableLongStateOf(0L)
+    /** The reminder Quick Add just saved, for Home to scroll into view. */
+    var lastAddedId by mutableStateOf<String?>(null)
+    /** Opens Quick Add (Home's FAB calls this). */
+    fun openQuickAdd(text: String = "") { quickAdd = com.fastkiwi.rememberme.ui.quick.QuickAddRequest(text) }
+    // [quick] end
 
     private val icsExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
         uri ?: return@registerForActivityResult
@@ -248,6 +269,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handle(intent: Intent?) {
         when {
+            // [quick] begin
+            com.fastkiwi.rememberme.ui.quick.QuickEntry.request(intent) != null -> {
+                stack = listOf(Screen.Home)
+                quickAdd = com.fastkiwi.rememberme.ui.quick.QuickEntry.request(intent)
+            }
+            com.fastkiwi.rememberme.ui.quick.QuickEntry.isToday(intent) -> { stack = listOf(Screen.Home); todayRequest = System.currentTimeMillis() }
+            // [quick] end
             intent?.action == ACTION_NEW -> stack = listOf(Screen.Home, Screen.Edit(null))
             intent?.getStringExtra(EXTRA_OPEN) != null -> stack = listOf(Screen.Home, Screen.Edit(intent.getStringExtra(EXTRA_OPEN)))
         }
@@ -329,6 +357,22 @@ class MainActivity : AppCompatActivity() {
         val screen = stack.last()
         // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
         key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
+        // [quick] begin
+        quickAdd?.let { req ->
+            com.fastkiwi.rememberme.ui.quick.QuickAddHost(
+                request = req, weekStart = Repo.weekStart(state),
+                onDismiss = { if (quickAdd == req) quickAdd = null },
+                onSaved = { id ->
+                    lastAddedId = id
+                    homeSnack = SnackRequest(getString(R.string.added_msg)) {
+                        lifecycleScope.launch(Dispatchers.IO) { runCatching { com.fastkiwi.rememberme.ui.quick.QuickAddSave.undo(ctx, id) } }
+                    }
+                },
+                onMore = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input); push(Screen.Edit(null)) },
+                onTemplate = { push(Screen.Templates) },
+            )
+        }
+        // [quick] end
         pendingImport?.let { imp ->
             val current = Repo.state(this).tasks.count { it.deletedAt == null }
             val lines = buildList {
@@ -509,6 +553,12 @@ class MainActivity : AppCompatActivity() {
                 onEmpty = { act { s -> Tasks.purgeTrash(s, Instant.now(), all = true) } },
                 onBack = { pop() })
             Screen.About -> AboutScreen { pop() }
+            // [quick] begin
+            Screen.Templates -> com.fastkiwi.rememberme.ui.quick.TemplatesRoute(
+                onPick = { fill -> editPrefill = fill; stack = stack.dropLast(1) + Screen.Edit(null) },
+                onBack = { pop() },
+            )
+            // [quick] end
         }
     }
 

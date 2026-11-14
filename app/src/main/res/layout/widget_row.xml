@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One widget row: 48 dp Done circle (due, overdue, today), 76 dp time column, title, warning when overdue. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_row"
+    style="@style/WidgetRow"
+    android:minHeight="48dp"
+    android:paddingStart="0dp"
+    android:paddingEnd="12dp">
+    <ImageButton
+        android:id="@+id/w_done"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/done"
+        android:scaleType="center"
+        android:src="@drawable/widget_done_circle" />
+    <TextView android:id="@+id/w_time" style="@style/WidgetTime" />
+    <TextView android:id="@+id/w_text" style="@style/WidgetTitle" />
+    <ImageView android:id="@+id/w_warn" style="@style/WidgetWarn" android:contentDescription="@null" />
+</LinearLayout>
