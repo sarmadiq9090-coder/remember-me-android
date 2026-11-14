@@ -220,7 +220,7 @@ class ChaosTortureTest {
         val imported = Backup.read(text.toByteArray().inputStream(), now)
         Repo.store(h.app).replace(imported.state)
         val r = runCatching { Engine.sync(h.app, reason = "start") }
-        assertTrue("Engine.sync threw ${r.exceptionOrNull()}", r.isSuccess)
+        assertTrue("Engine.sync threw ${r.exceptionOrNull()} at ${r.exceptionOrNull()?.stackTrace?.firstOrNull { it.className.startsWith("com.fastkiwi") && !it.className.contains("torture") }}", r.isSuccess)
         assertTrue("the due reminder is shown", h.dueShown().contains("due"))
         // And with an ordinary reminder ahead, that one is armed.
         Repo.change(h.app) { s -> Tasks.save(s, TaskInput(title = "soon", dueAt = Instant.parse(soon)), now, h.zone).first }

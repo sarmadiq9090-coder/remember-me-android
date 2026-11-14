@@ -1,0 +1,53 @@
+Remember Me Android torture run 2026-11-15-0228 (heavy=0, seed=default, gradle exit 1)
+commit 2e5bfc4 on torture
+
+BackupFuzzTortureTest                      tests   4  failed   1  skipped   0  5.216 s
+ChaosTortureTest                           tests  36  failed   9  skipped   1  20.184 s
+EnginePropertyTortureTest                  tests   2  failed   0  skipped   0  180.017 s
+IcsFuzzTortureTest                         tests   3  failed   0  skipped   0  4.693 s
+IcsPropertyTortureTest                     tests   2  failed   1  skipped   0  1.044 s
+IcsTimezoneTortureTest                     tests   2  failed   1  skipped   0  0.561 s
+PerfTortureTest                            tests   4  failed   0  skipped   0  3.807 s
+PlanStressTortureTest                      tests   2  failed   0  skipped   0  6.357 s
+QuickAddFuzzTortureTest                    tests   2  failed   1  skipped   0  2.945 s
+ReceiverFuzzTortureTest                    tests   9  failed   3  skipped   0  11.275 s
+RepeatParityTortureTest                    tests   1  failed   0  skipped   0  0.308 s
+StoreChaosTortureTest                      tests   8  failed   3  skipped   0  1.565 s
+StressTortureTest                          tests  12  failed   3  skipped   3  74.328 s
+TaskOpsPropertyTortureTest                 tests   1  failed   0  skipped   0  7.339 s
+TimeEngineTortureTest                      tests  15  failed   9  skipped   0  17.039 s
+TimeRepeatTortureTest                      tests   4  failed   0  skipped   0  0.285 s
+TOTAL tests 107, failed 31, skipped 4
+
+FAILURES
+- BackupFuzzTortureTest.randomTruncatedAndMutatedBackupsAreReadOrRefusedCleanly: java.lang.AssertionError: case 0: BAD: java.util.zip.ZipException: invalid distance too far back | case 1: BAD: java.io.EOFException: Unexpected end of ZLIB input stream | case 3: BAD: java.util.zip.ZipException: invalid distance too far back | case 5: BAD: java.util.zip.ZipException: invalid distance too far back
+- ChaosTortureTest.aReminderDatedBeyondEpochMillisDoesNotStopTheEngine[26]: java.lang.AssertionError: Engine.sync threw java.lang.ArithmeticException: long overflow
+- ChaosTortureTest.anImportedIdWithALineBreakRingsOnlyOnce[26]: java.lang.AssertionError: rings: [(94625, cb3ead28), (96518, dd2134c2), (94625, cb3ead28), (96518, dd2134c2), (94625, cb3ead28), (96518, dd2134c2)] expected:<[1, 1]> but was:<[3, 3]>
+- ChaosTortureTest.aReminderDueWhileNotificationsWereOffRingsWhenTheyComeBack[26]: java.lang.AssertionError: it never rang expected:<1> but was:<0>
+- ChaosTortureTest.aReminderDatedBeyondEpochMillisDoesNotStopTheEngine[33]: java.lang.AssertionError: Engine.sync threw java.lang.ArithmeticException: long overflow
+- ChaosTortureTest.anImportedIdWithALineBreakRingsOnlyOnce[33]: java.lang.AssertionError: rings: [(94625, bc48ff7b), (96518, f35a3970), (94625, bc48ff7b), (96518, f35a3970), (94625, bc48ff7b), (96518, f35a3970)] expected:<[1, 1]> but was:<[3, 3]>
+- ChaosTortureTest.aReminderDueWhileNotificationsWereOffRingsWhenTheyComeBack[33]: java.lang.AssertionError: it never rang expected:<1> but was:<0>
+- ChaosTortureTest.aReminderDatedBeyondEpochMillisDoesNotStopTheEngine: java.lang.AssertionError: Engine.sync threw java.lang.ArithmeticException: long overflow
+- ChaosTortureTest.anImportedIdWithALineBreakRingsOnlyOnce: java.lang.AssertionError: rings: [(94625, 5ce7dd10), (96518, 088c03f8), (94625, 5ce7dd10), (96518, 088c03f8), (94625, 5ce7dd10), (96518, 088c03f8)] expected:<[1, 1]> but was:<[3, 3]>
+- ChaosTortureTest.aReminderDueWhileNotificationsWereOffRingsWhenTheyComeBack: java.lang.AssertionError: it never rang expected:<1> but was:<0>
+- IcsPropertyTortureTest.exportedRemindersExpandAndImportBackTheSame: java.lang.AssertionError: [dtstart-off-rule] Asia/Baghdad DAYS FREQ=WEEKLY;BYDAY=TU,SA days=[2, 6] from=2027-01-22T03:13 start=2027-01-22T03:13: occurrence 0 app 2027-01-22T03:13 calendar 2027-01-23T03:13 (13 vs 14)NL[dtstart-off-rule] Asia/Tehran DAYS FREQ=WEEKLY;BYDAY=MO,TH days=[1, 4] from=2029-02-02T20:54 start=2029-02-02T20:54: occurrence 0 app 2029-02-02T20:54 calendar 2029-02-05T20:54 (13 vs 14)NL[occurrences] Africa/Cairo YEARLY FREQ=YEARLY;BYMONTH=11;BYMONTHDAY=25 days=[] from=2028-11-25T17:41 start=2028-11-25T17:41: occurrence 2 app 2030-11-25T17:41 calendar 2030-11-25T16:41 (6 vs 6)
+- IcsTimezoneTortureTest.everyZonesVTimezoneGivesJavasOffsets: java.lang.AssertionError: Africa/Cairo: at 2030-11-04T22:00+02:00[Africa/Cairo]: Java +02:00, the file's VTIMEZONE +03:00; Java rules TransitionRule[Gap +02:00 to +03:00, FRIDAY on or after APRIL 24 at 00:00 WALL, standard offset +02:00]; TransitionRule[Overlap +03:00 to +02:00, FRIDAY on or after OCTOBER 26 at 00:00 WALL, standard offset +02:00] | America/Godthab: at 2030-03-31T12:00-01:00[America/Godthab]: Java -01:00, the file's VTIMEZONE -02:00; Java rules TransitionRule[Gap -02:00 to -01:00, SUNDAY on or after MARCH 25 at 01:00 UTC, standard offset -02:00]; TransitionRule[Overlap -01:00 t
+- QuickAddFuzzTortureTest.theNoDateCorpusWithEverydayDecorationsStillHoldsNoDate: java.lang.AssertionError: Arabic comma inside «الخميس، الماضي» → due=null ask=TIME title=«الماضي» | Arabic comma inside «الخميس، الماضي» → due=null ask=TIME title=«الماضي» | Arabic comma inside «السبت، اللي فات» → due=null ask=TIME title=«اللي فات» | Arabic comma inside «السبت، اللي فات» → due=null ask=TIME title=«اللي فات»
+- ReceiverFuzzTortureTest.aDueExtraBeyondEpochMillisDoesNotCrashTheReceiver[26]: java.lang.AssertionError: crashes: [java.lang.ArithmeticException: long overflow]
+- ReceiverFuzzTortureTest.aDueExtraBeyondEpochMillisDoesNotCrashTheReceiver[33]: java.lang.AssertionError: crashes: [java.lang.ArithmeticException: long overflow]
+- ReceiverFuzzTortureTest.aDueExtraBeyondEpochMillisDoesNotCrashTheReceiver: java.lang.AssertionError: crashes: [java.lang.ArithmeticException: long overflow]
+- StoreChaosTortureTest.onlyATmpFromTheFirstEverWriteIsNotLost: java.lang.AssertionError: the first save, complete in data.json.tmp, was ignored expected:<[old, new]> but was:<[]>
+- StoreChaosTortureTest.deathBetweenDeleteAndRenameLoadsTheNewestCompleteCopy: java.lang.AssertionError: the complete data.json.tmp was ignored expected:<[old, new, newest]> but was:<[old, new]>
+- StoreChaosTortureTest.twoDamagedFilesInTheSameSecondAreBothKept: java.lang.AssertionError: a damaged copy was overwritten: [data.json.damaged-20261115-060000=first damage] expected:<2> but was:<1>
+- StressTortureTest.anEngineRunDoesNotCallTheNotificationServiceOncePerReminder[26]: java.lang.AssertionError: one engine run with 2,000 reminders made 1956 cancel calls (one binder call each on a phone)
+- StressTortureTest.anEngineRunDoesNotCallTheNotificationServiceOncePerReminder[33]: java.lang.AssertionError: one engine run with 2,000 reminders made 1956 cancel calls (one binder call each on a phone)
+- StressTortureTest.anEngineRunDoesNotCallTheNotificationServiceOncePerReminder: java.lang.AssertionError: one engine run with 2,000 reminders made 1956 cancel calls (one binder call each on a phone)
+- TimeEngineTortureTest.theClockSetBackAndForwardDoesNotRingTheSameOccurrenceTwice[26]: java.lang.AssertionError: the same occurrence rang twice expected:<1> but was:<2>
+- TimeEngineTortureTest.undoAfterDoneDoesNotRingTheSameOccurrenceAgain[26]: java.lang.AssertionError: rang again after undo expected:<1> but was:<2>
+- TimeEngineTortureTest.randomClockJumpsNeverLoseOrRepeatAReminder[26]: java.lang.AssertionError: rang again after the clock went back and forward: [r2×2, r7×2, r8×2, r10×2, r18×2, r23×3, r28×2]
+- TimeEngineTortureTest.theClockSetBackAndForwardDoesNotRingTheSameOccurrenceTwice[33]: java.lang.AssertionError: the same occurrence rang twice expected:<1> but was:<2>
+- TimeEngineTortureTest.undoAfterDoneDoesNotRingTheSameOccurrenceAgain[33]: java.lang.AssertionError: rang again after undo expected:<1> but was:<2>
+- TimeEngineTortureTest.randomClockJumpsNeverLoseOrRepeatAReminder[33]: java.lang.AssertionError: rang again after the clock went back and forward: [r2×2, r12×2, r14×2, r28×2, r29×2]
+- TimeEngineTortureTest.theClockSetBackAndForwardDoesNotRingTheSameOccurrenceTwice: java.lang.AssertionError: the same occurrence rang twice expected:<1> but was:<2>
+- TimeEngineTortureTest.undoAfterDoneDoesNotRingTheSameOccurrenceAgain: java.lang.AssertionError: rang again after undo expected:<1> but was:<2>
+- TimeEngineTortureTest.randomClockJumpsNeverLoseOrRepeatAReminder: java.lang.AssertionError: rang again after the clock went back and forward: [r0×2, r1×2, r8×2, r15×2, r16×2, r19×2, r22×2, r26×2]

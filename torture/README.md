@@ -116,10 +116,15 @@ All classes are in `app/src/test/java/com/fastkiwi/rememberme/torture/` (the `to
   FEATURES.md gate where there is one. Ceilings are generous (5× the gate). The heavy stress run adds the time of
   one `Engine.sync` with 10,000 reminders under Robolectric.
 
-### 7. UI monkey (later)
-Placeholder. After the UI is merged: seeded random Compose input on Robolectric (SDK 33 and 36 only; Compose on
-SDK 26/27 never idles under Robolectric), 10,000 events per screen, no crash, no data change without a save.
-A real `adb monkey` needs a connected phone and is not claimed.
+### 7. UI monkey
+- `UiMonkeyTortureTest` (Robolectric, SDK 36 only: Compose on SDK 26/27 never idles there): seeded random taps,
+  long presses, swipes, text, back and rotation (`+land`/`+port` and recreate) on the real screens from
+  `MainActivity` (two seeds, 800 events each, heavy 4,000) and `AlertActivity` (300, heavy 1,500), with a sample
+  week of reminders. After every event: no crash; no reminder disappears unless it was in the trash or it is the
+  history copy an undone «تم» removes; no event takes over 10 s; every 25 events data.json still decodes (read
+  only then, after the background saves: on the Windows test host an open file cannot be replaced). On
+  `AppNotIdleException` the failure says whether the recomposer kept pending work frame after frame (a composition
+  that never settles). A real `adb monkey` needs a connected phone and is not claimed.
 
 ## Reports
 
