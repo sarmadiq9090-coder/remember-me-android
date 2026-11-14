@@ -125,6 +125,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // [home] begin
+    /** Ids of the reminders «تصدير المحدد» saves, while the save dialog is open. */
+    private var exportIds: List<String> = emptyList()
+    private val selectedExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
+        val ids = exportIds.toHashSet()
+        exportIds = emptyList()
+        uri ?: return@registerForActivityResult
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    val s = Repo.state(this@MainActivity)
+                    contentResolver.openOutputStream(uri, "wt")!!.use {
+                        it.write(Ics.export(s.copy(tasks = s.tasks.filter { t -> t.id in ids }), Repo.zone(), Instant.now()).toByteArray(Charsets.UTF_8))
+                    }
+                }.isSuccess
+            }
+            toast(if (ok) R.string.export_done else R.string.export_failed)
+        }
+    }
+
+    /** «تصدير المحدد» (F-066): the selected reminders as a calendar file, through the system's save dialog. */
+    fun exportSelected(ids: List<String>) {
+        if (ids.isEmpty()) return
+        exportIds = ids
+        selectedExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics")
+    }
+    // [home] end
+
     private val notifPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { refreshHealth() }
     private val exporter = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         uri ?: return@registerForActivityResult
@@ -376,6 +404,17 @@ class MainActivity : AppCompatActivity() {
                     onDismissBackup = { prefs.backupNudgeDismissed = System.currentTimeMillis(); tick = System.currentTimeMillis() },
                     snack = homeSnack, newerData = Repo.store(this).newer,
                     onSnackShown = { homeSnack = null },
+                    // [home] begin
+                    swipe = com.fastkiwi.rememberme.data.HomePrefs(this).swipe,
+                    filters = com.fastkiwi.rememberme.data.Filters(this).all(),
+                    change = { block, then ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            runCatching { Repo.change(ctx, block) }
+                            withContext(Dispatchers.Main) { then() }
+                        }
+                    },
+                    onExportSelected = { ids -> exportSelected(ids) },
+                    // [home] end
                 )
             }
             is Screen.Edit -> {
