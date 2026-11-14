@@ -74,6 +74,9 @@ object Engine {
         }
     }
 
+    /** Waits until queued background runs have finished (tests). */
+    fun drain() { worker.submit {}.get() }
+
     private fun operation(context: Context): PendingIntent = PendingIntent.getBroadcast(
         context, 100, Intent(context, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,

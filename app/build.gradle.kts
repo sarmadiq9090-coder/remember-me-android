@@ -70,6 +70,9 @@ android {
         }
     }
 
+    // The APK carries both languages; a bundle must not split them away (per-app language switch).
+    bundle { language { enableSplit = false } }
+
     // No dependency-metadata blob in the APK (privacy, size).
     dependenciesInfo {
         includeInApk = false
@@ -86,8 +89,11 @@ android {
         abortOnError = true
         warningsAsErrors = false
         checkReleaseBuilds = true
-        // Translations are Arabic (default) and English; both are complete.
-        disable += setOf("MissingTranslation")
+        // Dependency versions are pinned on purpose (same as kiwi-scan's verified toolchain) and reviewed at
+        // each release, so "a newer version exists" is not a lint failure.
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+        // AAPT2 only finds the adaptive launcher icon under mipmap-anydpi-v26, which lint calls redundant at minSdk 26.
+        disable += "ObsoleteSdkInt"
     }
 }
 

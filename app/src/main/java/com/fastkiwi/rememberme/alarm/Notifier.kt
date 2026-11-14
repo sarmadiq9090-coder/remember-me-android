@@ -15,6 +15,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.fastkiwi.rememberme.AlertActivity
 import com.fastkiwi.rememberme.MainActivity
 import com.fastkiwi.rememberme.R
@@ -41,7 +42,6 @@ object Notifier {
     const val MAX_SHOWN = 8
 
     fun channels(context: Context) {
-        if (Build.VERSION.SDK_INT < 26) return
         val c = L10n.context(context)
         val nm = context.getSystemService(NotificationManager::class.java)
         val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -70,7 +70,6 @@ object Notifier {
 
     /** True when the reminder channel exists and the user has not silenced or blocked it. */
     fun alertChannelOk(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT < 26) return true
         val ch = context.getSystemService(NotificationManager::class.java).getNotificationChannel(CH_ALERT) ?: return true
         return ch.importance >= NotificationManager.IMPORTANCE_HIGH
     }
@@ -89,7 +88,7 @@ object Notifier {
     private fun action(context: Context, action: String, t: Task): PendingIntent {
         val i = Intent(context, ActionReceiver::class.java).apply {
             this.action = action
-            data = Uri.parse("rememberme://task/" + Uri.encode(t.id))
+            data = ("rememberme://task/" + Uri.encode(t.id)).toUri()
             putExtra(ActionReceiver.EXTRA_ID, t.id)
             putExtra(ActionReceiver.EXTRA_DUE, t.dueAt?.let(Codec::iso))
         }

@@ -1,0 +1,221 @@
+package com.fastkiwi.rememberme
+
+import android.Manifest
+import android.app.AlarmManager
+import android.app.Application
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
+import com.fastkiwi.rememberme.alarm.ActionReceiver
+import com.fastkiwi.rememberme.alarm.Engine
+import com.fastkiwi.rememberme.alarm.Notifier
+import com.fastkiwi.rememberme.alarm.SystemReceiver
+import com.fastkiwi.rememberme.core.Codec
+import com.fastkiwi.rememberme.core.Repeat
+import com.fastkiwi.rememberme.core.TaskInput
+import com.fastkiwi.rememberme.core.Tasks
+import com.fastkiwi.rememberme.ui.L10n
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowAlarmManager
+import java.io.File
+import java.time.Instant
+import java.time.ZoneId
+import java.util.TimeZone
+
+/**
+ * The alarm engine on a simulated Android 16 phone: alarms, notifications, the notification buttons,
+ * re-arming after a reboot, and a time-zone change.
+ */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [36])
+class EngineTest {
+    private val app: Application = ApplicationProvider.getApplicationContext()
+    private val zone = ZoneId.of("Asia/Baghdad")
+    private lateinit var tzBefore: TimeZone
+
+    @Before fun setUp() {
+        Engine.drain()
+        tzBefore = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone(zone))
+        Repo.resetForTests()
+        File(app.filesDir, "data").deleteRecursively()
+        app.getSharedPreferences("device", Context.MODE_PRIVATE).edit().clear().commit()
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        ShadowAlarmManager.setCanScheduleExactAlarms(true)
+        Notifier.channels(app)
+    }
+
+    @After fun tearDown() { TimeZone.setDefault(tzBefore) }
+
+    private val am get() = app.getSystemService(AlarmManager::class.java)
+    private val nm get() = app.getSystemService(NotificationManager::class.java)
+    private fun save(input: TaskInput, now: Instant = Instant.now()) =
+        Repo.store(app).change { Tasks.save(it, input, now, zone).first }.tasks.last()
+    private fun shown() = shadowOf(nm).allNotifications.size
+    private fun dueTags() = nm.activeNotifications.mapNotNull { it.tag }.filter { it.startsWith(Notifier.TAG_DUE) }
+
+    @Test fun armsAnAlarmClockForTheNextReminder() {
+        val due = Instant.now().plusSeconds(3600)
+        save(TaskInput(title = "later", dueAt = due))
+        Engine.sync(app)
+        val next = shadowOf(am).peekNextScheduledAlarm()
+        assertNotNull(next)
+        assertEquals(due.toEpochMilli(), next!!.triggerAtTime)
+        assertNotNull("Uses setAlarmClock (Doze-exempt)", am.nextAlarmClock)
+        assertEquals(due.toEpochMilli(), Repo.prefs(app).armedAt)
+        assertEquals(0, shown())
+    }
+
+    @Test fun fallsBackToAnInexactAlarmWithoutThePermission() {
+        ShadowAlarmManager.setCanScheduleExactAlarms(false)
+        save(TaskInput(title = "later", dueAt = Instant.now().plusSeconds(3600)))
+        Engine.sync(app)
+        assertNotNull(shadowOf(am).peekNextScheduledAlarm())
+        assertNull(am.nextAlarmClock)
+        assertFalse(Engine.exact)
+    }
+
+    @Test fun dueRemindersArePostedWithButtonsAndStayUntilDone() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "دواء الضغط", dueAt = now.minusSeconds(30)), now.minusSeconds(60))
+        Engine.sync(app, now)
+        val n = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
+        assertEquals(Notifier.CH_ALERT, n.channelId)
+        assertTrue("Ongoing", n.flags and android.app.Notification.FLAG_ONGOING_EVENT != 0)
+        assertEquals(2, n.actions.size)
+        assertEquals("تم", n.actions[0].title.toString())
+        assertEquals("أجّل", n.actions[1].title.toString())
+        assertNotNull(n.deleteIntent)
+        // Swiped away: it comes back on the next run, quietly.
+        nm.cancel(Notifier.TAG_DUE + t.id, 0)
+        ActionReceiver.handle(app, ActionReceiver.DISMISSED, t.id, t.dueAt, now.plusSeconds(5))
+        val again = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
+        assertEquals(Notifier.CH_QUIET, again.channelId)
+        // Done from the notification: gone, and the task is completed.
+        ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusSeconds(10))
+        assertTrue(dueTags().isEmpty())
+        assertNotNull(Repo.state(app).task(t.id)!!.completedAt)
+    }
+
+    @Test fun snoozeFromTheNotificationUsesTheFirstPresetAndStaleTapsAreIgnored() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "r", dueAt = now.minusSeconds(30), repeat = Repeat.DAILY), now.minusSeconds(60))
+        Engine.sync(app, now)
+        ActionReceiver.handle(app, ActionReceiver.SNOOZE, t.id, t.dueAt, now)
+        val snoozed = Repo.state(app).task(t.id)!!
+        assertEquals(now.plusSeconds(600), snoozed.dueAt)
+        assertTrue(dueTags().isEmpty())
+        assertEquals(now.plusSeconds(600).toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        // An old notification's Done (for the occurrence before the snooze) changes nothing.
+        ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusSeconds(1))
+        assertEquals(snoozed, Repo.state(app).task(t.id))
+    }
+
+    @Test fun manyDueRemindersShowAtMostEightPlusASummary() {
+        val now = Instant.now()
+        Repo.store(app).change { s ->
+            var x = s
+            for (i in 0 until 20) x = Tasks.save(x, TaskInput(title = "t$i", dueAt = now.minusSeconds(3600L - i)), now.minusSeconds(4000), zone).first
+            x
+        }
+        Engine.sync(app, now)
+        assertEquals(Notifier.MAX_SHOWN, dueTags().size)
+        assertTrue(nm.activeNotifications.any { it.id == 1 && it.tag == null })
+    }
+
+    @Test fun rebootAndTimeChangesReArm() {
+        val due = Instant.now().plusSeconds(7200)
+        save(TaskInput(title = "after reboot", dueAt = due))
+        // The boot receiver is registered for every re-arm broadcast.
+        for (action in listOf(Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED,
+            "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED", "android.intent.action.QUICKBOOT_POWERON")) {
+            val receivers = app.packageManager.queryBroadcastReceivers(Intent(action).setPackage(app.packageName), 0)
+            assertTrue(action, receivers.any { it.activityInfo.name == SystemReceiver::class.java.name })
+        }
+        // A reboot clears every alarm; BOOT_COMPLETED sets it again.
+        assertNull(shadowOf(am).peekNextScheduledAlarm())
+        // Delivered as the system does after a reboot (Robolectric does not route protected broadcasts sent by the app).
+        SystemReceiver().onReceive(app, Intent(Intent.ACTION_BOOT_COMPLETED))
+        Engine.drain()
+        assertEquals(due.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+    }
+
+    @Test fun aTimeZoneChangeKeepsOneTimeInstantsAndRebuildsRepeats() {
+        val now = Instant.now()
+        val once = save(TaskInput(title = "once", dueAt = now.plusSeconds(3600)), now)
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Dubai"))
+        Engine.sync(app, now)
+        assertEquals(once.dueAt!!.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+    }
+
+    @Test fun earlyNoticeIsShownOnceOnItsOwnChannel() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "meeting", dueAt = now.plusSeconds(10 * 60), remindBefore = 15), now.minusSeconds(3600))
+        Engine.sync(app, now)
+        val notice = nm.activeNotifications.single { it.tag == Notifier.TAG_NOTICE + t.id }
+        assertEquals(Notifier.CH_NOTICE, notice.notification.channelId)
+        nm.cancelAll()
+        Engine.sync(app, now.plusSeconds(30))
+        assertTrue(nm.activeNotifications.none { it.tag == Notifier.TAG_NOTICE + t.id })
+        assertEquals(t.dueAt!!.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+    }
+
+    @Test fun lockScreenPrivacyHidesTheTitle() {
+        Repo.prefs(app).lockPrivacy = true
+        val now = Instant.now()
+        val t = save(TaskInput(title = "secret", dueAt = now.minusSeconds(5)), now.minusSeconds(60))
+        Engine.sync(app, now)
+        val n = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
+        assertEquals(android.app.Notification.VISIBILITY_PRIVATE, n.visibility)
+        assertEquals("تذكير", n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+    }
+
+    @Test fun arabicTextUsesWesternDigits() {
+        val ar = L10n.context(app)
+        val at = Instant.parse("2026-11-14T14:35:00Z")
+        val texts = listOf(
+            L10n.dueText(ar, at, at.minusSeconds(86_400 * 3)), L10n.late(ar, at, at.plusSeconds(25 * 60))!!,
+            L10n.duration(ar, 3), L10n.duration(ar, 11), L10n.duration(ar, 1440 * 3), L10n.date(ar, at),
+            ar.getString(R.string.n_of_m, "1", "3"), L10n.plural(ar, R.plurals.reminders_waiting, 12),
+        )
+        for (t in texts) assertFalse("Arabic-Indic digit in \"$t\"", t.any { it in '٠'..'٩' || it in '۰'..'۹' })
+        assertTrue(texts[1], texts[1].contains("25 دقيقة"))
+        assertEquals("3 دقائق", texts[2])
+        assertTrue(texts[0], texts[0].contains("5:35"))
+        // Iraq and the Levant: «تشرين الثاني»; the choice "standard": «نوفمبر».
+        Repo.store(app).change { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive("levant")))) }
+        assertTrue(L10n.date(L10n.context(app), at).contains("تشرين الثاني"))
+        Repo.store(app).change { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive("standard")))) }
+        assertTrue(L10n.date(L10n.context(app), at).contains("نوفمبر"))
+    }
+
+    @Test fun noInternetPermissionAndReceiversAreLockedDown() {
+        val info = app.packageManager.getPackageInfo(app.packageName, android.content.pm.PackageManager.GET_PERMISSIONS or android.content.pm.PackageManager.GET_RECEIVERS)
+        assertFalse((info.requestedPermissions ?: emptyArray()).contains(Manifest.permission.INTERNET))
+        // Exported: only the system-broadcast receiver, and AndroidX's profile installer, which needs the DUMP permission.
+        val exported = info.receivers!!.filter { it.exported && it.permission != "android.permission.DUMP" }.map { it.name }
+        assertEquals(listOf(SystemReceiver::class.java.name), exported)
+    }
+
+    @Test fun dataSurvivesAProcessRestart() {
+        save(TaskInput(title = "persist", dueAt = Instant.now().plusSeconds(60)))
+        Repo.resetForTests()
+        assertEquals("persist", Repo.state(app).tasks.single().title)
+        assertTrue(File(app.filesDir, "data/data.json").readText().contains("\"version\":1"))
+        assertEquals(Codec.decode(File(app.filesDir, "data/data.json").readText()).tasks.single().title, "persist")
+    }
+}

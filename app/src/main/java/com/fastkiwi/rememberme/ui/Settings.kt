@@ -131,7 +131,7 @@ fun SettingsScreen(
         SwitchRow(stringResource(R.string.sound), stringResource(R.string.sound_hint), m.sound, onSound)
         Choice(
             stringResource(R.string.remind_again),
-            listOf(0, 2, 5, 15).map { it.toString() to if (it == 0) context.getString(R.string.off) else context.getString(R.string.every_duration, L10n.duration(context, it.toLong())) },
+            listOf(0, 2, 5, 15).map { it.toString() to if (it == 0) stringResource(R.string.off) else stringResource(R.string.every_duration, L10n.duration(context, it.toLong())) },
             m.remindAgain.toString(),
         ) { onRemindAgain(it.toInt()) }
         Section(stringResource(R.string.calendar))
@@ -153,7 +153,7 @@ fun SettingsScreen(
             Text(stringResource(R.string.safety_copies), style = MaterialTheme.typography.bodyMedium)
             safety.forEach { f ->
                 val at = Instant.ofEpochMilli(f.lastModified())
-                LinkRow(context.getString(R.string.safety_copy_from, L10n.dueText(context, at)), stringResource(R.string.tap_to_restore)) { onRestoreSafety(f) }
+                LinkRow(stringResource(R.string.safety_copy_from, L10n.dueText(context, at)), stringResource(R.string.tap_to_restore)) { onRestoreSafety(f) }
             }
         }
         HorizontalDivider()
@@ -163,13 +163,19 @@ fun SettingsScreen(
 }
 
 @Composable
-fun CheckItem(ok: Boolean?, title: String, text: String, action: String?, onClick: (() -> Unit)?) {
-    Card(colors = CardDefaults.cardColors(containerColor = if (ok == false) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer)) {
+fun CheckItem(ok: Boolean?, title: String, text: String, action: String?, essential: Boolean = true, onClick: (() -> Unit)?) {
+    // Red is only for what reminders cannot work without; a missing extra is shown as advice.
+    val shown = if (ok == false && !essential) null else ok
+    Card(colors = CardDefaults.cardColors(containerColor = when {
+        shown == false -> MaterialTheme.colorScheme.errorContainer
+        ok == false -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surfaceContainer
+    })) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
             Icon(
-                when (ok) { true -> Icons.Filled.CheckCircle; false -> Icons.Filled.Error; null -> Icons.Filled.Info },
-                contentDescription = stringResource(when (ok) { true -> R.string.status_ok; false -> R.string.status_needed; null -> R.string.status_check }),
-                tint = when (ok) { true -> MaterialTheme.colorScheme.primary; false -> MaterialTheme.colorScheme.error; null -> MaterialTheme.colorScheme.secondary },
+                when (shown) { true -> Icons.Filled.CheckCircle; false -> Icons.Filled.Error; null -> Icons.Filled.Info },
+                contentDescription = stringResource(when { shown == true -> R.string.status_ok; shown == false -> R.string.status_needed; ok == false -> R.string.status_recommended; else -> R.string.status_check }),
+                tint = when (shown) { true -> MaterialTheme.colorScheme.primary; false -> MaterialTheme.colorScheme.error; null -> MaterialTheme.colorScheme.secondary },
             )
             Column(Modifier.weight(1f).padding(start = 12.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
@@ -185,10 +191,10 @@ fun BackgroundScreen(health: Health, maker: Maker?, onFix: (String) -> Unit, onB
     Page(stringResource(R.string.background_title), onBack) {
         Text(stringResource(R.string.background_intro), style = MaterialTheme.typography.bodyLarge)
         CheckItem(health.notifications, stringResource(R.string.chk_notifications), stringResource(R.string.chk_notifications_text), stringResource(R.string.allow)) { onFix("notifications") }
-        if (health.notifications) CheckItem(health.channel, stringResource(R.string.chk_channel), stringResource(R.string.chk_channel_text), stringResource(R.string.open_settings)) { onFix("channel") }
+        if (health.notifications && !health.channel) CheckItem(false, stringResource(R.string.chk_channel), stringResource(R.string.chk_channel_text), stringResource(R.string.open_settings)) { onFix("channel") }
         CheckItem(health.exact, stringResource(R.string.chk_exact), stringResource(R.string.chk_exact_text), stringResource(R.string.allow)) { onFix("exact") }
-        CheckItem(health.fullScreen, stringResource(R.string.chk_fullscreen), stringResource(R.string.chk_fullscreen_text), stringResource(R.string.allow)) { onFix("fullscreen") }
-        CheckItem(health.battery, stringResource(R.string.chk_battery), stringResource(R.string.chk_battery_text), stringResource(R.string.allow)) { onFix("battery") }
+        CheckItem(health.fullScreen, stringResource(R.string.chk_fullscreen), stringResource(R.string.chk_fullscreen_text), stringResource(R.string.allow), essential = false) { onFix("fullscreen") }
+        CheckItem(health.battery, stringResource(R.string.chk_battery), stringResource(R.string.chk_battery_text), stringResource(R.string.allow), essential = false) { onFix("battery") }
         CheckItem(null, stringResource(R.string.chk_hibernation), stringResource(R.string.chk_hibernation_text), stringResource(R.string.open_settings)) { onFix("hibernation") }
         if (health.dnd) CheckItem(null, stringResource(R.string.chk_dnd), stringResource(R.string.chk_dnd_text), stringResource(R.string.open_settings)) { onFix("dnd") }
         if (maker != null) CheckItem(null, stringResource(R.string.chk_maker, stringResource(maker.name)), stringResource(maker.steps), stringResource(R.string.open_settings)) { onFix("maker") }
@@ -207,7 +213,7 @@ fun TrashScreen(state: AppState, now: Instant, onRestore: (Task) -> Unit, onPurg
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
                 Column(Modifier.padding(12.dp)) {
                     Text(t.title, style = MaterialTheme.typography.titleMedium)
-                    Text(context.getString(R.string.deleted_at, L10n.dueText(context, t.deletedAt!!, now)), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.deleted_at, L10n.dueText(context, t.deletedAt!!, now)), style = MaterialTheme.typography.bodySmall)
                     Row {
                         TextButton(onClick = { onRestore(t) }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.restore)) }
                         TextButton(onClick = { onPurge(t) }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.delete_forever)) }
@@ -224,7 +230,7 @@ fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     Page(stringResource(R.string.about), onBack) {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
-        Text(context.getString(R.string.version_text, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.version_text, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodyLarge)
         Text(stringResource(R.string.about_privacy), style = MaterialTheme.typography.bodyLarge)
         Section(stringResource(R.string.licences))
         Text(stringResource(R.string.licences_text), style = MaterialTheme.typography.bodyMedium)

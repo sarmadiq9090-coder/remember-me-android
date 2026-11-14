@@ -120,7 +120,7 @@ object Backup {
             verified = true
         }
         var text = data!!.toString(Charsets.UTF_8)
-        if (text.startsWith("﻿")) text = text.substring(1)
+        if (text.isNotEmpty() && text[0] == 0xFEFF.toChar()) text = text.substring(1)
         val state = try { Codec.decode(text, now) } catch (_: DataFormatException) { throw ImportException(ImportException.Reason.INVALID) }
         val (clean, dropped) = stripAttachments(state)
         return Imported(clean, verified, dropped)

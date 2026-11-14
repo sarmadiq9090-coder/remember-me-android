@@ -94,7 +94,7 @@ fun AlertScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(Icons.Filled.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            if (count > 1) Text(context.getString(R.string.n_of_m, position.toString(), count.toString()), style = MaterialTheme.typography.labelLarge)
+            if (count > 1) Text(stringResource(R.string.n_of_m, position.toString(), count.toString()), style = MaterialTheme.typography.labelLarge)
             Text(
                 task.title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },

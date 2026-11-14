@@ -124,6 +124,9 @@ fun EditScreen(
         error = onSave(input)
     }
 
+    val timedLabel = stringResource(R.string.remind_at_time)
+    val noneLabel = stringResource(R.string.none)
+    val beforeLabel = stringResource(R.string.before)
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(stringResource(if (task == null) R.string.new_reminder else R.string.edit_reminder)) },
@@ -150,7 +153,7 @@ fun EditScreen(
             )
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                 Text(stringResource(R.string.remind_at_time), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Switch(checked = timed, onCheckedChange = { timed = it }, modifier = Modifier.semantics { contentDescription = context.getString(R.string.remind_at_time) })
+                Switch(checked = timed, onCheckedChange = { timed = it }, modifier = Modifier.semantics { contentDescription = timedLabel })
             }
             if (timed) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -190,7 +193,7 @@ fun EditScreen(
                 }
                 Choice(
                     label = stringResource(R.string.early_notice),
-                    options = (listOf(0) + EARLY_MINUTES).map { it.toString() to (if (it == 0) context.getString(R.string.none) else context.getString(R.string.before, L10n.duration(context, it.toLong()))) },
+                    options = (listOf(0) + EARLY_MINUTES).map { it.toString() to (if (it == 0) noneLabel else beforeLabel.replace("%1\$s", L10n.duration(context, it.toLong()))) },
                     selected = early.toString(), onSelect = { early = it.toInt() },
                 )
             }
@@ -272,8 +275,8 @@ fun Stepper(label: String, value: Int, min: Int, max: Int, onChange: (Int) -> Un
     val context = LocalContext.current
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        IconButton(onClick = { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min) { Icon(Icons.Filled.Remove, context.getString(R.string.decrease)) }
+        IconButton(onClick = { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min) { Icon(Icons.Filled.Remove, stringResource(R.string.decrease)) }
         Text(value.toString(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 8.dp))
-        IconButton(onClick = { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max) { Icon(Icons.Filled.Add, context.getString(R.string.increase)) }
+        IconButton(onClick = { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max) { Icon(Icons.Filled.Add, stringResource(R.string.increase)) }
     }
 }

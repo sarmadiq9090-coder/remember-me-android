@@ -114,6 +114,9 @@ class DataTest {
         assertEquals(JsonArray(emptyList()), data["notes"]!!.jsonArray[0].jsonObject["attachments"])
         assertEquals(JsonArray(emptyList()), data["tasks"]!!.jsonArray[0].jsonObject["attachments"])
         assertFalse(files["$folder/data.json"]!!.let { it.size >= 3 && it[0] == 0xEF.toByte() })
+        // Extracted for tools/windows-validate.cjs, which restores it with the Windows app's own code.
+        val check = File("build/windows-check/$folder").apply { deleteRecursively(); mkdirs() }
+        for ((name, bytes) in files) File(check, name.substringAfter('/')).writeBytes(bytes)
     }
 
     @Test fun importRoundTripAndWindowsShapes() {

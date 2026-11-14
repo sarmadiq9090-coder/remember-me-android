@@ -1,0 +1,5287 @@
+{
+ "source": "Remember-Me/src/core/repeat.js",
+ "count": 600,
+ "cases": [
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2028-11-30T12:30:00.000Z",
+   "now": "2028-12-01T13:06:21.079Z",
+   "repeatFrom": "2028-11-30T12:30:00.000Z",
+   "next": "2028-12-30T12:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2026-06-14T23:30:00.000Z",
+   "now": "2026-06-24T00:07:38.230Z",
+   "repeatFrom": "2026-06-14T23:30:00.000Z",
+   "next": "2027-06-14T23:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2026-08-02T06:00:00.000Z",
+   "now": "2026-08-11T06:10:25.893Z",
+   "repeatFrom": "2026-07-31T06:00:00.000Z",
+   "next": "2026-09-30T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2027-04-01T21:59:00.000Z",
+   "now": "2028-05-05T22:06:02.311Z",
+   "repeatFrom": "2027-01-29T21:59:00.000Z",
+   "next": "2028-05-06T20:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2024-11-02T15:30:00.000Z",
+   "now": "2024-11-02T16:02:20.187Z",
+   "repeatFrom": "2024-10-31T15:30:00.000Z",
+   "next": "2024-11-09T15:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2028-08-15T21:30:00.000Z",
+   "now": "2028-08-15T22:03:58.522Z",
+   "repeatFrom": "2028-08-15T21:30:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-09-14T21:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-06-15T23:59:00.000Z",
+   "now": "2025-06-17T00:37:36.465Z",
+   "repeatFrom": "2025-04-14T23:59:00.000Z",
+   "next": "2025-06-17T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-09-05T23:00:00.000Z",
+   "now": "2025-09-05T23:35:57.749Z",
+   "repeatFrom": "2025-08-29T23:00:00.000Z",
+   "next": "2025-09-06T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2024-12-29T20:00:00.000Z",
+   "now": "2026-02-02T20:31:21.279Z",
+   "repeatFrom": "2024-12-29T20:00:00.000Z",
+   "repeatDays": [
+    0,
+    4
+   ],
+   "next": "2026-02-05T20:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2026-02-28T07:00:00.000Z",
+   "now": "2026-02-28T07:40:19.588Z",
+   "repeatFrom": "2026-02-28T07:00:00.000Z",
+   "next": "2026-03-01T07:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2026-12-15T07:00:00.000Z",
+   "now": "2028-01-19T07:25:37.671Z",
+   "repeatFrom": "2026-12-15T07:00:00.000Z",
+   "next": "2028-01-20T07:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-04-05T12:30:00.000Z",
+   "now": "2026-05-10T13:16:02.007Z",
+   "repeatFrom": "2025-04-05T12:30:00.000Z",
+   "next": "2026-05-10T13:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2027-06-30T00:30:00.000Z",
+   "now": "2027-06-30T00:07:19.848Z",
+   "repeatFrom": "2027-05-30T00:30:00.000Z",
+   "next": "2027-07-07T00:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2026-05-29T06:59:00.000Z",
+   "now": "2026-05-30T07:42:04.082Z",
+   "repeatFrom": "2026-05-15T06:59:00.000Z",
+   "next": "2027-05-15T06:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2025-06-29T04:30:00.000Z",
+   "now": "2025-07-08T04:46:01.076Z",
+   "repeatFrom": "2025-06-28T04:30:00.000Z",
+   "next": "2025-07-09T04:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2026-10-28T13:59:00.000Z",
+   "now": "2026-10-28T13:22:44.505Z",
+   "repeatFrom": "2026-10-28T13:59:00.000Z",
+   "next": "2026-11-28T14:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2028-11-29T21:00:00.000Z",
+   "now": "2028-11-29T20:42:16.400Z",
+   "repeatFrom": "2028-10-29T21:00:00.000Z",
+   "next": "2028-12-29T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2025-03-29T13:30:00.000Z",
+   "now": "2025-03-29T14:11:07.347Z",
+   "repeatFrom": "2025-03-29T13:30:00.000Z",
+   "next": "2025-04-05T13:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2024-03-02T00:00:00.000Z",
+   "now": "2024-03-02T00:52:47.446Z",
+   "repeatFrom": "2024-02-29T00:00:00.000Z",
+   "next": "2024-03-09T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2027-12-02T04:59:00.000Z",
+   "now": "2027-12-02T05:39:58.372Z",
+   "repeatFrom": "2027-12-01T04:59:00.000Z",
+   "repeatDays": [
+    0,
+    6
+   ],
+   "next": "2027-12-05T04:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2028-05-14T21:59:00.000Z",
+   "now": "2029-06-18T22:45:35.548Z",
+   "repeatFrom": "2028-05-14T21:59:00.000Z",
+   "repeatDays": [
+    0
+   ],
+   "next": "2029-06-23T21:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2025-05-03T02:30:00.000Z",
+   "now": "2025-05-12T02:36:17.380Z",
+   "repeatFrom": "2025-03-02T02:30:00.000Z",
+   "next": "2025-05-17T02:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2027-03-07T21:00:00.000Z",
+   "now": "2027-03-16T21:38:49.947Z",
+   "repeatFrom": "2027-01-04T21:00:00.000Z",
+   "next": "2027-03-21T21:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2024-12-01T22:30:00.000Z",
+   "now": "2024-12-01T23:13:14.184Z",
+   "repeatFrom": "2024-12-01T22:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-12-01T22:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-04-06T21:30:00.000Z",
+   "now": "2026-05-11T21:36:43.473Z",
+   "repeatFrom": "2025-03-30T21:30:00.000Z",
+   "next": "2026-05-12T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2024-03-16T06:00:00.000Z",
+   "now": "2024-03-16T06:53:21.421Z",
+   "repeatFrom": "2024-03-02T06:00:00.000Z",
+   "next": "2024-03-17T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2025-10-28T21:59:00.000Z",
+   "now": "2025-10-28T22:25:11.622Z",
+   "repeatFrom": "2025-10-27T21:59:00.000Z",
+   "next": "2025-11-27T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2024-09-14T23:00:00.000Z",
+   "now": "2024-09-14T23:06:33.076Z",
+   "repeatFrom": "2024-08-31T23:00:00.000Z",
+   "next": "2024-09-15T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2028-11-04T22:00:00.000Z",
+   "now": "2028-11-04T22:38:55.537Z",
+   "repeatFrom": "2028-11-04T22:00:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2028-11-07T22:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2028-07-29T00:00:00.000Z",
+   "now": "2028-07-30T00:48:29.752Z",
+   "repeatFrom": "2028-06-28T00:00:00.000Z",
+   "next": "2028-08-05T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2026-04-19T04:00:00.000Z",
+   "now": "2026-04-20T04:26:46.202Z",
+   "repeatFrom": "2026-02-16T04:00:00.000Z",
+   "next": "2027-02-16T04:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2025-02-14T15:00:00.000Z",
+   "now": "2025-02-23T15:06:38.453Z",
+   "repeatFrom": "2024-12-14T15:00:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2025-02-26T15:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2024-06-10T23:00:00.000Z",
+   "now": "2024-06-10T23:43:39.078Z",
+   "repeatFrom": "2024-05-27T23:00:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-06-10T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2025-10-29T21:59:00.000Z",
+   "now": "2026-12-03T22:50:34.875Z",
+   "repeatFrom": "2025-10-27T21:59:00.000Z",
+   "next": "2026-12-09T21:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2026-03-08T12:59:00.000Z",
+   "now": "2026-03-08T13:56:23.223Z",
+   "repeatFrom": "2026-03-01T12:59:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2026-03-09T12:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2025-12-13T04:59:00.000Z",
+   "now": "2025-12-13T05:52:07.384Z",
+   "repeatFrom": "2025-11-29T04:59:00.000Z",
+   "repeatDays": [
+    1,
+    4
+   ],
+   "next": "2025-12-16T04:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2024-12-01T21:30:00.000Z",
+   "now": "2024-12-02T22:20:53.250Z",
+   "repeatFrom": "2024-12-01T21:30:00.000Z",
+   "next": "2025-12-01T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2025-07-11T23:30:00.000Z",
+   "now": "2025-07-21T00:24:41.368Z",
+   "repeatFrom": "2025-07-04T23:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-07-21T23:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2025-04-30T21:59:00.000Z",
+   "now": "2025-04-30T22:33:25.466Z",
+   "repeatFrom": "2025-04-30T21:59:00.000Z",
+   "next": "2025-05-01T21:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2024-09-30T22:59:00.000Z",
+   "now": "2024-10-01T23:43:36.115Z",
+   "repeatFrom": "2024-09-30T22:59:00.000Z",
+   "repeatDays": [
+    1,
+    4
+   ],
+   "next": "2024-10-02T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2025-01-30T20:00:00.000Z",
+   "now": "2025-01-30T20:56:48.861Z",
+   "repeatFrom": "2025-01-28T20:00:00.000Z",
+   "repeatDays": [
+    2,
+    5
+   ],
+   "next": "2025-01-31T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2025-06-15T23:59:00.000Z",
+   "now": "2026-07-21T00:12:55.185Z",
+   "repeatFrom": "2025-06-14T23:59:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2026-07-25T23:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2025-05-01T09:59:00.000Z",
+   "now": "2025-05-01T10:13:43.523Z",
+   "repeatFrom": "2025-05-01T09:59:00.000Z",
+   "repeatDays": [
+    5
+   ],
+   "next": "2025-05-02T09:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2027-04-01T00:59:00.000Z",
+   "now": "2027-04-01T00:49:41.829Z",
+   "repeatFrom": "2027-03-30T00:59:00.000Z",
+   "next": "2027-04-08T00:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2028-07-16T06:30:00.000Z",
+   "now": "2028-07-25T07:29:40.346Z",
+   "repeatFrom": "2028-05-15T06:30:00.000Z",
+   "next": "2028-08-15T06:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2028-07-15T20:30:00.000Z",
+   "now": "2028-07-24T20:49:55.161Z",
+   "repeatFrom": "2028-07-15T20:30:00.000Z",
+   "next": "2028-07-25T20:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2027-02-08T12:00:00.000Z",
+   "now": "2027-02-08T12:58:31.548Z",
+   "repeatFrom": "2027-02-01T12:00:00.000Z",
+   "next": "2027-02-09T12:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2025-09-11T23:30:00.000Z",
+   "now": "2025-09-13T00:16:44.731Z",
+   "repeatFrom": "2025-09-04T23:30:00.000Z",
+   "next": "2025-10-04T23:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2027-12-30T15:30:00.000Z",
+   "now": "2027-12-30T16:29:54.136Z",
+   "repeatFrom": "2027-11-29T15:30:00.000Z",
+   "next": "2027-12-31T15:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2027-09-17T06:00:00.000Z",
+   "now": "2027-09-17T06:56:09.408Z",
+   "repeatFrom": "2027-09-15T06:00:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2027-09-20T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-04-02T21:59:00.000Z",
+   "now": "2024-04-02T22:37:55.656Z",
+   "repeatFrom": "2024-04-01T21:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2024-04-12T21:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2025-12-16T12:30:00.000Z",
+   "now": "2025-12-16T12:52:50.850Z",
+   "repeatFrom": "2025-11-15T12:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-12-26T12:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2025-09-14T23:30:00.000Z",
+   "now": "2025-09-14T22:51:48.046Z",
+   "repeatFrom": "2025-08-31T23:30:00.000Z",
+   "next": "2025-09-21T23:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2025-03-17T22:30:00.000Z",
+   "now": "2025-03-17T22:21:18.806Z",
+   "repeatFrom": "2025-03-03T22:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2025-03-19T22:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2024-04-30T02:59:00.000Z",
+   "now": "2024-05-01T03:03:30.185Z",
+   "repeatFrom": "2024-04-30T02:59:00.000Z",
+   "next": "2024-05-07T02:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2027-03-30T07:00:00.000Z",
+   "now": "2027-03-30T07:03:41.915Z",
+   "repeatFrom": "2027-03-29T07:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2027-04-01T07:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2026-03-01T20:00:00.000Z",
+   "now": "2026-03-01T19:05:20.707Z",
+   "repeatFrom": "2026-03-01T20:00:00.000Z",
+   "repeatDays": [
+    2,
+    4
+   ],
+   "next": "2026-03-03T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2027-11-05T20:59:00.000Z",
+   "now": "2027-11-05T21:43:52.723Z",
+   "repeatFrom": "2027-11-05T20:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2027-12-05T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2028-03-03T00:59:00.000Z",
+   "now": "2028-03-03T00:27:03.077Z",
+   "repeatFrom": "2028-03-02T00:59:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2028-03-04T00:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2025-03-19T21:59:00.000Z",
+   "now": "2025-03-20T22:19:07.917Z",
+   "repeatFrom": "2025-03-05T21:59:00.000Z",
+   "repeatEvery": 3,
+   "next": "2025-03-22T21:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2028-04-29T03:30:00.000Z",
+   "now": "2028-04-29T04:16:37.422Z",
+   "repeatFrom": "2028-04-29T03:30:00.000Z",
+   "next": "2028-05-06T03:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2028-01-01T20:59:00.000Z",
+   "now": "2028-01-01T20:07:18.466Z",
+   "repeatFrom": "2027-10-31T20:59:00.000Z",
+   "next": "2028-02-29T20:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2026-01-22T14:30:00.000Z",
+   "now": "2026-01-22T14:23:41.555Z",
+   "repeatFrom": "2026-01-15T14:30:00.000Z",
+   "next": "2026-01-23T14:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2028-11-04T23:30:00.000Z",
+   "now": "2028-11-04T22:38:46.267Z",
+   "repeatFrom": "2028-11-04T23:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-11-06T23:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2027-08-29T23:30:00.000Z",
+   "now": "2027-08-29T23:32:48.326Z",
+   "repeatFrom": "2027-08-28T23:30:00.000Z",
+   "next": "2028-08-28T23:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2027-08-12T23:30:00.000Z",
+   "now": "2027-08-12T22:39:08.126Z",
+   "repeatFrom": "2027-07-29T23:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2028-08-11T23:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-03-31T12:30:00.000Z",
+   "now": "2025-03-31T12:09:42.980Z",
+   "repeatFrom": "2025-03-31T12:30:00.000Z",
+   "next": "2025-04-01T12:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-08-29T06:00:00.000Z",
+   "now": "2026-10-03T06:35:40.583Z",
+   "repeatFrom": "2025-08-29T06:00:00.000Z",
+   "next": "2026-10-04T06:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2027-05-05T16:30:00.000Z",
+   "now": "2027-05-05T15:37:30.965Z",
+   "repeatFrom": "2027-04-28T16:30:00.000Z",
+   "repeatDays": [
+    1,
+    3
+   ],
+   "next": "2027-05-09T16:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2028-04-28T06:59:00.000Z",
+   "now": "2028-05-07T07:48:39.385Z",
+   "repeatFrom": "2028-04-28T06:59:00.000Z",
+   "next": "2028-05-08T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2024-02-03T22:59:00.000Z",
+   "now": "2024-02-03T22:43:35.539Z",
+   "repeatFrom": "2024-01-27T22:59:00.000Z",
+   "next": "2024-03-27T22:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2027-03-16T02:59:00.000Z",
+   "now": "2027-03-16T03:09:19.512Z",
+   "repeatFrom": "2027-03-02T02:59:00.000Z",
+   "next": "2027-03-17T02:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2025-02-27T21:59:00.000Z",
+   "now": "2025-03-08T22:38:10.144Z",
+   "repeatFrom": "2025-02-27T21:59:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2025-03-11T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2026-07-03T06:59:00.000Z",
+   "now": "2026-07-03T07:34:08.515Z",
+   "repeatFrom": "2026-07-01T06:59:00.000Z",
+   "next": "2027-07-01T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2025-12-02T20:59:00.000Z",
+   "now": "2025-12-02T20:19:41.456Z",
+   "repeatFrom": "2025-10-01T20:59:00.000Z",
+   "next": "2026-01-01T20:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2027-02-28T07:30:00.000Z",
+   "now": "2027-03-09T08:08:17.837Z",
+   "repeatFrom": "2026-12-28T07:30:00.000Z",
+   "next": "2027-12-28T07:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2028-05-29T13:30:00.000Z",
+   "now": "2028-06-07T13:51:53.858Z",
+   "repeatFrom": "2028-05-15T13:30:00.000Z",
+   "next": "2028-06-12T13:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2024-06-22T06:30:00.000Z",
+   "now": "2024-07-01T07:06:56.289Z",
+   "repeatFrom": "2024-06-15T06:30:00.000Z",
+   "next": "2024-07-02T06:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2024-03-02T20:59:00.000Z",
+   "now": "2024-03-02T20:07:39.087Z",
+   "repeatFrom": "2024-03-02T20:59:00.000Z",
+   "next": "2024-03-03T20:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2028-01-29T09:59:00.000Z",
+   "now": "2028-02-07T10:53:39.836Z",
+   "repeatFrom": "2027-11-28T09:59:00.000Z",
+   "next": "2028-02-28T09:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2024-08-05T20:59:00.000Z",
+   "now": "2024-08-14T21:28:08.944Z",
+   "repeatFrom": "2024-08-05T20:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2024-08-15T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2028-08-15T21:30:00.000Z",
+   "now": "2028-08-16T22:20:09.108Z",
+   "repeatFrom": "2028-08-14T21:30:00.000Z",
+   "next": "2028-08-17T21:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2027-04-08T08:00:00.000Z",
+   "now": "2028-05-12T08:52:45.806Z",
+   "repeatFrom": "2027-02-05T08:00:00.000Z",
+   "next": "2029-02-05T08:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2025-05-16T23:59:00.000Z",
+   "now": "2025-05-18T00:57:58.690Z",
+   "repeatFrom": "2025-05-14T23:59:00.000Z",
+   "next": "2025-05-23T23:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2024-12-01T00:30:00.000Z",
+   "now": "2024-12-01T00:01:53.817Z",
+   "repeatFrom": "2024-11-29T00:30:00.000Z",
+   "next": "2024-12-08T00:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2025-06-11T06:59:00.000Z",
+   "now": "2025-06-11T07:34:28.813Z",
+   "repeatFrom": "2025-05-28T06:59:00.000Z",
+   "next": "2026-05-28T06:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2024-08-01T00:30:00.000Z",
+   "now": "2024-08-01T01:04:26.283Z",
+   "repeatFrom": "2024-07-01T00:30:00.000Z",
+   "next": "2024-09-01T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2024-10-28T21:00:00.000Z",
+   "now": "2024-10-28T20:18:28.588Z",
+   "repeatFrom": "2024-10-27T21:00:00.000Z",
+   "next": "2024-11-04T21:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2028-12-22T00:00:00.000Z",
+   "now": "2028-12-22T00:41:29.453Z",
+   "repeatFrom": "2028-12-15T00:00:00.000Z",
+   "next": "2029-12-15T00:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2024-08-02T09:00:00.000Z",
+   "now": "2024-08-02T09:50:23.209Z",
+   "repeatFrom": "2024-07-31T09:00:00.000Z",
+   "next": "2024-08-03T09:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2027-04-30T02:59:00.000Z",
+   "now": "2028-06-03T03:27:12.288Z",
+   "repeatFrom": "2027-04-30T02:59:00.000Z",
+   "next": "2029-04-30T02:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2028-08-11T13:00:00.000Z",
+   "now": "2028-08-20T13:25:13.253Z",
+   "repeatFrom": "2028-07-28T13:00:00.000Z",
+   "next": "2028-08-21T13:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2024-10-29T06:59:00.000Z",
+   "now": "2024-10-29T07:01:11.548Z",
+   "repeatFrom": "2024-09-28T06:59:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2024-11-01T06:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2025-04-29T09:59:00.000Z",
+   "now": "2025-04-30T10:47:36.189Z",
+   "repeatFrom": "2025-03-29T09:59:00.000Z",
+   "next": "2025-05-01T09:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2025-10-05T20:00:00.000Z",
+   "now": "2025-10-05T20:51:39.680Z",
+   "repeatFrom": "2025-10-05T20:00:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-10-15T20:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2025-03-28T02:30:00.000Z",
+   "now": "2026-05-02T02:50:06.697Z",
+   "repeatFrom": "2025-03-28T02:30:00.000Z",
+   "repeatDays": [
+    1,
+    5
+   ],
+   "next": "2026-05-04T02:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-01-31T21:30:00.000Z",
+   "now": "2028-01-31T20:41:27.848Z",
+   "repeatFrom": "2028-01-31T21:30:00.000Z",
+   "next": "2029-01-31T21:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2026-03-08T07:59:00.000Z",
+   "now": "2026-03-08T07:02:02.101Z",
+   "repeatFrom": "2026-02-05T07:59:00.000Z",
+   "repeatEvery": 365,
+   "next": "2027-03-08T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-02-28T21:00:00.000Z",
+   "now": "2025-03-01T21:35:49.882Z",
+   "repeatFrom": "2024-12-28T21:00:00.000Z",
+   "next": "2025-03-02T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2027-10-17T06:59:00.000Z",
+   "now": "2027-10-18T07:29:24.662Z",
+   "repeatFrom": "2027-10-15T06:59:00.000Z",
+   "next": "2027-10-19T06:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2028-08-01T16:30:00.000Z",
+   "now": "2028-08-01T16:46:27.701Z",
+   "repeatFrom": "2028-07-31T16:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-08-03T16:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2027-09-05T23:59:00.000Z",
+   "now": "2028-10-10T00:58:02.341Z",
+   "repeatFrom": "2027-09-05T23:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2028-10-19T23:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2027-09-06T07:30:00.000Z",
+   "now": "2027-09-06T06:52:50.056Z",
+   "repeatFrom": "2027-08-30T07:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-09-09T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2026-09-15T06:59:00.000Z",
+   "now": "2027-10-20T07:28:32.684Z",
+   "repeatFrom": "2026-09-15T06:59:00.000Z",
+   "next": "2028-09-15T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2029-01-16T20:59:00.000Z",
+   "now": "2029-01-16T21:24:47.262Z",
+   "repeatFrom": "2028-11-15T20:59:00.000Z",
+   "next": "2029-01-23T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2027-05-12T21:30:00.000Z",
+   "now": "2027-05-12T22:18:49.129Z",
+   "repeatFrom": "2027-04-28T21:30:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2027-05-14T21:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2025-05-30T23:00:00.000Z",
+   "now": "2025-06-08T23:26:48.245Z",
+   "repeatFrom": "2025-05-28T23:00:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-06-09T23:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2028-01-29T15:00:00.000Z",
+   "now": "2028-01-29T16:00:46.650Z",
+   "repeatFrom": "2027-11-28T15:00:00.000Z",
+   "next": "2028-01-30T15:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2028-10-05T02:00:00.000Z",
+   "now": "2028-10-06T02:56:47.715Z",
+   "repeatFrom": "2028-09-28T02:00:00.000Z",
+   "repeatDays": [
+    0,
+    1
+   ],
+   "next": "2028-10-08T02:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2027-10-29T06:30:00.000Z",
+   "now": "2027-10-29T07:14:52.836Z",
+   "repeatFrom": "2027-10-28T06:30:00.000Z",
+   "next": "2027-10-30T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2028-04-05T06:00:00.000Z",
+   "now": "2028-04-05T06:50:50.722Z",
+   "repeatFrom": "2028-04-05T06:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-05-05T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2027-10-05T21:00:00.000Z",
+   "now": "2027-10-05T20:26:26.873Z",
+   "repeatFrom": "2027-08-04T21:00:00.000Z",
+   "next": "2027-10-06T21:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2025-12-28T22:00:00.000Z",
+   "now": "2025-12-29T22:41:50.331Z",
+   "repeatFrom": "2025-12-27T22:00:00.000Z",
+   "repeatDays": [
+    1,
+    4
+   ],
+   "next": "2025-12-31T22:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2025-07-01T06:59:00.000Z",
+   "now": "2025-07-01T07:21:04.309Z",
+   "repeatFrom": "2025-07-01T06:59:00.000Z",
+   "repeatDays": [
+    4,
+    5
+   ],
+   "next": "2025-07-03T06:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-09-01T13:30:00.000Z",
+   "now": "2025-09-01T13:28:20.870Z",
+   "repeatFrom": "2025-09-01T13:30:00.000Z",
+   "next": "2026-09-01T13:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2028-04-01T00:59:00.000Z",
+   "now": "2028-04-01T01:02:12.935Z",
+   "repeatFrom": "2028-03-01T00:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2028-04-10T23:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2027-04-08T08:59:00.000Z",
+   "now": "2027-04-09T09:58:09.135Z",
+   "repeatFrom": "2027-02-05T08:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2027-04-18T07:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2024-11-01T23:59:00.000Z",
+   "now": "2024-11-03T00:35:03.348Z",
+   "repeatFrom": "2024-10-01T23:59:00.000Z",
+   "next": "2024-12-01T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2024-07-02T06:59:00.000Z",
+   "now": "2024-07-02T07:25:37.736Z",
+   "repeatFrom": "2024-06-01T06:59:00.000Z",
+   "repeatDays": [
+    2,
+    3
+   ],
+   "next": "2024-07-03T06:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2024-04-07T23:30:00.000Z",
+   "now": "2024-04-08T23:53:32.440Z",
+   "repeatFrom": "2024-03-31T23:30:00.000Z",
+   "next": "2024-05-31T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2028-08-11T23:30:00.000Z",
+   "now": "2028-08-11T23:59:24.891Z",
+   "repeatFrom": "2028-08-04T23:30:00.000Z",
+   "next": "2028-09-04T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2027-05-01T20:30:00.000Z",
+   "now": "2027-05-01T19:59:00.422Z",
+   "repeatFrom": "2027-05-01T20:30:00.000Z",
+   "next": "2027-05-08T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2028-02-04T21:59:00.000Z",
+   "now": "2029-03-10T22:31:19.912Z",
+   "repeatFrom": "2028-02-04T21:59:00.000Z",
+   "next": "2029-03-16T21:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2025-06-30T23:59:00.000Z",
+   "now": "2025-07-02T00:39:55.415Z",
+   "repeatFrom": "2025-04-29T23:59:00.000Z",
+   "next": "2025-07-07T23:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2026-03-03T04:30:00.000Z",
+   "now": "2026-03-03T04:28:52.408Z",
+   "repeatFrom": "2026-01-31T04:30:00.000Z",
+   "repeatDays": [
+    0,
+    1
+   ],
+   "next": "2026-03-09T03:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2026-10-07T16:30:00.000Z",
+   "now": "2027-11-11T17:11:25.188Z",
+   "repeatFrom": "2026-09-30T16:30:00.000Z",
+   "next": "2028-09-30T16:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-02-14T22:59:00.000Z",
+   "now": "2024-02-14T23:50:48.523Z",
+   "repeatFrom": "2024-01-31T22:59:00.000Z",
+   "next": "2025-01-31T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2024-09-05T20:30:00.000Z",
+   "now": "2025-10-10T20:50:21.217Z",
+   "repeatFrom": "2024-09-05T20:30:00.000Z",
+   "next": "2026-09-05T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2025-09-29T21:59:00.000Z",
+   "now": "2026-11-03T21:59:51.351Z",
+   "repeatFrom": "2025-09-28T21:59:00.000Z",
+   "repeatEvery": 3,
+   "next": "2026-11-05T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2025-10-18T21:59:00.000Z",
+   "now": "2025-10-18T22:07:48.773Z",
+   "repeatFrom": "2025-10-04T21:59:00.000Z",
+   "repeatEvery": 2,
+   "next": "2025-10-20T21:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2024-05-07T07:30:00.000Z",
+   "now": "2024-05-08T08:01:15.824Z",
+   "repeatFrom": "2024-05-05T07:30:00.000Z",
+   "next": "2024-05-09T07:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2025-02-01T00:00:00.000Z",
+   "now": "2025-02-10T00:12:38.770Z",
+   "repeatFrom": "2025-02-01T00:00:00.000Z",
+   "next": "2026-02-01T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2028-07-29T03:30:00.000Z",
+   "now": "2028-08-07T04:08:45.385Z",
+   "repeatFrom": "2028-07-29T03:30:00.000Z",
+   "next": "2028-08-29T03:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-07-07T23:00:00.000Z",
+   "now": "2024-07-16T23:33:56.864Z",
+   "repeatFrom": "2024-06-30T23:00:00.000Z",
+   "next": "2025-06-30T23:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-01-31T23:00:00.000Z",
+   "now": "2026-01-31T23:01:37.372Z",
+   "repeatFrom": "2025-12-31T23:00:00.000Z",
+   "next": "2026-02-07T23:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-05-31T22:30:00.000Z",
+   "now": "2026-05-31T22:46:47.666Z",
+   "repeatFrom": "2026-03-30T22:30:00.000Z",
+   "next": "2026-06-07T22:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2024-11-14T21:30:00.000Z",
+   "now": "2024-11-14T22:13:42.658Z",
+   "repeatFrom": "2024-10-31T21:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2024-11-24T21:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2025-03-04T00:00:00.000Z",
+   "now": "2025-03-03T23:52:47.042Z",
+   "repeatFrom": "2025-03-02T00:00:00.000Z",
+   "next": "2025-03-05T00:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2027-06-27T23:59:00.000Z",
+   "now": "2027-06-28T00:05:47.313Z",
+   "repeatFrom": "2027-06-27T23:59:00.000Z",
+   "next": "2027-06-28T23:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2026-08-07T02:00:00.000Z",
+   "now": "2026-08-07T02:02:34.391Z",
+   "repeatFrom": "2026-07-31T02:00:00.000Z",
+   "next": "2026-08-14T02:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2028-08-06T06:59:00.000Z",
+   "now": "2028-08-07T07:55:22.971Z",
+   "repeatFrom": "2028-07-30T06:59:00.000Z",
+   "repeatEvery": 3,
+   "next": "2028-08-09T06:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2025-05-02T14:30:00.000Z",
+   "now": "2025-05-02T15:09:20.414Z",
+   "repeatFrom": "2025-03-01T14:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-05-12T13:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2025-07-31T13:30:00.000Z",
+   "now": "2026-09-04T13:52:16.355Z",
+   "repeatFrom": "2025-07-29T13:30:00.000Z",
+   "next": "2026-09-29T13:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2025-04-06T01:00:00.000Z",
+   "now": "2026-05-11T01:48:32.554Z",
+   "repeatFrom": "2025-03-30T01:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2026-05-31T01:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2026-11-29T09:59:00.000Z",
+   "now": "2026-11-29T10:13:32.126Z",
+   "repeatFrom": "2026-11-28T09:59:00.000Z",
+   "next": "2026-11-30T09:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2028-06-30T03:59:00.000Z",
+   "now": "2029-08-04T04:23:25.539Z",
+   "repeatFrom": "2028-06-30T03:59:00.000Z",
+   "next": "2030-06-30T03:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2026-04-03T06:00:00.000Z",
+   "now": "2026-04-12T06:28:42.338Z",
+   "repeatFrom": "2026-04-01T06:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-04-13T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-07-05T21:00:00.000Z",
+   "now": "2028-07-05T20:03:38.337Z",
+   "repeatFrom": "2028-05-04T21:00:00.000Z",
+   "next": "2029-05-04T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2026-07-28T14:00:00.000Z",
+   "now": "2026-07-28T14:36:30.596Z",
+   "repeatFrom": "2026-07-27T14:00:00.000Z",
+   "repeatDays": [
+    2,
+    6
+   ],
+   "next": "2026-07-31T14:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2026-02-02T05:30:00.000Z",
+   "now": "2026-02-11T06:08:14.941Z",
+   "repeatFrom": "2026-01-31T05:30:00.000Z",
+   "next": "2027-01-31T05:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2024-01-28T07:30:00.000Z",
+   "now": "2025-03-03T07:32:50.189Z",
+   "repeatFrom": "2024-01-28T07:30:00.000Z",
+   "next": "2025-03-09T07:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-07-13T06:30:00.000Z",
+   "now": "2028-07-13T07:07:57.455Z",
+   "repeatFrom": "2028-06-29T06:30:00.000Z",
+   "next": "2029-06-29T06:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2025-05-29T20:00:00.000Z",
+   "now": "2025-05-29T20:54:27.183Z",
+   "repeatFrom": "2025-04-28T20:00:00.000Z",
+   "next": "2025-05-30T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-01-29T00:30:00.000Z",
+   "now": "2024-01-29T00:36:42.246Z",
+   "repeatFrom": "2024-01-29T00:30:00.000Z",
+   "next": "2025-01-29T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2028-10-18T23:30:00.000Z",
+   "now": "2028-10-28T00:18:06.334Z",
+   "repeatFrom": "2028-10-04T23:30:00.000Z",
+   "next": "2028-10-28T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2024-11-11T21:00:00.000Z",
+   "now": "2024-11-11T21:40:01.295Z",
+   "repeatFrom": "2024-11-04T21:00:00.000Z",
+   "next": "2024-11-12T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2028-06-30T06:00:00.000Z",
+   "now": "2028-06-30T06:58:02.239Z",
+   "repeatFrom": "2028-05-30T06:00:00.000Z",
+   "next": "2028-07-07T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2025-05-29T20:59:00.000Z",
+   "now": "2025-05-30T21:41:46.706Z",
+   "repeatFrom": "2025-05-15T20:59:00.000Z",
+   "next": "2025-06-15T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2028-01-21T21:59:00.000Z",
+   "now": "2029-02-24T22:22:41.602Z",
+   "repeatFrom": "2028-01-14T21:59:00.000Z",
+   "repeatDays": [
+    1,
+    3
+   ],
+   "next": "2029-02-25T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2027-07-13T06:00:00.000Z",
+   "now": "2028-08-16T06:10:50.321Z",
+   "repeatFrom": "2027-06-29T06:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2028-08-18T06:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2026-08-15T23:30:00.000Z",
+   "now": "2026-08-16T23:57:59.718Z",
+   "repeatFrom": "2026-08-01T23:30:00.000Z",
+   "next": "2026-08-17T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2027-08-27T21:00:00.000Z",
+   "now": "2027-08-27T21:03:52.275Z",
+   "repeatFrom": "2027-08-27T21:00:00.000Z",
+   "repeatEvery": 365,
+   "next": "2028-08-26T21:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2028-05-31T00:00:00.000Z",
+   "now": "2028-05-31T00:19:40.970Z",
+   "repeatFrom": "2028-05-31T00:00:00.000Z",
+   "next": "2028-06-07T00:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2026-08-05T09:30:00.000Z",
+   "now": "2026-08-06T10:12:13.713Z",
+   "repeatFrom": "2026-07-29T09:30:00.000Z",
+   "next": "2027-07-29T09:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2024-12-06T21:30:00.000Z",
+   "now": "2024-12-06T22:21:48.676Z",
+   "repeatFrom": "2024-10-05T21:30:00.000Z",
+   "next": "2025-10-05T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2026-09-01T06:30:00.000Z",
+   "now": "2026-09-02T06:51:36.044Z",
+   "repeatFrom": "2026-09-01T06:30:00.000Z",
+   "next": "2026-09-03T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2029-01-31T14:59:00.000Z",
+   "now": "2029-01-31T14:16:49.392Z",
+   "repeatFrom": "2028-12-31T14:59:00.000Z",
+   "next": "2029-02-07T14:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2026-10-07T20:00:00.000Z",
+   "now": "2026-10-07T19:25:02.084Z",
+   "repeatFrom": "2026-10-05T20:00:00.000Z",
+   "next": "2027-10-05T20:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-10-21T21:59:00.000Z",
+   "now": "2024-10-21T21:51:55.314Z",
+   "repeatFrom": "2024-10-14T21:59:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-10-21T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2027-03-14T23:59:00.000Z",
+   "now": "2027-03-16T00:44:08.965Z",
+   "repeatFrom": "2027-02-28T23:59:00.000Z",
+   "next": "2028-02-29T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2027-03-03T06:59:00.000Z",
+   "now": "2027-03-03T05:59:12.025Z",
+   "repeatFrom": "2027-03-01T06:59:00.000Z",
+   "next": "2027-03-04T06:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2025-05-01T22:59:00.000Z",
+   "now": "2025-05-01T23:15:56.289Z",
+   "repeatFrom": "2025-04-30T22:59:00.000Z",
+   "repeatDays": [
+    2,
+    4
+   ],
+   "next": "2025-05-05T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-03-31T06:00:00.000Z",
+   "now": "2028-05-04T06:00:07.967Z",
+   "repeatFrom": "2027-01-28T06:00:00.000Z",
+   "next": "2028-05-10T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2024-08-05T06:30:00.000Z",
+   "now": "2024-08-05T07:26:52.489Z",
+   "repeatFrom": "2024-08-05T06:30:00.000Z",
+   "repeatDays": [
+    5,
+    6
+   ],
+   "next": "2024-08-09T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2028-08-28T13:59:00.000Z",
+   "now": "2028-08-29T14:54:25.029Z",
+   "repeatFrom": "2028-08-28T13:59:00.000Z",
+   "next": "2028-09-28T13:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2026-09-29T09:59:00.000Z",
+   "now": "2026-09-29T10:53:40.572Z",
+   "repeatFrom": "2026-08-29T09:59:00.000Z",
+   "next": "2026-09-30T09:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2028-03-01T05:30:00.000Z",
+   "now": "2028-03-01T06:17:29.302Z",
+   "repeatFrom": "2028-03-01T05:30:00.000Z",
+   "next": "2029-03-01T05:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-09-01T04:59:00.000Z",
+   "now": "2026-10-06T05:07:04.509Z",
+   "repeatFrom": "2025-07-01T04:59:00.000Z",
+   "next": "2027-07-01T04:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2027-10-15T21:59:00.000Z",
+   "now": "2027-10-16T22:47:04.750Z",
+   "repeatFrom": "2027-10-15T21:59:00.000Z",
+   "next": "2027-10-22T21:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2026-04-01T12:00:00.000Z",
+   "now": "2026-04-01T11:02:33.689Z",
+   "repeatFrom": "2026-04-01T12:00:00.000Z",
+   "next": "2026-04-08T13:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2026-02-01T09:30:00.000Z",
+   "now": "2026-02-01T08:31:04.252Z",
+   "repeatFrom": "2026-01-01T09:30:00.000Z",
+   "next": "2026-02-08T09:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2026-12-02T06:59:00.000Z",
+   "now": "2026-12-03T07:38:34.406Z",
+   "repeatFrom": "2026-10-01T06:59:00.000Z",
+   "next": "2027-01-01T06:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2027-10-02T00:30:00.000Z",
+   "now": "2028-11-05T01:17:33.791Z",
+   "repeatFrom": "2027-10-01T00:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2028-11-05T01:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2028-11-04T20:59:00.000Z",
+   "now": "2029-12-09T21:31:49.527Z",
+   "repeatFrom": "2028-10-28T20:59:00.000Z",
+   "next": "2029-12-28T20:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2025-10-30T23:30:00.000Z",
+   "now": "2025-11-01T00:10:36.334Z",
+   "repeatFrom": "2025-10-28T23:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-11-09T23:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2024-06-15T23:00:00.000Z",
+   "now": "2024-06-24T23:25:55.162Z",
+   "repeatFrom": "2024-05-15T23:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2024-07-15T23:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2028-04-02T00:00:00.000Z",
+   "now": "2028-04-02T00:32:14.474Z",
+   "repeatFrom": "2028-04-01T00:00:00.000Z",
+   "next": "2028-05-01T00:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2028-08-04T22:59:00.000Z",
+   "now": "2028-08-05T23:40:19.707Z",
+   "repeatFrom": "2028-07-04T22:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2028-08-14T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2028-09-28T23:30:00.000Z",
+   "now": "2028-09-30T00:05:06.371Z",
+   "repeatFrom": "2028-09-28T23:30:00.000Z",
+   "next": "2029-09-28T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2028-06-15T06:59:00.000Z",
+   "now": "2028-06-15T07:31:14.525Z",
+   "repeatFrom": "2028-06-15T06:59:00.000Z",
+   "next": "2028-06-16T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2028-08-13T23:59:00.000Z",
+   "now": "2028-08-23T00:47:28.084Z",
+   "repeatFrom": "2028-07-30T23:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-09-12T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-11-30T23:30:00.000Z",
+   "now": "2027-12-01T23:44:11.916Z",
+   "repeatFrom": "2027-11-30T23:30:00.000Z",
+   "next": "2027-12-07T23:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2027-01-16T14:59:00.000Z",
+   "now": "2027-01-16T14:01:58.623Z",
+   "repeatFrom": "2027-01-15T14:59:00.000Z",
+   "next": "2027-01-17T14:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2027-12-05T08:59:00.000Z",
+   "now": "2027-12-14T09:08:43.768Z",
+   "repeatFrom": "2027-12-05T08:59:00.000Z",
+   "next": "2028-12-05T08:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2028-05-30T16:30:00.000Z",
+   "now": "2028-06-08T16:51:36.579Z",
+   "repeatFrom": "2028-05-28T16:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-06-09T16:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2027-05-01T06:59:00.000Z",
+   "now": "2027-05-01T07:41:11.289Z",
+   "repeatFrom": "2027-04-30T06:59:00.000Z",
+   "next": "2027-06-30T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2028-04-03T20:00:00.000Z",
+   "now": "2028-04-03T20:24:21.279Z",
+   "repeatFrom": "2028-04-01T20:00:00.000Z",
+   "next": "2028-04-04T20:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2024-03-01T05:59:00.000Z",
+   "now": "2024-03-01T06:15:56.030Z",
+   "repeatFrom": "2024-01-30T05:59:00.000Z",
+   "next": "2025-01-30T05:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2026-01-03T21:30:00.000Z",
+   "now": "2026-01-12T21:49:22.405Z",
+   "repeatFrom": "2026-01-01T21:30:00.000Z",
+   "next": "2027-01-01T21:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2024-06-14T20:00:00.000Z",
+   "now": "2024-06-14T19:52:29.779Z",
+   "repeatFrom": "2024-05-31T20:00:00.000Z",
+   "next": "2024-07-31T20:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2027-01-28T02:30:00.000Z",
+   "now": "2027-01-28T02:35:07.949Z",
+   "repeatFrom": "2027-01-28T02:30:00.000Z",
+   "next": "2027-02-28T02:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-12-07T23:00:00.000Z",
+   "now": "2024-12-07T23:27:03.599Z",
+   "repeatFrom": "2024-11-30T23:00:00.000Z",
+   "next": "2024-12-31T23:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2024-09-30T02:30:00.000Z",
+   "now": "2024-10-01T03:20:06.656Z",
+   "repeatFrom": "2024-08-30T02:30:00.000Z",
+   "next": "2024-10-02T02:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2026-10-01T20:00:00.000Z",
+   "now": "2026-10-01T19:27:16.051Z",
+   "repeatFrom": "2026-08-31T20:00:00.000Z",
+   "next": "2026-11-30T20:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2026-05-15T09:59:00.000Z",
+   "now": "2026-05-15T10:55:38.669Z",
+   "repeatFrom": "2026-05-15T09:59:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2026-05-17T09:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2026-12-02T21:00:00.000Z",
+   "now": "2026-12-02T21:15:09.395Z",
+   "repeatFrom": "2026-12-01T21:00:00.000Z",
+   "next": "2027-01-01T21:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2027-01-05T05:59:00.000Z",
+   "now": "2028-02-09T06:20:44.773Z",
+   "repeatFrom": "2027-01-05T05:59:00.000Z",
+   "next": "2029-01-05T05:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2024-10-02T06:59:00.000Z",
+   "now": "2024-10-11T07:17:55.112Z",
+   "repeatFrom": "2024-09-30T06:59:00.000Z",
+   "next": "2024-10-16T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2024-07-08T20:59:00.000Z",
+   "now": "2025-08-12T21:51:56.336Z",
+   "repeatFrom": "2024-07-01T20:59:00.000Z",
+   "repeatDays": [
+    2,
+    6
+   ],
+   "next": "2025-08-16T20:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2024-04-30T14:00:00.000Z",
+   "now": "2025-06-04T14:35:14.674Z",
+   "repeatFrom": "2024-04-29T14:00:00.000Z",
+   "next": "2026-04-29T14:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2024-03-28T22:00:00.000Z",
+   "now": "2025-05-02T22:57:20.385Z",
+   "repeatFrom": "2024-03-27T22:00:00.000Z",
+   "next": "2025-05-08T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2026-02-16T07:59:00.000Z",
+   "now": "2026-02-17T08:10:40.820Z",
+   "repeatFrom": "2026-02-15T07:59:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2026-02-23T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2026-11-28T23:00:00.000Z",
+   "now": "2026-12-07T23:05:43.652Z",
+   "repeatFrom": "2026-11-14T23:00:00.000Z",
+   "next": "2026-12-12T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2025-08-08T04:59:00.000Z",
+   "now": "2025-08-09T05:46:56.768Z",
+   "repeatFrom": "2025-08-01T04:59:00.000Z",
+   "repeatEvery": 365,
+   "next": "2026-08-08T04:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-12-29T22:30:00.000Z",
+   "now": "2025-12-29T22:40:24.766Z",
+   "repeatFrom": "2025-12-29T22:30:00.000Z",
+   "next": "2026-01-05T22:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2026-08-06T23:00:00.000Z",
+   "now": "2026-08-15T23:32:02.588Z",
+   "repeatFrom": "2026-07-30T23:00:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2026-08-18T23:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2026-07-13T23:00:00.000Z",
+   "now": "2026-07-22T23:49:29.787Z",
+   "repeatFrom": "2026-06-29T23:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2026-07-25T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2028-05-02T03:59:00.000Z",
+   "now": "2029-06-06T04:53:28.605Z",
+   "repeatFrom": "2028-05-02T03:59:00.000Z",
+   "repeatDays": [
+    5,
+    6
+   ],
+   "next": "2029-06-09T03:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2027-05-28T16:59:00.000Z",
+   "now": "2028-07-01T17:31:02.634Z",
+   "repeatFrom": "2027-05-28T16:59:00.000Z",
+   "next": "2028-07-02T16:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2024-12-05T07:30:00.000Z",
+   "now": "2024-12-14T07:33:07.331Z",
+   "repeatFrom": "2024-12-05T07:30:00.000Z",
+   "next": "2025-12-05T07:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2028-08-28T13:59:00.000Z",
+   "now": "2028-08-29T14:05:45.135Z",
+   "repeatFrom": "2028-08-28T13:59:00.000Z",
+   "next": "2029-08-28T13:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2026-09-16T03:00:00.000Z",
+   "now": "2026-09-16T02:20:27.326Z",
+   "repeatFrom": "2026-09-16T03:00:00.000Z",
+   "next": "2026-09-17T03:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-12-31T22:30:00.000Z",
+   "now": "2027-01-01T23:27:05.452Z",
+   "repeatFrom": "2026-12-30T22:30:00.000Z",
+   "next": "2027-01-07T22:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2027-03-02T00:59:00.000Z",
+   "now": "2027-03-02T01:24:23.990Z",
+   "repeatFrom": "2027-03-02T00:59:00.000Z",
+   "next": "2027-04-02T00:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2027-11-29T06:00:00.000Z",
+   "now": "2027-11-29T06:02:27.725Z",
+   "repeatFrom": "2027-11-29T06:00:00.000Z",
+   "next": "2027-12-29T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2026-12-07T22:30:00.000Z",
+   "now": "2026-12-08T23:18:55.441Z",
+   "repeatFrom": "2026-11-30T22:30:00.000Z",
+   "next": "2026-12-31T22:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2025-03-31T22:00:00.000Z",
+   "now": "2025-03-31T22:14:43.717Z",
+   "repeatFrom": "2025-02-28T22:00:00.000Z",
+   "next": "2026-02-28T22:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2026-04-15T20:30:00.000Z",
+   "now": "2026-04-15T19:59:35.997Z",
+   "repeatFrom": "2026-04-15T20:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2026-04-18T20:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2025-11-01T03:00:00.000Z",
+   "now": "2025-11-01T03:57:35.572Z",
+   "repeatFrom": "2025-10-01T03:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2025-11-03T04:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2025-09-29T06:30:00.000Z",
+   "now": "2025-09-29T07:18:21.858Z",
+   "repeatFrom": "2025-07-29T06:30:00.000Z",
+   "next": "2025-10-29T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2025-09-06T04:00:00.000Z",
+   "now": "2025-09-06T04:02:01.623Z",
+   "repeatFrom": "2025-08-30T04:00:00.000Z",
+   "next": "2025-09-07T04:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2028-09-05T04:00:00.000Z",
+   "now": "2028-09-05T04:52:29.483Z",
+   "repeatFrom": "2028-07-05T04:00:00.000Z",
+   "next": "2029-07-05T04:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2028-05-01T05:59:00.000Z",
+   "now": "2028-05-01T06:55:52.221Z",
+   "repeatFrom": "2028-02-29T05:59:00.000Z",
+   "next": "2028-05-02T04:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2025-01-30T21:00:00.000Z",
+   "now": "2025-02-08T21:45:11.746Z",
+   "repeatFrom": "2025-01-30T21:00:00.000Z",
+   "next": "2026-01-30T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2024-07-01T06:59:00.000Z",
+   "now": "2024-07-01T07:55:40.056Z",
+   "repeatFrom": "2024-06-30T06:59:00.000Z",
+   "next": "2024-08-30T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2025-09-04T23:59:00.000Z",
+   "now": "2025-09-05T00:43:24.769Z",
+   "repeatFrom": "2025-08-04T23:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2025-10-04T23:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2027-02-14T22:30:00.000Z",
+   "now": "2027-02-14T22:32:41.845Z",
+   "repeatFrom": "2027-02-14T22:30:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2027-02-16T22:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2027-06-04T21:30:00.000Z",
+   "now": "2027-06-13T22:03:52.320Z",
+   "repeatFrom": "2027-06-04T21:30:00.000Z",
+   "next": "2027-06-18T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2026-11-29T07:00:00.000Z",
+   "now": "2026-11-29T06:53:40.222Z",
+   "repeatFrom": "2026-10-29T07:00:00.000Z",
+   "next": "2027-10-29T06:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "monthly",
+   "current": "2028-10-27T22:00:00.000Z",
+   "now": "2028-10-27T21:58:18.192Z",
+   "repeatFrom": "2028-10-27T22:00:00.000Z",
+   "next": "2028-11-27T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2024-05-02T07:30:00.000Z",
+   "now": "2024-05-02T07:31:50.305Z",
+   "repeatFrom": "2024-03-01T07:30:00.000Z",
+   "next": "2025-03-01T07:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2027-11-28T13:00:00.000Z",
+   "now": "2027-11-28T12:20:41.303Z",
+   "repeatFrom": "2027-10-28T13:00:00.000Z",
+   "repeatDays": [
+    6
+   ],
+   "next": "2027-12-03T13:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2027-10-14T23:00:00.000Z",
+   "now": "2027-10-14T23:48:18.317Z",
+   "repeatFrom": "2027-09-30T23:00:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2027-10-17T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2026-04-05T20:00:00.000Z",
+   "now": "2026-04-05T19:56:48.231Z",
+   "repeatFrom": "2026-03-05T20:00:00.000Z",
+   "repeatDays": [
+    0,
+    3
+   ],
+   "next": "2026-04-08T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2025-04-28T20:59:00.000Z",
+   "now": "2025-04-28T20:10:16.252Z",
+   "repeatFrom": "2025-04-28T20:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2025-05-28T20:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2026-10-01T20:30:00.000Z",
+   "now": "2026-10-01T21:04:31.343Z",
+   "repeatFrom": "2026-09-29T20:30:00.000Z",
+   "repeatDays": [
+    4
+   ],
+   "next": "2026-10-08T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2028-05-06T06:00:00.000Z",
+   "now": "2028-05-07T06:23:29.878Z",
+   "repeatFrom": "2028-03-05T06:00:00.000Z",
+   "next": "2028-06-05T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2026-02-28T22:30:00.000Z",
+   "now": "2026-03-09T23:08:56.780Z",
+   "repeatFrom": "2026-02-28T22:30:00.000Z",
+   "next": "2026-03-10T22:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2027-01-01T00:59:00.000Z",
+   "now": "2027-01-02T01:01:16.908Z",
+   "repeatFrom": "2027-01-01T00:59:00.000Z",
+   "next": "2028-01-01T00:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2028-07-14T04:30:00.000Z",
+   "now": "2028-07-15T04:49:18.278Z",
+   "repeatFrom": "2028-06-30T04:30:00.000Z",
+   "next": "2028-07-21T04:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2029-02-01T06:30:00.000Z",
+   "now": "2030-03-08T07:00:18.474Z",
+   "repeatFrom": "2028-12-01T06:30:00.000Z",
+   "repeatDays": [
+    2
+   ],
+   "next": "2030-03-12T06:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2027-03-18T22:59:00.000Z",
+   "now": "2027-03-27T22:59:34.063Z",
+   "repeatFrom": "2027-03-04T22:59:00.000Z",
+   "next": "2027-04-04T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2029-03-01T22:00:00.000Z",
+   "now": "2030-04-05T22:36:10.138Z",
+   "repeatFrom": "2028-12-29T22:00:00.000Z",
+   "next": "2030-12-29T22:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2024-11-01T06:00:00.000Z",
+   "now": "2024-11-10T06:47:52.499Z",
+   "repeatFrom": "2024-11-01T06:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2024-11-13T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2026-06-04T21:00:00.000Z",
+   "now": "2026-06-04T21:19:43.430Z",
+   "repeatFrom": "2026-06-04T21:00:00.000Z",
+   "next": "2026-06-05T21:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-08-01T04:00:00.000Z",
+   "now": "2025-08-01T04:09:18.157Z",
+   "repeatFrom": "2025-07-31T04:00:00.000Z",
+   "next": "2026-07-31T04:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2028-05-30T23:00:00.000Z",
+   "now": "2029-07-04T23:27:19.210Z",
+   "repeatFrom": "2028-05-28T23:00:00.000Z",
+   "next": "2029-07-05T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2026-08-31T20:00:00.000Z",
+   "now": "2026-09-01T20:11:49.632Z",
+   "repeatFrom": "2026-08-31T20:00:00.000Z",
+   "next": "2026-09-30T20:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2024-03-28T23:59:00.000Z",
+   "now": "2025-05-03T00:19:38.245Z",
+   "repeatFrom": "2024-03-28T23:59:00.000Z",
+   "next": "2025-05-03T22:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2028-06-16T02:59:00.000Z",
+   "now": "2029-07-21T03:08:54.011Z",
+   "repeatFrom": "2028-06-15T02:59:00.000Z",
+   "next": "2029-08-15T02:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2027-08-14T23:59:00.000Z",
+   "now": "2027-08-14T23:54:50.028Z",
+   "repeatFrom": "2027-07-14T23:59:00.000Z",
+   "next": "2027-09-14T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2027-12-01T06:30:00.000Z",
+   "now": "2027-12-02T06:56:12.889Z",
+   "repeatFrom": "2027-12-01T06:30:00.000Z",
+   "next": "2028-12-01T06:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2026-04-28T23:30:00.000Z",
+   "now": "2027-06-03T00:28:36.420Z",
+   "repeatFrom": "2026-04-28T23:30:00.000Z",
+   "next": "2027-06-03T23:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-01-03T12:30:00.000Z",
+   "now": "2025-01-04T12:36:06.454Z",
+   "repeatFrom": "2025-01-01T12:30:00.000Z",
+   "next": "2025-01-05T12:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2028-05-01T20:30:00.000Z",
+   "now": "2028-05-02T20:45:39.598Z",
+   "repeatFrom": "2028-04-30T20:30:00.000Z",
+   "next": "2028-06-30T20:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-10-15T20:00:00.000Z",
+   "now": "2025-10-15T19:27:27.466Z",
+   "repeatFrom": "2025-10-01T20:00:00.000Z",
+   "next": "2025-10-22T20:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2025-09-16T02:30:00.000Z",
+   "now": "2025-09-16T03:29:51.543Z",
+   "repeatFrom": "2025-09-15T02:30:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2025-09-17T02:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2024-12-30T21:00:00.000Z",
+   "now": "2024-12-30T20:56:25.883Z",
+   "repeatFrom": "2024-12-29T21:00:00.000Z",
+   "next": "2025-01-29T21:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2029-01-11T00:00:00.000Z",
+   "now": "2029-01-20T00:37:47.912Z",
+   "repeatFrom": "2028-12-28T00:00:00.000Z",
+   "next": "2029-01-25T00:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-06-29T00:00:00.000Z",
+   "now": "2026-06-29T00:52:37.938Z",
+   "repeatFrom": "2026-06-29T00:00:00.000Z",
+   "next": "2026-07-06T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2025-06-11T13:00:00.000Z",
+   "now": "2025-06-11T12:27:16.417Z",
+   "repeatFrom": "2025-05-28T13:00:00.000Z",
+   "next": "2025-06-12T13:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2026-07-28T22:59:00.000Z",
+   "now": "2026-07-28T23:29:36.018Z",
+   "repeatFrom": "2026-07-28T22:59:00.000Z",
+   "next": "2026-07-29T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2028-01-29T20:00:00.000Z",
+   "now": "2028-01-29T20:13:58.891Z",
+   "repeatFrom": "2028-01-15T20:00:00.000Z",
+   "next": "2029-01-15T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2025-05-31T23:00:00.000Z",
+   "now": "2025-05-31T22:44:39.373Z",
+   "repeatFrom": "2025-05-30T23:00:00.000Z",
+   "next": "2025-07-30T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-10-31T21:59:00.000Z",
+   "now": "2027-10-31T22:03:56.464Z",
+   "repeatFrom": "2027-10-31T21:59:00.000Z",
+   "next": "2027-11-07T21:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2026-10-01T13:59:00.000Z",
+   "now": "2026-10-01T14:41:44.276Z",
+   "repeatFrom": "2026-10-01T13:59:00.000Z",
+   "repeatDays": [
+    0,
+    6
+   ],
+   "next": "2026-10-03T13:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2025-01-28T07:00:00.000Z",
+   "now": "2025-01-28T06:58:56.690Z",
+   "repeatFrom": "2025-01-28T07:00:00.000Z",
+   "next": "2025-02-04T07:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2026-02-27T22:59:00.000Z",
+   "now": "2026-02-27T22:09:56.422Z",
+   "repeatFrom": "2026-02-27T22:59:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-03-01T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2024-07-31T23:59:00.000Z",
+   "now": "2025-09-05T00:24:18.051Z",
+   "repeatFrom": "2024-07-31T23:59:00.000Z",
+   "next": "2025-09-05T23:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2026-01-17T12:30:00.000Z",
+   "now": "2026-01-26T12:50:31.985Z",
+   "repeatFrom": "2026-01-15T12:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2026-01-29T12:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2024-11-29T20:30:00.000Z",
+   "now": "2024-11-29T20:50:32.000Z",
+   "repeatFrom": "2024-09-28T20:30:00.000Z",
+   "next": "2024-12-28T21:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2024-11-01T13:59:00.000Z",
+   "now": "2024-11-10T14:45:11.849Z",
+   "repeatFrom": "2024-10-31T13:59:00.000Z",
+   "next": "2024-11-10T14:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2025-05-31T16:00:00.000Z",
+   "now": "2025-05-31T16:29:50.363Z",
+   "repeatFrom": "2025-04-30T16:00:00.000Z",
+   "next": "2025-06-07T16:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2026-09-13T00:30:00.000Z",
+   "now": "2027-10-18T00:43:10.110Z",
+   "repeatFrom": "2026-08-30T00:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2027-10-20T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2027-07-28T21:00:00.000Z",
+   "now": "2027-07-29T21:43:31.564Z",
+   "repeatFrom": "2027-07-28T21:00:00.000Z",
+   "repeatEvery": 10,
+   "next": "2027-08-07T21:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2025-05-01T23:59:00.000Z",
+   "now": "2025-05-03T00:31:20.973Z",
+   "repeatFrom": "2025-05-01T23:59:00.000Z",
+   "next": "2025-05-03T23:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2026-11-30T15:00:00.000Z",
+   "now": "2026-12-01T15:42:52.759Z",
+   "repeatFrom": "2026-11-30T15:00:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2026-12-05T15:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2027-04-05T04:30:00.000Z",
+   "now": "2027-04-05T03:56:17.533Z",
+   "repeatFrom": "2027-04-05T04:30:00.000Z",
+   "next": "2028-04-05T04:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2024-10-27T23:59:00.000Z",
+   "now": "2024-10-27T23:48:44.441Z",
+   "repeatFrom": "2024-10-27T23:59:00.000Z",
+   "next": "2024-10-28T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2026-04-02T06:00:00.000Z",
+   "now": "2026-04-02T06:39:01.420Z",
+   "repeatFrom": "2026-03-31T06:00:00.000Z",
+   "next": "2026-04-09T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2025-01-30T07:59:00.000Z",
+   "now": "2025-01-31T08:19:39.577Z",
+   "repeatFrom": "2024-12-30T07:59:00.000Z",
+   "repeatDays": [
+    1,
+    3
+   ],
+   "next": "2025-02-03T07:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2024-07-06T23:59:00.000Z",
+   "now": "2024-07-07T00:34:18.179Z",
+   "repeatFrom": "2024-05-05T23:59:00.000Z",
+   "next": "2025-05-05T23:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-02-05T01:30:00.000Z",
+   "now": "2026-02-05T02:12:05.951Z",
+   "repeatFrom": "2025-12-05T01:30:00.000Z",
+   "next": "2026-02-12T01:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2028-10-15T12:59:00.000Z",
+   "now": "2028-10-24T13:27:44.108Z",
+   "repeatFrom": "2028-10-15T12:59:00.000Z",
+   "repeatDays": [
+    3,
+    4
+   ],
+   "next": "2028-10-25T12:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2024-07-31T20:30:00.000Z",
+   "now": "2024-07-31T19:41:33.035Z",
+   "repeatFrom": "2024-07-31T20:30:00.000Z",
+   "next": "2025-07-31T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2025-05-15T20:59:00.000Z",
+   "now": "2026-06-19T21:29:33.045Z",
+   "repeatFrom": "2025-05-01T20:59:00.000Z",
+   "next": "2026-07-01T20:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2026-01-12T07:59:00.000Z",
+   "now": "2026-01-13T08:12:05.062Z",
+   "repeatFrom": "2026-01-05T07:59:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2026-01-14T07:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2026-08-14T14:00:00.000Z",
+   "now": "2026-08-14T14:26:20.097Z",
+   "repeatFrom": "2026-08-14T14:00:00.000Z",
+   "next": "2027-08-14T14:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2026-08-13T23:00:00.000Z",
+   "now": "2026-08-14T23:08:58.681Z",
+   "repeatFrom": "2026-07-30T23:00:00.000Z",
+   "next": "2026-09-29T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2025-04-19T20:59:00.000Z",
+   "now": "2025-04-20T21:31:48.310Z",
+   "repeatFrom": "2025-04-05T20:59:00.000Z",
+   "next": "2026-04-05T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2026-11-30T00:30:00.000Z",
+   "now": "2028-01-04T00:42:01.600Z",
+   "repeatFrom": "2026-10-30T00:30:00.000Z",
+   "next": "2028-01-10T00:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2024-09-30T21:30:00.000Z",
+   "now": "2025-11-04T22:29:04.321Z",
+   "repeatFrom": "2024-09-29T21:30:00.000Z",
+   "next": "2025-11-10T22:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2028-10-16T02:59:00.000Z",
+   "now": "2028-10-16T02:52:19.294Z",
+   "repeatFrom": "2028-10-15T02:59:00.000Z",
+   "next": "2028-11-15T02:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2025-07-05T16:59:00.000Z",
+   "now": "2025-07-06T17:54:07.149Z",
+   "repeatFrom": "2025-06-04T16:59:00.000Z",
+   "repeatDays": [
+    2,
+    4
+   ],
+   "next": "2025-07-07T16:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2025-06-05T21:30:00.000Z",
+   "now": "2026-07-10T21:38:13.502Z",
+   "repeatFrom": "2025-05-29T21:30:00.000Z",
+   "next": "2026-07-16T21:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2025-04-29T23:00:00.000Z",
+   "now": "2026-06-03T23:04:00.340Z",
+   "repeatFrom": "2025-04-29T23:00:00.000Z",
+   "next": "2027-04-29T23:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2024-11-01T09:00:00.000Z",
+   "now": "2024-11-10T09:41:02.564Z",
+   "repeatFrom": "2024-10-01T09:00:00.000Z",
+   "next": "2024-11-15T09:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2024-01-30T12:00:00.000Z",
+   "now": "2024-01-30T12:36:07.806Z",
+   "repeatFrom": "2024-01-28T12:00:00.000Z",
+   "next": "2025-01-28T12:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2024-12-01T00:59:00.000Z",
+   "now": "2024-12-01T01:00:28.546Z",
+   "repeatFrom": "2024-11-30T00:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2024-12-11T00:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2025-03-04T07:30:00.000Z",
+   "now": "2025-03-05T07:37:01.527Z",
+   "repeatFrom": "2025-01-01T07:30:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2025-03-06T07:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-01-07T07:30:00.000Z",
+   "now": "2025-01-07T08:23:47.607Z",
+   "repeatFrom": "2025-01-05T07:30:00.000Z",
+   "next": "2025-01-14T07:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2025-09-27T21:59:00.000Z",
+   "now": "2025-09-27T22:04:28.271Z",
+   "repeatFrom": "2025-09-27T21:59:00.000Z",
+   "next": "2026-09-27T21:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2028-08-01T13:59:00.000Z",
+   "now": "2028-08-01T13:09:44.385Z",
+   "repeatFrom": "2028-08-01T13:59:00.000Z",
+   "next": "2028-09-01T13:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2027-12-29T05:00:00.000Z",
+   "now": "2027-12-29T04:14:00.661Z",
+   "repeatFrom": "2027-12-29T05:00:00.000Z",
+   "next": "2028-12-29T05:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2028-09-01T20:59:00.000Z",
+   "now": "2028-09-01T20:12:19.530Z",
+   "repeatFrom": "2028-09-01T20:59:00.000Z",
+   "next": "2028-09-08T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-07-29T23:00:00.000Z",
+   "now": "2024-07-29T23:42:26.845Z",
+   "repeatFrom": "2024-07-29T23:00:00.000Z",
+   "next": "2025-07-29T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2028-11-01T21:30:00.000Z",
+   "now": "2028-11-01T22:22:30.211Z",
+   "repeatFrom": "2028-11-01T21:30:00.000Z",
+   "next": "2028-11-02T21:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2024-05-04T03:00:00.000Z",
+   "now": "2025-06-08T03:38:37.446Z",
+   "repeatFrom": "2024-05-02T03:00:00.000Z",
+   "next": "2025-06-14T03:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2029-01-01T20:00:00.000Z",
+   "now": "2030-02-05T20:31:03.904Z",
+   "repeatFrom": "2028-12-30T20:00:00.000Z",
+   "next": "2030-02-28T20:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2025-05-28T00:59:00.000Z",
+   "now": "2025-05-28T01:19:38.767Z",
+   "repeatFrom": "2025-05-28T00:59:00.000Z",
+   "next": "2025-06-04T00:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-12-01T00:30:00.000Z",
+   "now": "2025-12-10T01:01:44.949Z",
+   "repeatFrom": "2025-12-01T00:30:00.000Z",
+   "next": "2025-12-15T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2026-03-30T23:30:00.000Z",
+   "now": "2026-03-30T22:42:09.444Z",
+   "repeatFrom": "2026-01-27T23:30:00.000Z",
+   "next": "2026-04-27T23:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-11-28T07:59:00.000Z",
+   "now": "2024-12-07T08:40:34.569Z",
+   "repeatFrom": "2024-11-28T07:59:00.000Z",
+   "repeatEvery": 2,
+   "next": "2024-12-08T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2027-09-14T21:59:00.000Z",
+   "now": "2027-09-14T22:29:43.965Z",
+   "repeatFrom": "2027-09-14T21:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2027-10-14T21:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-11-30T22:30:00.000Z",
+   "now": "2024-12-09T22:53:31.241Z",
+   "repeatFrom": "2024-11-30T22:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2024-12-10T22:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2028-12-27T22:59:00.000Z",
+   "now": "2028-12-27T23:35:10.161Z",
+   "repeatFrom": "2028-12-27T22:59:00.000Z",
+   "next": "2029-01-03T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2024-02-17T20:00:00.000Z",
+   "now": "2024-02-17T20:20:31.792Z",
+   "repeatFrom": "2024-02-15T20:00:00.000Z",
+   "next": "2025-02-15T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2027-05-31T06:30:00.000Z",
+   "now": "2027-06-01T07:25:52.445Z",
+   "repeatFrom": "2027-05-31T06:30:00.000Z",
+   "next": "2027-06-07T06:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2024-01-29T15:30:00.000Z",
+   "now": "2025-03-04T16:18:42.698Z",
+   "repeatFrom": "2024-01-27T15:30:00.000Z",
+   "next": "2026-01-27T15:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2025-03-04T12:59:00.000Z",
+   "now": "2025-03-04T13:42:43.589Z",
+   "repeatFrom": "2025-03-03T12:59:00.000Z",
+   "next": "2026-03-03T12:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2025-08-29T23:59:00.000Z",
+   "now": "2025-09-08T00:45:52.342Z",
+   "repeatFrom": "2025-06-28T23:59:00.000Z",
+   "next": "2026-06-28T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2024-11-28T23:00:00.000Z",
+   "now": "2024-12-07T23:03:30.856Z",
+   "repeatFrom": "2024-10-28T23:00:00.000Z",
+   "next": "2025-10-28T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2027-10-02T06:30:00.000Z",
+   "now": "2028-11-05T07:20:44.243Z",
+   "repeatFrom": "2027-10-01T06:30:00.000Z",
+   "next": "2028-11-11T07:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2025-06-02T06:00:00.000Z",
+   "now": "2025-06-02T07:00:02.529Z",
+   "repeatFrom": "2025-04-01T06:00:00.000Z",
+   "next": "2025-07-01T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2024-10-12T06:30:00.000Z",
+   "now": "2024-10-12T06:39:46.821Z",
+   "repeatFrom": "2024-09-28T06:30:00.000Z",
+   "next": "2024-10-13T06:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2028-09-14T02:59:00.000Z",
+   "now": "2028-09-14T03:20:08.950Z",
+   "repeatFrom": "2028-08-31T02:59:00.000Z",
+   "repeatDays": [
+    3
+   ],
+   "next": "2028-09-20T02:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2024-06-30T02:00:00.000Z",
+   "now": "2025-08-04T02:31:34.385Z",
+   "repeatFrom": "2024-06-28T02:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2025-08-06T02:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-06-29T23:59:00.000Z",
+   "now": "2025-08-04T00:28:07.314Z",
+   "repeatFrom": "2024-06-29T23:59:00.000Z",
+   "next": "2025-08-29T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2028-12-05T06:00:00.000Z",
+   "now": "2028-12-14T06:18:37.494Z",
+   "repeatFrom": "2028-12-05T06:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2028-12-17T06:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2024-03-29T23:00:00.000Z",
+   "now": "2024-03-30T23:46:26.596Z",
+   "repeatFrom": "2024-03-28T23:00:00.000Z",
+   "next": "2024-03-31T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-05-31T21:00:00.000Z",
+   "now": "2028-06-09T21:53:03.437Z",
+   "repeatFrom": "2028-05-30T21:00:00.000Z",
+   "next": "2029-05-30T21:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2024-02-01T21:00:00.000Z",
+   "now": "2024-02-10T21:20:54.776Z",
+   "repeatFrom": "2024-01-31T21:00:00.000Z",
+   "next": "2024-02-15T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2028-04-29T14:00:00.000Z",
+   "now": "2029-06-03T14:22:21.400Z",
+   "repeatFrom": "2028-04-28T14:00:00.000Z",
+   "next": "2029-06-04T14:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2025-05-06T06:30:00.000Z",
+   "now": "2025-05-06T07:18:05.597Z",
+   "repeatFrom": "2025-04-05T06:30:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2025-05-09T06:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2026-06-22T06:30:00.000Z",
+   "now": "2026-06-22T07:23:25.617Z",
+   "repeatFrom": "2026-06-15T06:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2026-07-02T06:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2028-12-30T01:30:00.000Z",
+   "now": "2030-02-03T01:45:03.912Z",
+   "repeatFrom": "2028-12-30T01:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2030-12-30T01:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2026-10-31T00:59:00.000Z",
+   "now": "2026-10-31T01:00:40.915Z",
+   "repeatFrom": "2026-10-31T00:59:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2026-11-04T00:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2025-01-02T07:00:00.000Z",
+   "now": "2025-01-02T07:41:32.335Z",
+   "repeatFrom": "2024-11-01T07:00:00.000Z",
+   "next": "2025-02-01T07:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2027-05-05T20:59:00.000Z",
+   "now": "2027-05-05T20:27:42.307Z",
+   "repeatFrom": "2027-05-05T20:59:00.000Z",
+   "next": "2027-06-05T20:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2024-03-31T13:59:00.000Z",
+   "now": "2024-04-09T14:38:16.057Z",
+   "repeatFrom": "2024-02-29T13:59:00.000Z",
+   "next": "2024-04-14T14:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2026-09-29T09:30:00.000Z",
+   "now": "2026-10-08T09:56:33.716Z",
+   "repeatFrom": "2026-09-29T09:30:00.000Z",
+   "next": "2027-09-29T09:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-05-28T07:59:00.000Z",
+   "now": "2027-07-02T08:50:53.455Z",
+   "repeatFrom": "2026-05-28T07:59:00.000Z",
+   "next": "2027-07-08T07:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2024-08-06T00:30:00.000Z",
+   "now": "2024-08-06T00:07:02.160Z",
+   "repeatFrom": "2024-06-05T00:30:00.000Z",
+   "repeatDays": [
+    0,
+    6
+   ],
+   "next": "2024-08-10T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2025-10-28T06:59:00.000Z",
+   "now": "2025-10-29T07:38:48.314Z",
+   "repeatFrom": "2025-10-28T06:59:00.000Z",
+   "repeatDays": [
+    2,
+    4
+   ],
+   "next": "2025-10-30T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2025-12-03T07:30:00.000Z",
+   "now": "2025-12-12T07:37:09.456Z",
+   "repeatFrom": "2025-12-01T07:30:00.000Z",
+   "repeatDays": [
+    4
+   ],
+   "next": "2025-12-18T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2026-11-19T21:59:00.000Z",
+   "now": "2027-12-24T22:42:39.065Z",
+   "repeatFrom": "2026-11-05T21:59:00.000Z",
+   "next": "2027-12-25T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-02-05T23:00:00.000Z",
+   "now": "2024-02-05T23:34:34.141Z",
+   "repeatFrom": "2024-02-04T23:00:00.000Z",
+   "next": "2024-03-04T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2027-01-16T07:00:00.000Z",
+   "now": "2027-01-25T07:33:02.629Z",
+   "repeatFrom": "2026-11-15T07:00:00.000Z",
+   "repeatDays": [
+    3,
+    5
+   ],
+   "next": "2027-01-27T07:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2026-05-17T03:59:00.000Z",
+   "now": "2026-05-18T04:00:58.207Z",
+   "repeatFrom": "2026-05-16T03:59:00.000Z",
+   "next": "2026-05-24T03:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-12-15T23:00:00.000Z",
+   "now": "2024-12-15T22:58:04.826Z",
+   "repeatFrom": "2024-10-14T23:00:00.000Z",
+   "next": "2025-01-14T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2027-07-31T04:00:00.000Z",
+   "now": "2027-07-31T03:18:28.427Z",
+   "repeatFrom": "2027-07-31T04:00:00.000Z",
+   "next": "2027-08-07T04:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2026-04-27T23:30:00.000Z",
+   "now": "2026-04-29T00:10:54.660Z",
+   "repeatFrom": "2026-04-27T23:30:00.000Z",
+   "next": "2026-04-29T23:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2027-10-21T21:59:00.000Z",
+   "now": "2027-10-30T22:11:06.941Z",
+   "repeatFrom": "2027-10-14T21:59:00.000Z",
+   "next": "2028-10-14T21:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2024-05-16T00:30:00.000Z",
+   "now": "2024-05-16T00:06:03.976Z",
+   "repeatFrom": "2024-04-15T00:30:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2024-05-19T00:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2026-04-28T21:00:00.000Z",
+   "now": "2026-04-28T21:06:31.203Z",
+   "repeatFrom": "2026-04-28T21:00:00.000Z",
+   "next": "2027-04-28T22:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2024-05-15T21:00:00.000Z",
+   "now": "2024-05-15T20:08:49.939Z",
+   "repeatFrom": "2024-05-14T21:00:00.000Z",
+   "next": "2024-06-14T21:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2025-05-27T22:30:00.000Z",
+   "now": "2025-05-28T22:44:32.833Z",
+   "repeatFrom": "2025-05-27T22:30:00.000Z",
+   "next": "2026-05-27T22:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2024-12-05T08:59:00.000Z",
+   "now": "2024-12-05T09:01:15.515Z",
+   "repeatFrom": "2024-12-05T08:59:00.000Z",
+   "repeatEvery": 3,
+   "next": "2024-12-08T08:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2027-04-05T02:00:00.000Z",
+   "now": "2027-04-05T02:20:49.678Z",
+   "repeatFrom": "2027-04-05T02:00:00.000Z",
+   "next": "2027-04-06T02:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2028-11-14T21:00:00.000Z",
+   "now": "2028-11-14T20:25:48.330Z",
+   "repeatFrom": "2028-10-31T21:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2028-11-17T21:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2027-07-14T23:00:00.000Z",
+   "now": "2027-07-14T23:29:59.673Z",
+   "repeatFrom": "2027-07-14T23:00:00.000Z",
+   "next": "2027-07-15T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2024-11-29T20:30:00.000Z",
+   "now": "2024-11-29T21:21:42.356Z",
+   "repeatFrom": "2024-11-29T20:30:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2024-12-01T20:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2028-09-29T09:30:00.000Z",
+   "now": "2028-09-29T09:31:33.453Z",
+   "repeatFrom": "2028-09-29T09:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2028-10-02T09:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2027-10-15T00:30:00.000Z",
+   "now": "2027-10-15T01:25:12.091Z",
+   "repeatFrom": "2027-10-15T00:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-10-18T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2028-04-06T23:00:00.000Z",
+   "now": "2029-05-11T23:50:04.883Z",
+   "repeatFrom": "2028-03-30T23:00:00.000Z",
+   "next": "2029-05-12T23:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "monthly",
+   "current": "2027-08-11T22:00:00.000Z",
+   "now": "2028-09-14T22:08:57.567Z",
+   "repeatFrom": "2027-07-28T22:00:00.000Z",
+   "next": "2028-09-28T22:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2024-06-29T06:30:00.000Z",
+   "now": "2025-08-03T07:27:23.698Z",
+   "repeatFrom": "2024-06-29T06:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2026-06-29T06:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2028-01-07T15:30:00.000Z",
+   "now": "2028-01-16T16:08:50.752Z",
+   "repeatFrom": "2027-12-31T15:30:00.000Z",
+   "next": "2028-01-17T15:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2028-03-04T12:30:00.000Z",
+   "now": "2028-03-04T12:11:48.399Z",
+   "repeatFrom": "2028-03-02T12:30:00.000Z",
+   "next": "2028-04-02T13:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2027-03-31T06:30:00.000Z",
+   "now": "2027-03-31T06:06:34.836Z",
+   "repeatFrom": "2027-01-28T06:30:00.000Z",
+   "next": "2027-04-28T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2028-07-06T13:59:00.000Z",
+   "now": "2028-07-15T14:28:40.351Z",
+   "repeatFrom": "2028-05-05T13:59:00.000Z",
+   "next": "2028-07-16T13:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2025-05-29T14:00:00.000Z",
+   "now": "2025-05-29T13:16:28.944Z",
+   "repeatFrom": "2025-04-28T14:00:00.000Z",
+   "next": "2025-06-28T14:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2026-03-28T00:00:00.000Z",
+   "now": "2026-04-06T00:43:17.933Z",
+   "repeatFrom": "2026-03-28T00:00:00.000Z",
+   "next": "2026-04-07T00:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2026-01-12T06:59:00.000Z",
+   "now": "2026-01-13T07:45:42.794Z",
+   "repeatFrom": "2026-01-05T06:59:00.000Z",
+   "next": "2026-01-19T06:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2026-12-03T23:00:00.000Z",
+   "now": "2026-12-12T23:22:23.312Z",
+   "repeatFrom": "2026-12-01T23:00:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2026-12-14T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2024-02-06T07:30:00.000Z",
+   "now": "2024-02-06T08:12:39.860Z",
+   "repeatFrom": "2024-02-05T07:30:00.000Z",
+   "repeatDays": [
+    1,
+    3
+   ],
+   "next": "2024-02-07T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2025-06-30T21:59:00.000Z",
+   "now": "2025-06-30T22:17:04.563Z",
+   "repeatFrom": "2025-06-30T21:59:00.000Z",
+   "repeatDays": [
+    0,
+    4
+   ],
+   "next": "2025-07-02T21:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2026-11-29T22:00:00.000Z",
+   "now": "2026-12-08T22:21:58.275Z",
+   "repeatFrom": "2026-11-29T22:00:00.000Z",
+   "next": "2026-12-29T22:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2024-01-06T22:30:00.000Z",
+   "now": "2024-01-06T22:51:14.742Z",
+   "repeatFrom": "2024-01-04T22:30:00.000Z",
+   "next": "2024-01-13T22:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2024-10-30T12:59:00.000Z",
+   "now": "2024-10-30T13:58:44.501Z",
+   "repeatFrom": "2024-10-29T12:59:00.000Z",
+   "next": "2024-10-31T12:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2027-02-12T08:59:00.000Z",
+   "now": "2027-02-21T09:56:31.867Z",
+   "repeatFrom": "2027-02-05T08:59:00.000Z",
+   "next": "2027-02-26T08:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-01-01T01:30:00.000Z",
+   "now": "2026-01-01T02:13:33.934Z",
+   "repeatFrom": "2026-01-01T01:30:00.000Z",
+   "next": "2026-01-08T01:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2024-03-01T15:00:00.000Z",
+   "now": "2024-03-01T15:45:42.647Z",
+   "repeatFrom": "2024-02-28T15:00:00.000Z",
+   "next": "2024-04-28T16:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-09-27T16:00:00.000Z",
+   "now": "2026-11-01T16:13:52.275Z",
+   "repeatFrom": "2025-09-27T16:00:00.000Z",
+   "next": "2026-11-02T15:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2027-10-29T23:00:00.000Z",
+   "now": "2027-10-29T23:19:12.580Z",
+   "repeatFrom": "2027-10-29T23:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-11-01T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-09-15T20:00:00.000Z",
+   "now": "2025-09-15T20:36:17.722Z",
+   "repeatFrom": "2025-09-15T20:00:00.000Z",
+   "next": "2025-09-22T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2025-03-13T23:59:00.000Z",
+   "now": "2025-03-15T00:51:56.081Z",
+   "repeatFrom": "2025-02-27T23:59:00.000Z",
+   "repeatDays": [
+    4,
+    5
+   ],
+   "next": "2025-03-19T23:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2026-10-30T20:59:00.000Z",
+   "now": "2026-10-31T21:37:12.692Z",
+   "repeatFrom": "2026-10-29T20:59:00.000Z",
+   "next": "2026-11-29T21:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2027-01-30T23:59:00.000Z",
+   "now": "2027-02-09T00:25:29.781Z",
+   "repeatFrom": "2027-01-30T23:59:00.000Z",
+   "repeatDays": [
+    0,
+    3
+   ],
+   "next": "2027-02-10T23:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2025-07-02T04:59:00.000Z",
+   "now": "2025-07-03T05:01:00.858Z",
+   "repeatFrom": "2025-06-30T04:59:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2025-07-05T04:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2026-05-04T06:00:00.000Z",
+   "now": "2026-05-04T06:47:36.242Z",
+   "repeatFrom": "2026-03-03T06:00:00.000Z",
+   "repeatDays": [
+    5,
+    6
+   ],
+   "next": "2026-05-08T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2026-06-15T23:30:00.000Z",
+   "now": "2026-06-15T23:46:56.331Z",
+   "repeatFrom": "2026-06-14T23:30:00.000Z",
+   "next": "2026-07-14T23:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-08-16T21:30:00.000Z",
+   "now": "2024-08-17T21:40:08.297Z",
+   "repeatFrom": "2024-08-14T21:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2024-08-19T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2024-10-28T23:59:00.000Z",
+   "now": "2024-10-28T23:35:49.160Z",
+   "repeatFrom": "2024-10-14T23:59:00.000Z",
+   "next": "2024-11-05T00:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2028-02-01T01:30:00.000Z",
+   "now": "2028-02-01T01:32:59.094Z",
+   "repeatFrom": "2027-12-01T01:30:00.000Z",
+   "next": "2028-02-02T01:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2027-11-01T07:30:00.000Z",
+   "now": "2027-11-01T08:11:04.050Z",
+   "repeatFrom": "2027-10-01T07:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-11-04T08:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2025-09-01T02:30:00.000Z",
+   "now": "2025-09-10T02:39:04.051Z",
+   "repeatFrom": "2025-07-01T02:30:00.000Z",
+   "next": "2026-07-01T02:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2024-02-29T04:30:00.000Z",
+   "now": "2025-04-04T04:31:44.983Z",
+   "repeatFrom": "2024-02-29T04:30:00.000Z",
+   "next": "2025-04-05T03:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2025-03-03T09:00:00.000Z",
+   "now": "2026-04-07T09:46:55.054Z",
+   "repeatFrom": "2025-03-03T09:00:00.000Z",
+   "repeatDays": [
+    2,
+    3
+   ],
+   "next": "2026-04-08T09:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-12-29T07:00:00.000Z",
+   "now": "2026-01-07T07:57:44.376Z",
+   "repeatFrom": "2025-12-15T07:00:00.000Z",
+   "next": "2026-12-15T07:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2025-05-31T02:59:00.000Z",
+   "now": "2025-06-01T03:50:31.586Z",
+   "repeatFrom": "2025-04-30T02:59:00.000Z",
+   "next": "2025-06-30T02:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2024-04-01T07:59:00.000Z",
+   "now": "2024-04-01T08:29:17.692Z",
+   "repeatFrom": "2024-03-01T07:59:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-04-01T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-05-04T21:30:00.000Z",
+   "now": "2025-05-04T21:27:15.554Z",
+   "repeatFrom": "2025-05-04T21:30:00.000Z",
+   "next": "2025-05-05T21:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2026-07-31T23:59:00.000Z",
+   "now": "2026-07-31T23:30:52.131Z",
+   "repeatFrom": "2026-07-30T23:59:00.000Z",
+   "repeatDays": [
+    2,
+    3
+   ],
+   "next": "2026-08-04T23:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2025-06-30T13:00:00.000Z",
+   "now": "2025-07-01T13:13:27.168Z",
+   "repeatFrom": "2025-06-30T13:00:00.000Z",
+   "repeatDays": [
+    2,
+    6
+   ],
+   "next": "2025-07-05T13:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2024-10-01T21:00:00.000Z",
+   "now": "2024-10-01T21:33:59.113Z",
+   "repeatFrom": "2024-08-31T21:00:00.000Z",
+   "next": "2024-10-08T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2026-05-19T20:30:00.000Z",
+   "now": "2026-05-19T21:13:30.506Z",
+   "repeatFrom": "2026-05-05T20:30:00.000Z",
+   "next": "2027-05-05T20:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2027-05-07T03:00:00.000Z",
+   "now": "2027-05-16T03:34:18.424Z",
+   "repeatFrom": "2027-05-06T03:00:00.000Z",
+   "next": "2027-05-17T03:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2024-05-28T06:00:00.000Z",
+   "now": "2024-06-06T06:57:00.524Z",
+   "repeatFrom": "2024-05-28T06:00:00.000Z",
+   "repeatEvery": 10,
+   "next": "2024-06-07T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-02-29T21:30:00.000Z",
+   "now": "2024-03-01T22:04:39.975Z",
+   "repeatFrom": "2024-02-27T21:30:00.000Z",
+   "next": "2024-04-27T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2024-12-31T21:00:00.000Z",
+   "now": "2026-02-04T21:48:36.868Z",
+   "repeatFrom": "2024-12-31T21:00:00.000Z",
+   "repeatDays": [
+    4
+   ],
+   "next": "2026-02-11T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2028-09-30T06:00:00.000Z",
+   "now": "2028-09-30T05:51:41.285Z",
+   "repeatFrom": "2028-09-30T06:00:00.000Z",
+   "next": "2028-10-30T07:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2026-07-07T13:59:00.000Z",
+   "now": "2026-07-08T14:10:38.435Z",
+   "repeatFrom": "2026-07-05T13:59:00.000Z",
+   "next": "2027-07-05T13:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "monthly",
+   "current": "2025-02-16T08:30:00.000Z",
+   "now": "2025-02-25T08:33:44.133Z",
+   "repeatFrom": "2025-02-15T08:30:00.000Z",
+   "next": "2025-03-15T08:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2027-04-02T22:00:00.000Z",
+   "now": "2027-04-03T22:17:52.392Z",
+   "repeatFrom": "2027-01-30T22:00:00.000Z",
+   "next": "2027-04-10T21:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2026-07-31T00:30:00.000Z",
+   "now": "2026-07-31T01:16:33.349Z",
+   "repeatFrom": "2026-07-30T00:30:00.000Z",
+   "next": "2027-07-30T00:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2025-07-02T09:59:00.000Z",
+   "now": "2025-07-02T10:17:12.229Z",
+   "repeatFrom": "2025-05-01T09:59:00.000Z",
+   "next": "2025-07-09T09:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2027-03-02T15:30:00.000Z",
+   "now": "2027-03-02T15:04:42.655Z",
+   "repeatFrom": "2027-03-02T15:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-03-05T15:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2027-03-07T05:59:00.000Z",
+   "now": "2027-03-16T06:23:30.448Z",
+   "repeatFrom": "2027-03-05T05:59:00.000Z",
+   "next": "2028-03-05T05:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2026-04-05T13:59:00.000Z",
+   "now": "2026-04-05T13:39:21.058Z",
+   "repeatFrom": "2026-04-05T13:59:00.000Z",
+   "next": "2026-04-12T13:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2027-09-21T23:59:00.000Z",
+   "now": "2027-10-01T00:23:42.578Z",
+   "repeatFrom": "2027-09-14T23:59:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2027-10-02T23:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2026-08-11T16:00:00.000Z",
+   "now": "2026-08-20T16:27:25.236Z",
+   "repeatFrom": "2026-08-04T16:00:00.000Z",
+   "next": "2026-09-04T16:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2024-12-31T23:59:00.000Z",
+   "now": "2024-12-31T23:12:57.940Z",
+   "repeatFrom": "2024-10-30T23:59:00.000Z",
+   "next": "2025-02-27T23:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2027-09-01T00:30:00.000Z",
+   "now": "2027-09-01T00:27:22.248Z",
+   "repeatFrom": "2027-08-30T00:30:00.000Z",
+   "repeatDays": [
+    3,
+    4
+   ],
+   "next": "2027-09-02T00:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2027-05-29T16:00:00.000Z",
+   "now": "2028-07-02T16:22:52.274Z",
+   "repeatFrom": "2027-05-28T16:00:00.000Z",
+   "repeatDays": [
+    0,
+    2
+   ],
+   "next": "2028-07-03T16:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2027-12-31T07:30:00.000Z",
+   "now": "2027-12-31T08:02:24.774Z",
+   "repeatFrom": "2027-11-30T07:30:00.000Z",
+   "repeatEvery": 10,
+   "next": "2028-01-10T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2026-08-28T20:30:00.000Z",
+   "now": "2026-08-28T21:16:39.255Z",
+   "repeatFrom": "2026-08-28T20:30:00.000Z",
+   "repeatEvery": 3,
+   "next": "2026-08-31T20:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2027-06-12T20:30:00.000Z",
+   "now": "2027-06-12T21:01:18.899Z",
+   "repeatFrom": "2027-06-05T20:30:00.000Z",
+   "next": "2027-07-05T20:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "monthly",
+   "current": "2027-10-14T22:59:00.000Z",
+   "now": "2027-10-15T23:35:28.286Z",
+   "repeatFrom": "2027-09-30T22:59:00.000Z",
+   "next": "2027-10-31T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2026-03-08T20:59:00.000Z",
+   "now": "2026-03-08T21:38:39.409Z",
+   "repeatFrom": "2026-03-01T20:59:00.000Z",
+   "next": "2027-03-01T20:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2026-08-16T06:30:00.000Z",
+   "now": "2027-09-20T07:29:07.248Z",
+   "repeatFrom": "2026-06-15T06:30:00.000Z",
+   "repeatDays": [
+    3,
+    6
+   ],
+   "next": "2027-09-22T06:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2027-08-01T21:30:00.000Z",
+   "now": "2027-08-02T21:41:43.860Z",
+   "repeatFrom": "2027-08-01T21:30:00.000Z",
+   "next": "2028-08-01T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2028-09-11T23:59:00.000Z",
+   "now": "2028-09-12T00:25:58.170Z",
+   "repeatFrom": "2028-08-28T23:59:00.000Z",
+   "next": "2028-09-12T23:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2028-08-31T13:59:00.000Z",
+   "now": "2028-08-31T14:42:05.904Z",
+   "repeatFrom": "2028-08-30T13:59:00.000Z",
+   "next": "2028-09-30T13:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-10-28T21:00:00.000Z",
+   "now": "2025-12-02T21:31:22.867Z",
+   "repeatFrom": "2024-08-27T21:00:00.000Z",
+   "next": "2026-08-27T21:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2028-11-29T23:00:00.000Z",
+   "now": "2030-01-03T23:09:47.316Z",
+   "repeatFrom": "2028-11-29T23:00:00.000Z",
+   "next": "2030-11-29T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2027-12-19T14:00:00.000Z",
+   "now": "2027-12-19T14:08:47.446Z",
+   "repeatFrom": "2027-12-05T14:00:00.000Z",
+   "repeatDays": [
+    4,
+    5
+   ],
+   "next": "2027-12-23T14:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2026-04-17T23:30:00.000Z",
+   "now": "2026-04-18T00:05:27.040Z",
+   "repeatFrom": "2026-04-15T23:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-04-19T23:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2025-09-01T09:00:00.000Z",
+   "now": "2025-09-02T09:14:22.521Z",
+   "repeatFrom": "2025-08-01T09:00:00.000Z",
+   "next": "2025-09-08T09:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2027-03-04T23:59:00.000Z",
+   "now": "2028-04-08T00:45:48.323Z",
+   "repeatFrom": "2027-03-04T23:59:00.000Z",
+   "next": "2028-05-04T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2027-05-15T23:59:00.000Z",
+   "now": "2027-05-17T00:31:29.172Z",
+   "repeatFrom": "2027-04-14T23:59:00.000Z",
+   "next": "2027-06-14T23:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2028-09-28T00:30:00.000Z",
+   "now": "2028-10-07T00:49:20.500Z",
+   "repeatFrom": "2028-09-28T00:30:00.000Z",
+   "next": "2028-10-08T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2025-08-13T20:30:00.000Z",
+   "now": "2025-08-13T20:14:29.979Z",
+   "repeatFrom": "2025-07-30T20:30:00.000Z",
+   "next": "2025-09-30T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-06-30T06:30:00.000Z",
+   "now": "2028-08-03T07:29:04.521Z",
+   "repeatFrom": "2027-06-30T06:30:00.000Z",
+   "next": "2028-08-09T06:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2026-07-06T06:59:00.000Z",
+   "now": "2027-08-10T07:13:45.193Z",
+   "repeatFrom": "2026-06-05T06:59:00.000Z",
+   "next": "2028-06-05T06:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2026-09-15T02:00:00.000Z",
+   "now": "2026-09-16T02:38:46.508Z",
+   "repeatFrom": "2026-09-15T02:00:00.000Z",
+   "next": "2026-10-15T02:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2027-03-10T04:00:00.000Z",
+   "now": "2027-03-19T04:16:01.483Z",
+   "repeatFrom": "2027-03-03T04:00:00.000Z",
+   "next": "2027-03-24T03:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "weekly",
+   "current": "2029-02-14T13:00:00.000Z",
+   "now": "2029-02-23T13:14:53.014Z",
+   "repeatFrom": "2028-12-14T13:00:00.000Z",
+   "next": "2029-02-28T13:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2025-07-01T21:30:00.000Z",
+   "now": "2025-07-10T21:45:59.821Z",
+   "repeatFrom": "2025-05-31T21:30:00.000Z",
+   "next": "2025-07-11T21:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2025-08-31T02:59:00.000Z",
+   "now": "2026-10-05T03:50:11.975Z",
+   "repeatFrom": "2025-08-31T02:59:00.000Z",
+   "next": "2026-10-06T02:59:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-12-29T07:59:00.000Z",
+   "now": "2028-12-29T08:11:51.886Z",
+   "repeatFrom": "2028-12-15T07:59:00.000Z",
+   "next": "2029-12-15T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2028-04-16T06:00:00.000Z",
+   "now": "2028-04-17T06:49:09.787Z",
+   "repeatFrom": "2028-04-15T06:00:00.000Z",
+   "next": "2029-04-15T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2025-02-14T23:00:00.000Z",
+   "now": "2025-02-23T23:32:51.033Z",
+   "repeatFrom": "2025-02-14T23:00:00.000Z",
+   "next": "2025-03-14T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2025-10-30T07:00:00.000Z",
+   "now": "2025-10-30T07:18:19.943Z",
+   "repeatFrom": "2025-10-29T07:00:00.000Z",
+   "next": "2026-10-29T07:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2027-08-30T20:00:00.000Z",
+   "now": "2028-10-03T20:37:13.656Z",
+   "repeatFrom": "2027-08-30T20:00:00.000Z",
+   "next": "2028-10-04T20:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2027-03-30T12:30:00.000Z",
+   "now": "2028-05-03T13:20:53.467Z",
+   "repeatFrom": "2027-03-28T12:30:00.000Z",
+   "repeatDays": [
+    2,
+    4
+   ],
+   "next": "2028-05-04T13:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2028-11-14T00:59:00.000Z",
+   "now": "2028-11-14T00:17:42.920Z",
+   "repeatFrom": "2028-10-31T00:59:00.000Z",
+   "next": "2028-11-21T00:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2025-04-01T20:59:00.000Z",
+   "now": "2025-04-01T21:52:06.011Z",
+   "repeatFrom": "2025-01-29T20:59:00.000Z",
+   "repeatEvery": 365,
+   "next": "2026-04-01T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2025-08-05T06:00:00.000Z",
+   "now": "2025-08-14T06:42:33.880Z",
+   "repeatFrom": "2025-07-05T06:00:00.000Z",
+   "next": "2026-07-05T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2025-03-06T06:59:00.000Z",
+   "now": "2025-03-06T07:29:31.148Z",
+   "repeatFrom": "2025-03-05T06:59:00.000Z",
+   "next": "2026-03-05T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-02-03T20:59:00.000Z",
+   "now": "2025-02-03T21:39:44.364Z",
+   "repeatFrom": "2025-02-01T20:59:00.000Z",
+   "next": "2025-02-04T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "days",
+   "current": "2026-06-14T23:00:00.000Z",
+   "now": "2026-06-14T23:30:47.429Z",
+   "repeatFrom": "2026-05-14T23:00:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2026-06-17T23:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2024-05-03T23:59:00.000Z",
+   "now": "2024-05-04T00:33:02.132Z",
+   "repeatFrom": "2024-05-01T23:59:00.000Z",
+   "next": "2025-05-01T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2024-03-12T21:59:00.000Z",
+   "now": "2024-03-12T22:02:05.228Z",
+   "repeatFrom": "2024-02-27T21:59:00.000Z",
+   "next": "2024-03-13T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2024-04-28T21:30:00.000Z",
+   "now": "2025-06-02T21:58:55.079Z",
+   "repeatFrom": "2024-04-28T21:30:00.000Z",
+   "next": "2025-06-28T21:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2024-05-01T07:00:00.000Z",
+   "now": "2024-05-10T07:35:49.700Z",
+   "repeatFrom": "2024-05-01T07:00:00.000Z",
+   "next": "2024-05-15T07:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2025-06-14T22:59:00.000Z",
+   "now": "2025-06-14T23:09:54.229Z",
+   "repeatFrom": "2025-06-14T22:59:00.000Z",
+   "repeatDays": [
+    0,
+    1
+   ],
+   "next": "2025-06-15T22:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-12-28T15:00:00.000Z",
+   "now": "2027-02-01T15:13:39.362Z",
+   "repeatFrom": "2025-10-27T15:00:00.000Z",
+   "next": "2027-02-02T15:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "days",
+   "current": "2028-04-03T07:00:00.000Z",
+   "now": "2028-04-03T06:45:09.687Z",
+   "repeatFrom": "2028-04-01T07:00:00.000Z",
+   "repeatDays": [
+    3,
+    4
+   ],
+   "next": "2028-04-05T07:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2028-01-14T15:59:00.000Z",
+   "now": "2029-02-17T16:12:11.339Z",
+   "repeatFrom": "2028-01-14T15:59:00.000Z",
+   "repeatDays": [
+    1,
+    6
+   ],
+   "next": "2029-02-18T15:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2025-11-04T09:00:00.000Z",
+   "now": "2025-11-04T08:32:12.396Z",
+   "repeatFrom": "2025-10-28T09:00:00.000Z",
+   "next": "2025-11-05T09:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2028-12-02T22:59:00.000Z",
+   "now": "2028-12-02T22:36:10.777Z",
+   "repeatFrom": "2028-12-01T22:59:00.000Z",
+   "repeatDays": [
+    1,
+    3
+   ],
+   "next": "2028-12-04T22:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2024-03-13T23:59:00.000Z",
+   "now": "2024-03-13T23:38:51.720Z",
+   "repeatFrom": "2024-02-28T23:59:00.000Z",
+   "next": "2024-03-14T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2027-02-11T06:59:00.000Z",
+   "now": "2028-03-17T07:33:51.722Z",
+   "repeatFrom": "2027-01-28T06:59:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2028-03-19T06:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2028-08-01T06:00:00.000Z",
+   "now": "2028-08-01T06:54:31.637Z",
+   "repeatFrom": "2028-07-01T06:00:00.000Z",
+   "next": "2028-09-01T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2026-02-19T20:00:00.000Z",
+   "now": "2026-02-20T20:45:47.216Z",
+   "repeatFrom": "2026-02-05T20:00:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2026-02-23T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2026-05-07T21:59:00.000Z",
+   "now": "2026-05-07T22:20:39.714Z",
+   "repeatFrom": "2026-04-30T21:59:00.000Z",
+   "next": "2026-05-08T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2025-06-12T23:30:00.000Z",
+   "now": "2025-06-22T00:22:19.898Z",
+   "repeatFrom": "2025-05-29T23:30:00.000Z",
+   "next": "2025-06-22T23:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2028-09-27T21:30:00.000Z",
+   "now": "2028-09-28T22:26:30.279Z",
+   "repeatFrom": "2028-08-27T21:30:00.000Z",
+   "next": "2028-09-29T21:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2026-08-31T20:00:00.000Z",
+   "now": "2027-10-05T20:12:01.694Z",
+   "repeatFrom": "2026-06-30T20:00:00.000Z",
+   "next": "2028-06-30T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2024-12-06T00:30:00.000Z",
+   "now": "2024-12-06T00:35:58.458Z",
+   "repeatFrom": "2024-11-29T00:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-12-06T00:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2028-01-07T03:30:00.000Z",
+   "now": "2028-01-07T02:55:15.938Z",
+   "repeatFrom": "2027-11-06T03:30:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2028-01-08T04:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2027-06-02T23:30:00.000Z",
+   "now": "2027-06-04T00:28:54.941Z",
+   "repeatFrom": "2027-05-31T23:30:00.000Z",
+   "next": "2027-06-09T23:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2027-07-19T06:59:00.000Z",
+   "now": "2027-07-20T07:26:01.439Z",
+   "repeatFrom": "2027-07-05T06:59:00.000Z",
+   "repeatEvery": 10,
+   "next": "2027-07-29T06:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2028-04-27T23:30:00.000Z",
+   "now": "2028-04-28T00:28:38.042Z",
+   "repeatFrom": "2028-04-27T23:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-04-29T23:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2027-07-16T02:30:00.000Z",
+   "now": "2027-07-25T02:40:58.318Z",
+   "repeatFrom": "2027-06-15T02:30:00.000Z",
+   "next": "2027-07-30T02:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "yearly",
+   "current": "2028-11-19T08:00:00.000Z",
+   "now": "2028-11-19T07:18:12.923Z",
+   "repeatFrom": "2028-11-05T08:00:00.000Z",
+   "next": "2029-11-05T08:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2025-08-11T13:00:00.000Z",
+   "now": "2025-08-20T13:13:16.521Z",
+   "repeatFrom": "2025-07-28T13:00:00.000Z",
+   "repeatEvery": 10,
+   "next": "2025-08-21T13:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2024-02-27T22:30:00.000Z",
+   "now": "2025-04-02T23:21:55.878Z",
+   "repeatFrom": "2024-02-27T22:30:00.000Z",
+   "next": "2025-04-27T21:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-10-01T13:00:00.000Z",
+   "now": "2025-10-01T13:21:55.334Z",
+   "repeatFrom": "2025-08-31T13:00:00.000Z",
+   "next": "2026-08-31T13:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2024-03-31T21:00:00.000Z",
+   "now": "2024-03-31T21:59:49.333Z",
+   "repeatFrom": "2024-03-29T21:00:00.000Z",
+   "next": "2025-03-29T21:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2025-06-10T21:30:00.000Z",
+   "now": "2025-06-10T22:03:59.526Z",
+   "repeatFrom": "2025-05-27T21:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2026-06-10T21:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2026-08-04T21:59:00.000Z",
+   "now": "2026-08-04T22:47:59.571Z",
+   "repeatFrom": "2026-07-28T21:59:00.000Z",
+   "next": "2026-09-28T21:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2027-11-05T13:00:00.000Z",
+   "now": "2027-11-05T13:23:22.926Z",
+   "repeatFrom": "2027-10-29T13:00:00.000Z",
+   "next": "2027-11-06T13:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2028-09-29T20:00:00.000Z",
+   "now": "2029-11-03T20:24:31.975Z",
+   "repeatFrom": "2028-07-29T20:00:00.000Z",
+   "repeatDays": [
+    0
+   ],
+   "next": "2029-11-04T20:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2027-01-27T23:00:00.000Z",
+   "now": "2027-02-05T23:42:23.677Z",
+   "repeatFrom": "2026-12-27T23:00:00.000Z",
+   "next": "2027-02-10T23:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "interval",
+   "current": "2027-02-15T07:59:00.000Z",
+   "now": "2027-02-15T07:52:02.949Z",
+   "repeatFrom": "2027-02-15T07:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2027-03-17T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2025-11-01T20:30:00.000Z",
+   "now": "2025-11-02T21:05:31.860Z",
+   "repeatFrom": "2025-10-01T20:30:00.000Z",
+   "repeatDays": [
+    1,
+    6
+   ],
+   "next": "2025-11-03T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2028-01-31T21:00:00.000Z",
+   "now": "2028-01-31T21:24:11.139Z",
+   "repeatFrom": "2027-11-30T21:00:00.000Z",
+   "next": "2028-02-01T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2026-03-02T12:00:00.000Z",
+   "now": "2027-04-06T12:48:39.781Z",
+   "repeatFrom": "2026-02-28T12:00:00.000Z",
+   "next": "2027-04-28T13:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2025-05-02T22:59:00.000Z",
+   "now": "2025-05-03T23:41:52.081Z",
+   "repeatFrom": "2025-03-01T22:59:00.000Z",
+   "repeatDays": [
+    1
+   ],
+   "next": "2025-05-05T21:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2027-01-01T08:30:00.000Z",
+   "now": "2027-01-01T07:51:30.270Z",
+   "repeatFrom": "2026-12-31T08:30:00.000Z",
+   "repeatDays": [
+    1,
+    4
+   ],
+   "next": "2027-01-04T08:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2025-01-02T00:30:00.000Z",
+   "now": "2025-01-03T01:02:11.636Z",
+   "repeatFrom": "2024-12-31T00:30:00.000Z",
+   "next": "2025-12-31T00:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2024-07-31T23:59:00.000Z",
+   "now": "2024-07-31T23:57:40.737Z",
+   "repeatFrom": "2024-06-30T23:59:00.000Z",
+   "next": "2024-08-01T23:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2026-08-02T06:59:00.000Z",
+   "now": "2026-08-02T05:59:51.670Z",
+   "repeatFrom": "2026-08-01T06:59:00.000Z",
+   "next": "2026-08-03T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-06-30T21:00:00.000Z",
+   "now": "2027-06-30T20:18:05.870Z",
+   "repeatFrom": "2027-04-29T21:00:00.000Z",
+   "next": "2027-07-07T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2027-01-30T15:00:00.000Z",
+   "now": "2028-03-05T15:09:45.676Z",
+   "repeatFrom": "2027-01-30T15:00:00.000Z",
+   "next": "2028-03-30T15:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2025-01-29T22:00:00.000Z",
+   "now": "2025-01-30T22:04:56.246Z",
+   "repeatFrom": "2025-01-28T22:00:00.000Z",
+   "repeatDays": [
+    0,
+    1
+   ],
+   "next": "2025-02-01T22:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2024-02-06T00:30:00.000Z",
+   "now": "2024-02-06T00:51:03.297Z",
+   "repeatFrom": "2024-01-30T00:30:00.000Z",
+   "next": "2024-03-30T00:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "days",
+   "current": "2026-08-16T21:00:00.000Z",
+   "now": "2026-08-16T21:15:07.146Z",
+   "repeatFrom": "2026-06-15T21:00:00.000Z",
+   "repeatDays": [
+    0,
+    4
+   ],
+   "next": "2026-08-20T21:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2028-10-15T00:00:00.000Z",
+   "now": "2029-11-19T00:33:51.108Z",
+   "repeatFrom": "2028-10-15T00:00:00.000Z",
+   "next": "2029-11-25T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2026-07-16T06:59:00.000Z",
+   "now": "2026-07-25T07:35:36.930Z",
+   "repeatFrom": "2026-06-15T06:59:00.000Z",
+   "repeatDays": [
+    3
+   ],
+   "next": "2026-07-29T06:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2028-12-01T00:00:00.000Z",
+   "now": "2028-12-10T00:21:08.802Z",
+   "repeatFrom": "2028-12-01T00:00:00.000Z",
+   "next": "2029-12-01T00:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "yearly",
+   "current": "2028-09-28T21:00:00.000Z",
+   "now": "2028-09-28T21:51:28.042Z",
+   "repeatFrom": "2028-09-27T21:00:00.000Z",
+   "next": "2029-09-27T21:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2025-02-05T01:00:00.000Z",
+   "now": "2025-02-05T01:27:52.488Z",
+   "repeatFrom": "2024-12-05T01:00:00.000Z",
+   "next": "2025-02-06T01:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2026-03-30T22:00:00.000Z",
+   "now": "2026-03-31T22:56:28.898Z",
+   "repeatFrom": "2026-01-27T22:00:00.000Z",
+   "next": "2026-04-06T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2026-02-07T13:59:00.000Z",
+   "now": "2026-02-07T14:04:30.589Z",
+   "repeatFrom": "2026-01-31T13:59:00.000Z",
+   "next": "2027-01-31T13:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "weekly",
+   "current": "2026-05-14T23:30:00.000Z",
+   "now": "2027-06-19T00:01:20.076Z",
+   "repeatFrom": "2026-04-30T23:30:00.000Z",
+   "next": "2027-06-24T23:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2024-01-15T05:30:00.000Z",
+   "now": "2024-01-15T05:43:29.547Z",
+   "repeatFrom": "2024-01-15T05:30:00.000Z",
+   "repeatEvery": 30,
+   "next": "2024-02-14T05:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2027-03-30T21:59:00.000Z",
+   "now": "2027-03-30T22:14:45.155Z",
+   "repeatFrom": "2027-03-30T21:59:00.000Z",
+   "next": "2027-04-29T21:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "yearly",
+   "current": "2025-03-03T20:30:00.000Z",
+   "now": "2025-03-03T21:01:59.225Z",
+   "repeatFrom": "2025-03-03T20:30:00.000Z",
+   "next": "2026-03-03T20:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "weekly",
+   "current": "2025-05-31T06:00:00.000Z",
+   "now": "2025-05-31T06:19:30.124Z",
+   "repeatFrom": "2025-03-30T06:00:00.000Z",
+   "next": "2025-06-07T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "monthly",
+   "current": "2027-08-05T20:30:00.000Z",
+   "now": "2027-08-05T20:34:14.694Z",
+   "repeatFrom": "2027-08-05T20:30:00.000Z",
+   "next": "2027-09-05T20:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2027-02-11T23:00:00.000Z",
+   "now": "2027-02-11T23:26:43.486Z",
+   "repeatFrom": "2027-01-28T23:00:00.000Z",
+   "next": "2027-02-12T23:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "monthly",
+   "current": "2028-07-01T21:30:00.000Z",
+   "now": "2028-07-10T21:31:31.879Z",
+   "repeatFrom": "2028-06-30T21:30:00.000Z",
+   "next": "2028-07-31T21:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2025-01-30T07:59:00.000Z",
+   "now": "2025-02-08T08:46:39.075Z",
+   "repeatFrom": "2024-12-30T07:59:00.000Z",
+   "next": "2025-12-30T07:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2024-04-15T23:00:00.000Z",
+   "now": "2024-04-24T23:23:55.596Z",
+   "repeatFrom": "2024-04-14T23:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2024-05-15T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2027-02-05T07:30:00.000Z",
+   "now": "2027-02-05T07:41:54.504Z",
+   "repeatFrom": "2027-02-05T07:30:00.000Z",
+   "next": "2027-02-06T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2028-02-27T23:59:00.000Z",
+   "now": "2028-02-29T00:38:58.238Z",
+   "repeatFrom": "2027-12-27T23:59:00.000Z",
+   "repeatDays": [
+    2,
+    6
+   ],
+   "next": "2028-03-03T23:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "daily",
+   "current": "2024-12-01T02:30:00.000Z",
+   "now": "2024-12-02T02:53:10.570Z",
+   "repeatFrom": "2024-12-01T02:30:00.000Z",
+   "next": "2024-12-03T02:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2028-10-31T06:00:00.000Z",
+   "now": "2028-10-31T06:01:31.834Z",
+   "repeatFrom": "2028-10-30T06:00:00.000Z",
+   "repeatDays": [
+    4,
+    6
+   ],
+   "next": "2028-11-02T06:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2026-10-08T20:30:00.000Z",
+   "now": "2026-10-17T20:38:46.249Z",
+   "repeatFrom": "2026-10-01T20:30:00.000Z",
+   "next": "2026-10-18T20:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "weekly",
+   "current": "2025-12-31T21:59:00.000Z",
+   "now": "2026-01-09T22:55:55.872Z",
+   "repeatFrom": "2025-12-29T21:59:00.000Z",
+   "next": "2026-01-14T21:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2025-02-03T05:30:00.000Z",
+   "now": "2025-02-03T06:30:25.773Z",
+   "repeatFrom": "2025-02-01T05:30:00.000Z",
+   "next": "2025-03-01T05:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "monthly",
+   "current": "2026-04-01T06:00:00.000Z",
+   "now": "2026-04-01T06:44:36.388Z",
+   "repeatFrom": "2026-03-30T06:00:00.000Z",
+   "next": "2026-05-30T06:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2025-03-03T02:30:00.000Z",
+   "now": "2025-03-04T02:56:42.145Z",
+   "repeatFrom": "2025-03-01T02:30:00.000Z",
+   "next": "2026-03-01T02:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2024-06-05T23:59:00.000Z",
+   "now": "2024-06-06T00:52:09.255Z",
+   "repeatFrom": "2024-06-04T23:59:00.000Z",
+   "next": "2024-06-12T23:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2027-10-15T13:59:00.000Z",
+   "now": "2028-11-18T14:05:32.326Z",
+   "repeatFrom": "2027-10-15T13:59:00.000Z",
+   "next": "2028-11-24T14:59:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "monthly",
+   "current": "2025-11-28T23:30:00.000Z",
+   "now": "2025-12-08T00:22:59.878Z",
+   "repeatFrom": "2025-11-27T23:30:00.000Z",
+   "next": "2025-12-27T23:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2028-11-07T04:30:00.000Z",
+   "now": "2028-11-07T04:50:58.952Z",
+   "repeatFrom": "2028-11-05T04:30:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-12-06T05:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "yearly",
+   "current": "2025-05-21T14:30:00.000Z",
+   "now": "2025-05-21T14:57:58.179Z",
+   "repeatFrom": "2025-05-14T14:30:00.000Z",
+   "next": "2026-05-14T14:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2024-08-18T23:30:00.000Z",
+   "now": "2024-08-18T23:56:20.486Z",
+   "repeatFrom": "2024-08-04T23:30:00.000Z",
+   "repeatDays": [
+    2,
+    5
+   ],
+   "next": "2024-08-19T23:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "interval",
+   "current": "2026-05-12T22:30:00.000Z",
+   "now": "2026-05-12T22:11:45.034Z",
+   "repeatFrom": "2026-04-28T22:30:00.000Z",
+   "repeatEvery": 365,
+   "next": "2027-05-12T22:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "days",
+   "current": "2028-03-08T12:00:00.000Z",
+   "now": "2028-03-17T12:44:35.049Z",
+   "repeatFrom": "2028-03-01T12:00:00.000Z",
+   "repeatDays": [
+    1,
+    2
+   ],
+   "next": "2028-03-20T12:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2028-05-30T00:30:00.000Z",
+   "now": "2028-05-30T01:18:27.434Z",
+   "repeatFrom": "2028-05-30T00:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-06-01T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2028-07-01T06:00:00.000Z",
+   "now": "2028-07-10T06:58:12.421Z",
+   "repeatFrom": "2028-06-30T06:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-07-31T06:00:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "yearly",
+   "current": "2028-11-03T00:00:00.000Z",
+   "now": "2029-12-08T00:59:27.553Z",
+   "repeatFrom": "2028-11-01T00:00:00.000Z",
+   "next": "2030-11-01T00:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2027-12-08T20:00:00.000Z",
+   "now": "2027-12-17T20:02:57.569Z",
+   "repeatFrom": "2027-12-01T20:00:00.000Z",
+   "next": "2027-12-22T20:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "daily",
+   "current": "2028-03-30T06:30:00.000Z",
+   "now": "2028-03-30T06:29:03.877Z",
+   "repeatFrom": "2028-03-30T06:30:00.000Z",
+   "next": "2028-03-31T06:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2026-04-08T03:59:00.000Z",
+   "now": "2026-04-09T04:13:44.793Z",
+   "repeatFrom": "2026-04-06T03:59:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2026-04-11T03:59:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2024-04-12T15:59:00.000Z",
+   "now": "2025-05-17T16:52:04.309Z",
+   "repeatFrom": "2024-03-29T15:59:00.000Z",
+   "next": "2025-05-17T16:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "interval",
+   "current": "2025-04-28T20:30:00.000Z",
+   "now": "2026-06-02T20:48:47.456Z",
+   "repeatFrom": "2025-04-28T20:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-06-04T20:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2027-05-01T03:00:00.000Z",
+   "now": "2027-05-01T03:32:12.814Z",
+   "repeatFrom": "2027-04-29T03:00:00.000Z",
+   "repeatEvery": 3,
+   "next": "2027-05-04T03:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "monthly",
+   "current": "2027-01-16T02:59:00.000Z",
+   "now": "2027-01-16T02:21:25.410Z",
+   "repeatFrom": "2026-11-15T02:59:00.000Z",
+   "next": "2027-02-15T02:59:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2024-12-06T09:00:00.000Z",
+   "now": "2024-12-06T08:19:32.051Z",
+   "repeatFrom": "2024-10-05T09:00:00.000Z",
+   "next": "2024-12-13T09:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "interval",
+   "current": "2026-07-05T21:00:00.000Z",
+   "now": "2026-07-06T21:10:49.981Z",
+   "repeatFrom": "2026-05-04T21:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-07-07T21:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2025-09-14T16:00:00.000Z",
+   "now": "2025-09-23T16:15:54.930Z",
+   "repeatFrom": "2025-09-14T16:00:00.000Z",
+   "next": "2025-09-24T16:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "yearly",
+   "current": "2028-01-29T00:30:00.000Z",
+   "now": "2028-02-07T00:35:11.616Z",
+   "repeatFrom": "2027-12-29T00:30:00.000Z",
+   "next": "2028-12-29T00:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2028-02-04T22:30:00.000Z",
+   "now": "2028-02-04T22:20:37.097Z",
+   "repeatFrom": "2028-01-04T22:30:00.000Z",
+   "repeatEvery": 30,
+   "next": "2028-03-05T22:30:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2028-04-17T13:00:00.000Z",
+   "now": "2028-04-26T13:54:45.550Z",
+   "repeatFrom": "2028-04-15T13:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-04-27T13:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "monthly",
+   "current": "2025-04-27T15:30:00.000Z",
+   "now": "2025-05-06T16:06:06.873Z",
+   "repeatFrom": "2025-03-27T15:30:00.000Z",
+   "next": "2025-05-27T16:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "weekly",
+   "current": "2027-06-30T09:00:00.000Z",
+   "now": "2027-06-30T09:31:51.045Z",
+   "repeatFrom": "2027-04-29T09:00:00.000Z",
+   "next": "2027-07-07T09:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2024-10-07T06:00:00.000Z",
+   "now": "2024-10-07T06:41:40.408Z",
+   "repeatFrom": "2024-09-30T06:00:00.000Z",
+   "next": "2025-09-30T06:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "interval",
+   "current": "2024-09-30T23:59:00.000Z",
+   "now": "2024-10-01T00:04:26.260Z",
+   "repeatFrom": "2024-09-30T23:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2024-10-30T22:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2028-03-16T21:30:00.000Z",
+   "now": "2028-03-16T22:00:31.036Z",
+   "repeatFrom": "2028-01-14T21:30:00.000Z",
+   "repeatDays": [
+    3,
+    5
+   ],
+   "next": "2028-03-21T21:30:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "interval",
+   "current": "2024-05-01T23:00:00.000Z",
+   "now": "2024-05-02T23:01:10.806Z",
+   "repeatFrom": "2024-05-01T23:00:00.000Z",
+   "repeatEvery": 365,
+   "next": "2025-05-01T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2025-11-05T07:30:00.000Z",
+   "now": "2025-11-06T08:28:44.006Z",
+   "repeatFrom": "2025-11-05T07:30:00.000Z",
+   "next": "2025-11-12T07:30:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "interval",
+   "current": "2028-05-12T21:00:00.000Z",
+   "now": "2028-05-21T21:25:45.944Z",
+   "repeatFrom": "2028-04-28T21:00:00.000Z",
+   "repeatEvery": 2,
+   "next": "2028-05-22T21:00:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "weekly",
+   "current": "2026-07-02T00:00:00.000Z",
+   "now": "2026-07-03T00:21:42.616Z",
+   "repeatFrom": "2026-05-01T00:00:00.000Z",
+   "next": "2026-07-09T00:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2024-04-02T13:59:00.000Z",
+   "now": "2024-04-02T13:28:04.138Z",
+   "repeatFrom": "2024-03-31T13:59:00.000Z",
+   "repeatEvery": 3,
+   "next": "2024-04-05T13:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "yearly",
+   "current": "2026-12-31T14:59:00.000Z",
+   "now": "2027-01-01T15:21:26.992Z",
+   "repeatFrom": "2026-11-30T14:59:00.000Z",
+   "next": "2027-11-30T14:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "days",
+   "current": "2028-10-01T23:30:00.000Z",
+   "now": "2028-10-10T23:53:52.551Z",
+   "repeatFrom": "2028-09-29T23:30:00.000Z",
+   "repeatDays": [
+    0,
+    5
+   ],
+   "next": "2028-10-12T23:30:00.000Z"
+  },
+  {
+   "zone": "Europe/Berlin",
+   "repeat": "daily",
+   "current": "2027-08-28T21:00:00.000Z",
+   "now": "2027-09-06T21:45:47.623Z",
+   "repeatFrom": "2027-08-28T21:00:00.000Z",
+   "next": "2027-09-07T21:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2024-10-13T20:00:00.000Z",
+   "now": "2024-10-13T20:17:49.823Z",
+   "repeatFrom": "2024-09-29T20:00:00.000Z",
+   "repeatDays": [
+    5,
+    6
+   ],
+   "next": "2024-10-18T20:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "monthly",
+   "current": "2025-12-02T06:00:00.000Z",
+   "now": "2027-01-06T06:11:10.160Z",
+   "repeatFrom": "2025-11-01T06:00:00.000Z",
+   "next": "2027-02-01T07:00:00.000Z"
+  },
+  {
+   "zone": "Australia/Sydney",
+   "repeat": "daily",
+   "current": "2024-03-01T13:00:00.000Z",
+   "now": "2024-03-01T13:53:41.658Z",
+   "repeatFrom": "2024-03-01T13:00:00.000Z",
+   "next": "2024-03-02T13:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "days",
+   "current": "2025-05-16T20:59:00.000Z",
+   "now": "2025-05-16T20:27:47.164Z",
+   "repeatFrom": "2025-04-15T20:59:00.000Z",
+   "repeatDays": [
+    3,
+    4
+   ],
+   "next": "2025-05-21T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Riyadh",
+   "repeat": "daily",
+   "current": "2024-09-30T20:59:00.000Z",
+   "now": "2024-10-09T21:43:02.993Z",
+   "repeatFrom": "2024-09-30T20:59:00.000Z",
+   "next": "2024-10-10T20:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "yearly",
+   "current": "2026-06-21T23:00:00.000Z",
+   "now": "2027-07-26T23:05:47.106Z",
+   "repeatFrom": "2026-06-14T23:00:00.000Z",
+   "next": "2028-06-14T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2024-03-31T05:00:00.000Z",
+   "now": "2025-05-05T05:49:06.585Z",
+   "repeatFrom": "2024-02-29T05:00:00.000Z",
+   "repeatEvery": 30,
+   "next": "2025-05-25T04:00:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "weekly",
+   "current": "2028-02-01T20:59:00.000Z",
+   "now": "2028-02-01T21:09:19.046Z",
+   "repeatFrom": "2028-01-30T20:59:00.000Z",
+   "next": "2028-02-08T20:59:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "days",
+   "current": "2028-01-29T07:00:00.000Z",
+   "now": "2028-02-07T07:07:20.284Z",
+   "repeatFrom": "2028-01-29T07:00:00.000Z",
+   "repeatDays": [
+    2,
+    3
+   ],
+   "next": "2028-02-08T07:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2024-07-07T04:59:00.000Z",
+   "now": "2024-07-08T05:42:49.335Z",
+   "repeatFrom": "2024-06-30T04:59:00.000Z",
+   "repeatEvery": 30,
+   "next": "2024-08-06T04:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Baghdad",
+   "repeat": "daily",
+   "current": "2024-05-28T21:30:00.000Z",
+   "now": "2024-05-29T21:50:11.625Z",
+   "repeatFrom": "2024-03-27T21:30:00.000Z",
+   "next": "2024-05-30T21:30:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "interval",
+   "current": "2026-05-06T03:30:00.000Z",
+   "now": "2026-05-06T03:22:47.008Z",
+   "repeatFrom": "2026-05-06T03:30:00.000Z",
+   "repeatEvery": 2,
+   "next": "2026-05-08T03:30:00.000Z"
+  },
+  {
+   "zone": "Africa/Cairo",
+   "repeat": "daily",
+   "current": "2026-03-27T22:00:00.000Z",
+   "now": "2027-05-01T22:51:30.037Z",
+   "repeatFrom": "2026-03-27T22:00:00.000Z",
+   "next": "2027-05-02T21:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "weekly",
+   "current": "2029-01-29T07:00:00.000Z",
+   "now": "2029-01-29T06:52:02.072Z",
+   "repeatFrom": "2028-12-29T07:00:00.000Z",
+   "next": "2029-02-05T07:00:00.000Z"
+  },
+  {
+   "zone": "UTC",
+   "repeat": "days",
+   "current": "2025-11-30T23:00:00.000Z",
+   "now": "2025-12-09T23:30:48.260Z",
+   "repeatFrom": "2025-11-30T23:00:00.000Z",
+   "repeatDays": [
+    0,
+    6
+   ],
+   "next": "2025-12-13T23:00:00.000Z"
+  },
+  {
+   "zone": "America/New_York",
+   "repeat": "daily",
+   "current": "2028-10-07T03:59:00.000Z",
+   "now": "2028-10-07T04:07:08.761Z",
+   "repeatFrom": "2028-09-06T03:59:00.000Z",
+   "next": "2028-10-08T03:59:00.000Z"
+  },
+  {
+   "zone": "Asia/Beirut",
+   "repeat": "monthly",
+   "current": "2027-09-29T20:30:00.000Z",
+   "now": "2027-10-08T21:07:00.162Z",
+   "repeatFrom": "2027-08-29T20:30:00.000Z",
+   "next": "2027-10-29T20:30:00.000Z"
+  }
+ ]
+}

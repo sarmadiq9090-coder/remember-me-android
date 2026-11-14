@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.IntentCompat
+import androidx.core.net.toUri
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.alarm.Engine
 import com.fastkiwi.rememberme.alarm.Notifier
@@ -42,7 +43,7 @@ data class Health(
 }
 
 object SystemScreens {
-    private fun pkg(context: Context) = Uri.parse("package:" + context.packageName)
+    private fun pkg(context: Context): Uri = ("package:" + context.packageName).toUri()
 
     fun appDetails(context: Context) = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg(context))
 

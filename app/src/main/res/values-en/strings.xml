@@ -12,7 +12,7 @@
     <string name="back">Back</string>
     <string name="background_title">Allow background work</string>
     <string name="background_hint">So reminders arrive on time, even when the phone is locked</string>
-    <string name="background_intro">For every reminder to reach you on time, Remember Me needs a few permissions. Red items are essential; the rest make it more reliable.</string>
+    <string name="background_intro">For every reminder to reach you on time, Remember Me needs a few permissions. Red is essential; purple is recommended, for clearer and surer reminders.</string>
     <string name="background_footer">Some phones stop background apps to save battery. If a reminder is ever late, come back to this page.</string>
     <string name="backup">Backup</string>
     <string name="backup_hint">Saves one file (zip) wherever you choose. Remember Me for Windows reads it too: extract it, then Restore and choose the folder. The file is not encrypted, so keep it somewhere safe.</string>
@@ -158,6 +158,7 @@
     <string name="status_check">Check yourself</string>
     <string name="status_needed">Needed</string>
     <string name="status_ok">Ready</string>
+    <string name="status_recommended">Recommended</string>
     <string name="steps_xiaomi">Settings → Apps → Manage apps → Remember Me: turn on Autostart, then Battery saver → No restrictions. In recent apps, long-press Remember Me and tap the lock.</string>
     <string name="steps_samsung">Settings → Battery → Background usage limits: add Remember Me to Never sleeping apps and make sure it is not in Sleeping apps. Then Settings → Apps → Remember Me → Battery → Unrestricted.</string>
     <string name="steps_huawei">Settings → Battery → App launch → Remember Me: turn off Manage automatically and turn on Auto-launch, Secondary launch and Run in background.</string>

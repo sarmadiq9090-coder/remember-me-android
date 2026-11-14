@@ -24,6 +24,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/widget_add_bg"
+            android:contentDescription="@string/new_reminder"
             android:src="@drawable/ic_add" />
     </LinearLayout>
     <TextView android:id="@+id/w_empty" style="@style/WidgetRow" />
