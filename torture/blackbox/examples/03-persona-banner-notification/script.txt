@@ -1,0 +1,15 @@
+# Persona: an older user with large text and dark mode, using the phone when the alert arrives.
+# With the phone unlocked and in use, the alert comes as a banner; the user answers from the shade.
+start onboarded
+font-scale 1.5
+dark on
+tap-desc "الإعدادات"
+tap "صحة التذكيرات"
+tap "اختبر التنبيه الآن"
+tap "ابدأ الاختبار"
+wait 15
+notifications
+notification-action "تنبيه تجريبي من ذكرني" "تم"
+home
+open-app
+back

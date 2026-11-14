@@ -1,0 +1,13 @@
+# The phone's settings change while the app is open, and the app's own language switch.
+start onboarded
+tap-desc "الإعدادات"
+dark on
+font-scale 1.3
+tap "اللغة"
+tap "English"
+screenshot
+home
+dark off
+open-app
+lockscreen-notifications hide-sensitive
+screenshot

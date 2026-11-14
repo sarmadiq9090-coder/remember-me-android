@@ -1,0 +1,13 @@
+# A returning user adds a reminder, looks at the time dialog and the ⋮ menu, then deletes it with undo.
+start onboarded
+tap "تذكير جديد"
+tap "العنوان"
+type "موعد طبيب الأسنان"
+tap "الوقت"
+tap "إلغاء"
+tap "حفظ"
+tap "موعد طبيب الأسنان"
+tap-desc "خيارات أخرى"
+tap "حذف"
+tap "تراجع"
+back
