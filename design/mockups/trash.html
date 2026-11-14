@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Trash</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>.row { padding-inline-end: 4px; } .row .btn.text { min-height: 48px; }</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- ⋮ holds «إفراغ السلة» (confirm dialog, red confirm text). Each row: «استعادة» + ⋮ «حذف نهائي». -->
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">سلة المحذوفات</div>
+    <span class="iconbtn"><i data-i="more"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="t-body-m muted" style="padding:0 24px 12px">تبقى المحذوفات هنا 30 يومًا ثم تُحذف نهائيًا.</div>
+    <div class="group">
+      <div class="row"><div class="txt"><div class="h reg">تجديد جواز السفر</div><div class="s num">حُذف اليوم، 3:10 م</div></div><span class="btn text">استعادة</span><span class="iconbtn"><i data-i="more"></i></span></div>
+      <div class="row"><div class="txt"><div class="h reg">شراء هدية لسارة</div><div class="s num">حُذف أمس، 8:45 م</div></div><span class="btn text">استعادة</span><span class="iconbtn"><i data-i="more"></i></span></div>
+      <div class="row"><div class="txt"><div class="h reg">تسجيل في النادي</div><div class="s num">حُذف الثلاثاء 10 نوفمبر، 11:00 ص</div></div><span class="btn text">استعادة</span><span class="iconbtn"><i data-i="more"></i></span></div>
+    </div>
+  </div>
+  <!-- Snackbar after a restore -->
+  <div class="snack" style="bottom:40px"><span style="flex:1">استُعيد التذكير</span><span class="btn text">تراجع</span></div>
+  <div class="gesturebar"></div>
+</div></body></html>

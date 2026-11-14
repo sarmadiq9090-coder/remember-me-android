@@ -1,3 +1,4 @@
+import java.security.MessageDigest
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -5,6 +6,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.cyclonedx.bom") version "3.6.1"
 }
 
 // Release signing material lives in the git-ignored keystore/ folder.
@@ -127,4 +129,45 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.test:core-ktx:1.7.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+// ---------------------------------------------------------------------------
+// Release SBOM (CycloneDX): the Maven libraries shipped in the APK, plus the bundled font files,
+// written to dist/RememberMe-<version>.cdx.json.
+// ---------------------------------------------------------------------------
+tasks.named<org.cyclonedx.gradle.CyclonedxDirectTask>("cyclonedxDirectBom") {
+    includeConfigs.set(listOf("releaseRuntimeClasspath"))
+    projectType.set(org.cyclonedx.model.Component.Type.APPLICATION)
+    componentGroup.set("com.fastkiwi")
+    componentName.set("remember-me-android")
+    componentVersion.set(android.defaultConfig.versionName)
+    jsonOutput.set(layout.buildDirectory.file("reports/sbom/remember-me.cdx.json"))
+}
+
+tasks.register("releaseSbom") {
+    description = "Writes dist/RememberMe-<version>.cdx.json (CycloneDX SBOM of the release APK)."
+    dependsOn("cyclonedxDirectBom")
+    val input = layout.buildDirectory.file("reports/sbom/remember-me.cdx.json")
+    val version = android.defaultConfig.versionName
+    val fonts = file("src/main/res/font")
+    val output = rootProject.file("dist/RememberMe-$version.cdx.json")
+    inputs.file(input)
+    outputs.file(output)
+    doLast {
+        @Suppress("UNCHECKED_CAST")
+        val bom = groovy.json.JsonSlurper().parse(input.get().asFile) as MutableMap<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val components = (bom["components"] as? MutableList<Any?>) ?: mutableListOf<Any?>().also { bom["components"] = it }
+        fun sha256(f: File): String = MessageDigest.getInstance("SHA-256").digest(f.readBytes()).joinToString("") { "%02x".format(it) }
+        fonts.listFiles()!!.filter { it.name.endsWith(".ttf") }.sortedBy { it.name }.forEach { f ->
+            components += mapOf(
+                "type" to "data", "bom-ref" to "font:${f.name}", "name" to "Noto Sans Arabic (${f.nameWithoutExtension})",
+                "hashes" to listOf(mapOf("alg" to "SHA-256", "content" to sha256(f))),
+                "licenses" to listOf(mapOf("license" to mapOf("id" to "OFL-1.1"))),
+                "externalReferences" to listOf(mapOf("type" to "website", "url" to "https://notofonts.github.io/")),
+            )
+        }
+        output.parentFile.mkdirs()
+        output.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(bom)) + "\n")
+    }
 }

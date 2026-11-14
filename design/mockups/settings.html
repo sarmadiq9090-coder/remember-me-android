@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Settings</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>.row.alarm { background: var(--error-container); color: var(--on-error-container); --icon-cut: var(--error-container); }
+.row.alarm .s { color: var(--on-error-container); } .row.alarm > i[data-i] { color: var(--error); }</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">الإعدادات</div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <!-- Status row first: red only while an essential permission is missing; otherwise a check and «جاهز» -->
+    <div class="group" style="margin-top:4px">
+      <div class="row alarm"><i data-i="warnfill"></i><div class="txt"><div class="h">السماح بالعمل في الخلفية</div><div class="s">إذن ضروري واحد غير مفعّل</div></div><i data-i="chevron" class="s20"></i></div>
+    </div>
+    <div class="group-h">العرض</div>
+    <div class="group">
+      <div class="row"><i data-i="globe"></i><div class="txt"><div class="h">اللغة</div><div class="s">العربية</div></div></div>
+      <div class="row"><i data-i="contrast"></i><div class="txt"><div class="h">السمة</div><div class="s">حسب الهاتف</div></div></div>
+      <div class="row"><i data-i="month"></i><div class="txt"><div class="h">أسماء الأشهر</div><div class="s">تشرين الثاني</div></div></div>
+      <div class="row"><i data-i="calendar"></i><div class="txt"><div class="h">أول يوم في الأسبوع</div><div class="s">السبت</div></div></div>
+    </div>
+    <div class="group-h">التنبيه</div>
+    <div class="group">
+      <div class="row"><i data-i="volume"></i><div class="txt"><div class="h">صوت التذكير</div><div class="s">يُسمع صوت الإشعار حين يحين الوقت.</div></div><span class="switch on"></span></div>
+      <div class="row"><i data-i="again"></i><div class="txt"><div class="h">إعادة التنبيه بالصوت</div><div class="s">متوقف</div></div></div>
+      <div class="row"><i data-i="lock"></i><div class="txt"><div class="h">إخفاء العنوان على شاشة القفل</div><div class="s">يظهر «تذكير» فقط حتى تفتح القفل.</div></div><span class="switch"></span></div>
+    </div>
+    <div class="group-h">بياناتك</div>
+    <div class="group">
+      <div class="row"><i data-i="save"></i><div class="txt"><div class="h">حفظ نسخة</div><div class="s">ملف zip تختار مكانه. الملف غير مشفّر.</div></div></div>
+      <div class="row"><i data-i="upload"></i><div class="txt"><div class="h">استعادة من ملف</div></div></div>
+      <div class="row"><i data-i="trash"></i><div class="txt"><div class="h">سلة المحذوفات</div></div><span class="val num">3</span></div>
+    </div>
+    <div class="group-h">حول</div>
+    <div class="group">
+      <div class="row"><i data-i="info"></i><div class="txt"><div class="h">حول ذكرني</div><div class="s">الإصدار 0.1.0</div></div></div>
+    </div>
+  </div>
+  <div class="gesturebar"></div>
+</div></body></html>

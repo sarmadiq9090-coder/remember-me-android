@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Allow background work</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>
+  .chk { background: var(--sc); padding: 14px 16px 12px; display: flex; gap: 16px; align-items: flex-start; }
+  .chk.need { background: var(--error-container); color: var(--on-error-container); --icon-cut: var(--error-container); }
+  .chk.need .s { color: var(--on-error-container); }
+  .chk .ic { margin-top: 2px; }
+  .chk .txt { flex: 1; min-width: 0; }
+  .chk .hl { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .chk .h { font-size: 16px; line-height: 26px; font-weight: 500; }
+  .chk .s { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); margin-top: 2px; }
+  .chk .act { margin-top: 10px; }
+  .chk .act .btn { min-height: 40px; }
+  .chk.need .status.need { color: var(--on-error-container); }
+  .gh { display: flex; align-items: baseline; justify-content: space-between; padding: 20px 32px 8px; }
+  .gh .t { font-size: 15px; line-height: 22px; font-weight: 700; color: var(--primary); }
+  .gh .n { font-size: 13px; line-height: 18px; color: var(--on-surface-variant); font-weight: 500; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">السماح بالعمل في الخلفية</div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="t-body-m muted" style="padding:0 24px 4px">لكي يصلك كل تذكير في وقته حتى والهاتف مقفل، اسمح بما ليس جاهزًا. كل بند يفتح الإعداد الخاص به.</div>
+    <div class="gh"><span class="t">ضروري</span><span class="n num">1 من 2 جاهز</span></div>
+    <div class="group">
+      <div class="chk"><i data-i="okfill" class="ic pri"></i><div class="txt"><div class="hl"><span class="h">الإشعارات</span><span class="status ok">جاهز</span></div>
+        <div class="s">بدونها لا يظهر أي تذكير.</div></div></div>
+      <div class="chk need"><i data-i="errorfill" class="ic" style="color:var(--error)"></i><div class="txt"><div class="hl"><span class="h">المنبّهات في وقتها</span><span class="status need">مطلوب</span></div>
+        <div class="s">تسمح لذكرني بالتنبيه في الدقيقة نفسها، لا بعدها.</div>
+        <div class="act"><span class="btn filled">اسمح</span></div></div></div>
+    </div>
+    <div class="gh"><span class="t">يُنصح به</span><span class="n num">1 من 2 جاهز</span></div>
+    <div class="group">
+      <div class="chk"><i data-i="infofill" class="ic" style="color:var(--tertiary)"></i><div class="txt"><div class="hl"><span class="h">شاشة التذكير الكاملة</span><span class="status rec">غير مفعّل</span></div>
+        <div class="s">تعرض التذكير على الشاشة كاملة والهاتف مقفل. بدونها يظهر كإشعار فقط.</div>
+        <div class="act"><span class="btn tonal">اسمح</span></div></div></div>
+      <div class="chk"><i data-i="okfill" class="ic pri"></i><div class="txt"><div class="hl"><span class="h">بلا قيود على البطارية</span><span class="status ok">جاهز</span></div>
+        <div class="s">يمنع النظام من تأخير التذكيرات لتوفير البطارية.</div></div></div>
+    </div>
+    <div class="gh"><span class="t">نصائح</span></div>
+    <div class="group">
+      <div class="chk"><i data-i="hourglass" class="ic muted"></i><div class="txt"><div class="hl"><span class="h">إيقاف التطبيق غير المستخدم</span><span class="status adv">تحقق بنفسك</span></div>
+        <div class="s">أوقف خيار «إيقاف نشاط التطبيق مؤقتًا إذا لم يُستخدم» لذكرني.</div>
+        <div class="act"><span class="btn outlined">افتح الإعدادات</span></div></div></div>
+      <div class="chk"><i data-i="phone" class="ic muted"></i><div class="txt"><div class="hl"><span class="h">خطوات خاصة بهواتف سامسونج</span></div>
+        <div class="s">الإعدادات ← البطارية ← حدود استخدام الخلفية: أضف ذكرني إلى «التطبيقات التي لا تنام أبدًا».</div>
+        <div class="act"><span class="btn outlined">افتح الإعدادات</span></div></div></div>
+    </div>
+  </div>
+  <!-- First start only. While an essential item is missing, its «اسمح» is the primary and «متابعة» is outlined; it turns filled when all essentials are ready. Opened from Settings or the banner: no bottom bar. -->
+  <div class="bottombar"><span class="btn outlined lg block">متابعة</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

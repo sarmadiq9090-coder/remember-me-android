@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Repeat dialog</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>
+  .form { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 20px; }
+  .dialog .opt .sub { display: block; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="close"></i></span>
+    <div class="title t-title-l">تعديل التذكير</div>
+    <span class="iconbtn"><i data-i="more"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="form">
+      <div class="field"><span class="lbl">العنوان</span>دواء الضغط</div>
+      <div class="field" style="min-height:80px"><span class="lbl">ملاحظة</span>حبة واحدة بعد الغداء مع كوب ماء.</div>
+    </div>
+    <div class="group-h">الموعد</div>
+    <div class="group">
+      <div class="row"><i data-i="alarm"></i><div class="txt"><div class="h reg">ذكّرني في وقت محدد</div></div><span class="switch on"></span></div>
+      <div class="row"><i data-i="event"></i><div class="txt"><div class="ov">التاريخ</div><div class="h reg">السبت 14 نوفمبر 2026</div></div></div>
+      <div class="row"><i data-i="clock"></i><div class="txt"><div class="ov">الوقت</div><div class="h reg num">2:00 م</div></div></div>
+      <div class="row"><i data-i="repeat"></i><div class="txt"><div class="ov">التكرار</div><div class="h reg">كل يوم</div></div></div>
+    </div>
+  </div>
+  <div class="bottombar"><span class="btn filled lg block"><i data-i="check"></i>حفظ</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+  <!-- Single-choice dialog: a tap selects and closes; «إلغاء» keeps the old value -->
+  <div class="scrim"></div>
+  <div class="dialog" style="top:150px">
+    <div class="dt">التكرار</div>
+    <div class="opt"><span class="radio"></span>مرة واحدة</div>
+    <div class="opt"><span class="radio on"></span>كل يوم</div>
+    <div class="opt"><span class="radio"></span>كل أسبوع</div>
+    <div class="opt"><span class="radio"></span>أيام محددة من الأسبوع</div>
+    <div class="opt"><span class="radio"></span>كل بضعة أيام</div>
+    <div class="opt"><span class="radio"></span><span>كل بضع ساعات<span class="sub">خاص بأندرويد: يصبح لمرة واحدة في ذكرني لويندوز</span></span></div>
+    <div class="opt"><span class="radio"></span>كل شهر</div>
+    <div class="opt"><span class="radio"></span>كل سنة</div>
+    <div class="acts"><span class="btn text">إلغاء</span></div>
+  </div>
+</div></body></html>

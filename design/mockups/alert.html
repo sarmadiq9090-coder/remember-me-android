@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Reminder screen</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 24px 0; gap: 4px; }
+  .bigtime { font-size: 57px; line-height: 72px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .bigtime .ap { font-size: 28px; font-weight: 500; }
+  .snz { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .snz .btn { padding: 0 8px; }
+  .foot { padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 12px; background: var(--sc-low); border-radius: 28px 28px 0 0; flex: none; }
+  .pair { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pair .btn { flex: 1 1 0; }
+  .note { margin: 16px 16px 0; background: var(--sc); border-radius: 16px; padding: 12px 16px; font-size: 16px; line-height: 28px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Top row: queue position (start), open-to-edit and «لاحقًا» (end). No back arrow: the screen stays until dealt with. -->
+  <div class="topbar" style="padding:0 16px 0 4px">
+    <span class="pill num">1 من 3</span>
+    <span class="grow"></span>
+    <span class="iconbtn"><i data-i="edit"></i></span>
+    <span class="btn text">لاحقًا</span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="hero">
+      <div class="disc" style="width:64px;height:64px;background:var(--tertiary-container);color:var(--on-tertiary-container);margin:8px 0 8px">
+        <i data-i="bellring" style="width:32px;height:32px"></i></div>
+      <div class="bigtime err">2:00 <span class="ap">م</span></div>
+      <div class="t-body-l err" style="display:flex;gap:6px;align-items:center"><i data-i="warning" class="s20"></i>اليوم، متأخر ساعتين</div>
+      <div class="t-headline-m" style="margin-top:12px">دواء الضغط</div>
+      <div class="t-body-m muted" style="display:flex;gap:12px;align-items:center;margin-top:4px">
+        <span style="display:inline-flex;gap:4px;align-items:center"><i data-i="repeat" class="s18"></i>كل يوم</span>
+        <span class="tag"><i data-i="flagfill"></i>مهم</span></div>
+    </div>
+    <div class="note" style="margin-bottom:16px">حبة واحدة بعد الغداء مع كوب ماء.</div>
+  </div>
+  <!-- Thumb zone: six snooze choices (secondary), then the paired actions: Skip (S, start) · Done (P, end) -->
+  <div class="foot">
+    <div class="t-title-s muted" style="padding:0 4px">ذكّرني مرة أخرى</div>
+    <div class="snz">
+      <span class="btn outlined neutral">10 دقائق</span><span class="btn outlined neutral">ساعة</span>
+      <span class="btn outlined neutral num">اليوم، 6:00 م</span><span class="btn outlined neutral num">غدًا، 9:00 ص</span>
+      <span class="btn outlined neutral">الأسبوع القادم</span><span class="btn outlined neutral">اختر وقتًا…</span>
+    </div>
+    <div class="pair" style="margin-top:4px">
+      <span class="btn outlined xl" style="font-size:16px;font-weight:500">تخطَّ هذه المرة</span>
+      <span class="btn filled xl"><i data-i="check"></i>تم</span>
+    </div>
+  </div>
+  <div class="gesturebar" style="background:var(--sc-low)"></div>
+</div></body></html>

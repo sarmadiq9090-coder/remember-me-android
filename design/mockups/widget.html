@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Home-screen widget</title>
+<link rel="stylesheet" href="kit.css"><script src="kit.js"></script>
+<style>
+  .phone { background: linear-gradient(160deg, #9FB8AA 0%, #5E7D6E 55%, #36513F 100%); }
+  @media (prefers-color-scheme: dark) { .phone { background: linear-gradient(160deg, #24342C 0%, #18241E 60%, #0E1612 100%); } }
+  .statusbar { color: #fff; }
+  .w { margin: 16px 16px 0; background: var(--surface); color: var(--on-surface); border-radius: 24px; padding: 8px 8px 12px 8px; box-shadow: var(--shadow-1); }
+  .wh { display: flex; align-items: center; gap: 10px; padding: 4px 8px 4px 4px; }
+  .wh .brand { margin-inline-start: 8px; width: 28px; height: 28px; }
+  .wh .t { flex: 1; font-size: 16px; line-height: 24px; font-weight: 700; }
+  .wadd { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; }
+  .wr { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 12px; background: var(--sc); border-radius: 4px; margin-top: 2px; }
+  .wr:first-of-type { border-top-left-radius: 16px; border-top-right-radius: 16px; }
+  .wr.last { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+  .wr .tm { width: 76px; flex: none; font-size: 15px; line-height: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .wr .tm .d { display: block; font-size: 12px; line-height: 16px; font-weight: 400; color: var(--on-surface-variant); }
+  .wr .ti { flex: 1; min-width: 0; font-size: 15px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wr.late .tm, .wr.late .d { color: var(--error); }
+  .icons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px 0; padding: 32px 16px; justify-items: center; }
+  .icons span { width: 56px; height: 56px; border-radius: 18px; background: rgba(255,255,255,.35); }
+  .cap { margin: 20px 24px 0; font-size: 13px; line-height: 20px; color: #fff; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="cap">4×2: التذكيرات القادمة، المتأخرة أولًا</div>
+  <!-- RemoteViews: rounded 24 dp surface, header (mark, name, + button 48 dp), up to 4 rows -->
+  <div class="w">
+    <div class="wh"><span class="brand" data-brand></span><span class="t">ذكرني</span><span class="wadd"><i data-i="add"></i></span></div>
+    <div class="wr late"><span class="tm">2:00 م<span class="d">متأخر</span></span><span class="ti">دواء الضغط</span><i data-i="warning" class="s20 err"></i></div>
+    <div class="wr"><span class="tm">5:30 م<span class="d">اليوم</span></span><span class="ti">اجتماع الفريق</span></div>
+    <div class="wr"><span class="tm">7:00 م<span class="d">اليوم</span></span><span class="ti">شراء الخبز والحليب</span></div>
+    <div class="wr last"><span class="tm">9:00 ص<span class="d">غدًا</span></span><span class="ti">دفع الإيجار</span></div>
+  </div>
+  <div class="cap">لا شيء قادم</div>
+  <div class="w">
+    <div class="wh"><span class="brand" data-brand></span><span class="t">ذكرني</span><span class="wadd"><i data-i="add"></i></span></div>
+    <div class="t-body-m muted" style="padding:8px 16px 4px">لا تذكيرات قادمة</div>
+  </div>
+  <div class="icons"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="grow"></div>
+  <div class="gesturebar"></div>
+</div></body></html>
