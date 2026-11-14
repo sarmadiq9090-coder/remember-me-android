@@ -488,6 +488,7 @@
     <string name="home_at_time">At the time</string>
     <string name="home_no_repeat">Does not repeat</string>
     <string name="template_saved">Saved to “My templates”</string>
+    <string name="history_cleared">Change history cleared</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>
     <string name="qa_title_is">Title: %1$s</string>

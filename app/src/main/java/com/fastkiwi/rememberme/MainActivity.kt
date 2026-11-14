@@ -139,6 +139,12 @@ class MainActivity : AppCompatActivity() {
     var quickAdd by mutableStateOf<com.fastkiwi.rememberme.ui.quick.QuickAddRequest?>(null)
     /** Fields for the editor from a template or Quick Add's «خيارات أكثر»; the lead passes it to EditScreen. */
     var editPrefill by mutableStateOf<com.fastkiwi.rememberme.core.TemplateFill?>(null)
+    // [lead] begin
+    /** The default tone being chosen from Settings: "normal", "alarm", or null. */
+    private var tonePickFor by mutableStateOf<String?>(null)
+    /** Lists and tags: Home filtered by a saved filter or searched for a category. */
+    private var homeRequest by mutableStateOf<com.fastkiwi.rememberme.ui.HomeRequest?>(null)
+    // [lead] end
     /** Bumped by the launcher shortcut «اليوم»; the lead routes it to Home's day/agenda view. */
     var todayRequest by mutableLongStateOf(0L)
     /** The reminder Quick Add just saved, for Home to scroll into view. */
@@ -378,6 +384,20 @@ class MainActivity : AppCompatActivity() {
         // [settings] begin
         flows.Dialogs()
         // [settings] end
+        // [lead] the default tones from Settings (F-014): the editor's tone sheet, for a style.
+        tonePickFor?.let { which ->
+            val alarm = which == "alarm"
+            com.fastkiwi.rememberme.ui.editor.TonePickerSheet(
+                current = if (alarm) prefs.importantTone else prefs.normalTone,
+                style = if (alarm) com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM else com.fastkiwi.rememberme.core.AlertPolicy.Style.NORMAL,
+                onPick = { t -> if (alarm) prefs.importantTone = t else prefs.normalTone = t; tonePickFor = null; tick = System.currentTimeMillis() },
+                onDismiss = { tonePickFor = null },
+                title = stringResource(if (alarm) R.string.set_default_tone_alarm else R.string.set_default_tone_normal),
+                subtitle = null,
+                defaultTone = null,
+                defaultLabel = stringResource(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification),
+            )
+        }
         reportText?.let { text ->
             // The report is shown in full before anything is shared; the user picks where it goes.
             ConfirmDialog(
@@ -441,6 +461,7 @@ class MainActivity : AppCompatActivity() {
                     },
                     todayRequest = todayRequest,
                     scrollToId = lastAddedId, onScrolled = { lastAddedId = null },
+                    request = homeRequest, onRequestShown = { homeRequest = null },
                 )
             }
             is Screen.Edit -> {
@@ -513,10 +534,10 @@ class MainActivity : AppCompatActivity() {
                     },
                     onPhoneChanged = { tick = System.currentTimeMillis(); Engine.syncAsync(this) },
                     onHealth = { push(Screen.Background) },
-                    onPickTone = { /* lead: open TonePickerSheet for "normal" / "alarm" defaults, then set tick */ },
+                    onPickTone = { style -> tonePickFor = style },
                     onLists = { push(Screen.Lists) },
-                    onTemplates = { /* lead: push the templates screen */ },
-                    onClearHistory = { /* lead: clear the change history (F-072) */ },
+                    onTemplates = { push(Screen.Templates) },
+                    onClearHistory = { com.fastkiwi.rememberme.data.History.of(ctx).clear(); toast(R.string.history_cleared) },
                     onRestoreSafety = { f ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
@@ -537,8 +558,11 @@ class MainActivity : AppCompatActivity() {
                     state = state, lists = lists, now = now, zone = zone, weekStart = Repo.weekStart(state),
                     onLists = { filters.save(it); lists = filters.all() },
                     onChange = { block -> act(block) },
-                    onCategory = { /* lead: show Home filtered by this category */ pop() },
-                    onFilter = { /* lead: show Home with this saved filter */ pop() },
+                    onCategory = { c -> homeRequest = com.fastkiwi.rememberme.ui.HomeRequest(search = getString(when (c) {
+                        com.fastkiwi.rememberme.core.Category.PERSONAL -> R.string.cat_personal
+                        com.fastkiwi.rememberme.core.Category.WORK -> R.string.cat_work
+                        com.fastkiwi.rememberme.core.Category.STUDY -> R.string.cat_study })); stack = listOf(Screen.Home) },
+                    onFilter = { f -> homeRequest = com.fastkiwi.rememberme.ui.HomeRequest(filter = f.id); stack = listOf(Screen.Home) },
                     onDone = { pop() },
                     onTrash = { push(Screen.Trash) },
                     onBack = { pop() },

@@ -456,7 +456,7 @@ fun SettingsScreen(
         "again" -> ChoiceDialog(stringResource(R.string.remind_again), again, m.remindAgain.toString(), {
             it.toInt().takeIf { n -> n in com.fastkiwi.rememberme.core.Planner.REMIND_AGAIN }?.let { n -> cb.onSetting("remindAgain", kotlinx.serialization.json.JsonPrimitive(n)) }
         }, { dialog = null })
-        "important" -> ChoiceDialog(stringResource(R.string.set_important_reminders), styles, v.importantStyle, { sp.importantStyle = it; changed() }, { dialog = null }, supporting = styleHints)
+        "important" -> ChoiceDialog(stringResource(R.string.set_important_reminders), styles, v.importantStyle, { sp.importantStyle = it; com.fastkiwi.rememberme.core.AlertPolicy.highIsAlarm = it != "normal"; changed() }, { dialog = null }, supporting = styleHints)
         "fullscreen" -> com.fastkiwi.rememberme.ui.settings.ChoiceWithNote(stringResource(R.string.set_full_screen), fullScreens, v.fullScreen, { prefs.fullScreenMode = it; changed() }, { dialog = null },
             note = stringResource(R.string.set_fs_fallback_note))
         "ring" -> com.fastkiwi.rememberme.ui.settings.ChoiceWithNote(stringResource(R.string.set_ring_length), rings, v.ringSeconds.toString(), { prefs.ringSeconds = it.toInt(); changed() }, { dialog = null },

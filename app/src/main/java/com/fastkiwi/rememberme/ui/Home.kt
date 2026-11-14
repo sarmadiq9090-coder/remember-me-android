@@ -191,6 +191,9 @@ fun HomeScreen(
     /** A reminder just added (Quick Add): scrolled into view once (DESIGN-SPEC §5.3). */
     scrollToId: String? = null,
     onScrolled: () -> Unit = {},
+    /** From Lists and tags: open a saved filter's chip, or search for a category. */
+    request: HomeRequest? = null,
+    onRequestShown: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val res = LocalResources.current
@@ -208,6 +211,13 @@ fun HomeScreen(
         if (todayRequest > 0) { viewName = HomeView.DAY.name; calDay = now.atZone(zone).toLocalDate().toEpochDay() }
     }
     var quick by rememberSaveable { mutableStateOf(QuickFilters.ALL) }
+    LaunchedEffect(request) {
+        val r = request ?: return@LaunchedEffect
+        viewName = HomeView.LIST.name
+        r.filter?.let { quick = it; searching = false }
+        r.search?.let { searching = true; query = it }
+        onRequestShown()
+    }
     var selected by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<String>()) }
     /** Ids the Snooze sheet is open for (one row, or the selection), and whether the date-time picker is up. */
     var snoozeIds by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<String>()) }
@@ -576,6 +586,9 @@ private fun priorityRes(p: Priority) = when (p) { Priority.NORMAL -> R.string.pr
  * What a row can do. [onSnooze] opens the Snooze sheet («أجّل», swipe end→start); [onSelect] enters or
  * toggles bulk selection («تحديد», long-press). Both may be null where a screen has no such action.
  */
+/** A request for Home from another screen (Lists and tags): a saved filter id, or a search text. */
+data class HomeRequest(val filter: String? = null, val search: String? = null)
+
 data class RowActions(
     val onClick: (Task) -> Unit,
     val onComplete: (Task) -> Unit,
