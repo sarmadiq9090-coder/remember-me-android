@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.fastkiwi.rememberme.alarm.RingService
 import com.fastkiwi.rememberme.core.AppState
 import com.fastkiwi.rememberme.core.Codec
+import com.fastkiwi.rememberme.core.hidesOnLockScreen
 import com.fastkiwi.rememberme.data.AlertLog
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.ui.AlertScreen
@@ -106,7 +107,7 @@ class AlertActivity : AppCompatActivity() {
             onEdit = { openInApp(task.id) },
             onLater = { finish() },
             // Lock-screen privacy: the title and note wait for the unlock.
-            hidden = Repo.prefs(this).lockPrivacy && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
+            hidden = com.fastkiwi.rememberme.core.AlertExt.of(task).hidesOnLockScreen(Repo.prefs(this).lockPrivacy) && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
             pickFirst = pick && task.id == first,
             arrivedLateMs = androidx.compose.runtime.remember(task.id, due) { due?.let { arrivedLate(task.id, it) } },
             lateReasonOff = due != null && bootedAfter(due),

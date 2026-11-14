@@ -357,7 +357,8 @@ not different in intent.
   "alerts":     [1440, 60],
   "speak":      true,
   "prayer":     {"name": "fajr|dhuhr|asr|maghrib|isha", "offset": 10},
-  "hijri":      {"month": 9, "day": 1}
+  "hijri":      {"month": 9, "day": 1},
+  "lock":       "show|hide"
 }
 ```
 
@@ -365,6 +366,7 @@ not different in intent.
   checked at play time; a different title for the same URI on another phone counts as missing.
   `bundled` = `chime-1|chime-2|chime-3`. `file` = the SHA-256 (hex) of the copy in
   `files/tones/<sha256>.<ext>`; `title` = the original display name (shown, never used to open).
+- `lock` (added while building 1.0.0): the reminder's own «على شاشة القفل» choice; absent = the phone setting.
 - `alerts`: extra early-alert minutes from `EARLY_MINUTES` (5, 10, 15, 30, 60, 1440), at most 3 in all.
   `remindBefore` (Windows) holds the one **nearest to the due time**. Reconciliation: if `alerts` does
   not contain the current `remindBefore` (Windows changed it), Android drops `alerts` and uses

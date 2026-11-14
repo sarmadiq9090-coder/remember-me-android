@@ -76,6 +76,15 @@ data class AlertExt(
     }
 }
 
+/**
+ * The reminder's own «على شاشة القفل» choice: "show", "hide", or null = the phone setting. Stored as the
+ * `lock` member of the `android` object (written by the editor; kept like any member).
+ */
+fun AlertExt.lockChoice(): String? = (unknown["lock"] as? JsonPrimitive)?.content?.takeIf { it == "show" || it == "hide" }
+
+/** Whether the lock screen hides this reminder's details: its own choice, else [phoneHides]. */
+fun AlertExt.hidesOnLockScreen(phoneHides: Boolean): Boolean = when (lockChoice()) { "hide" -> true; "show" -> false; else -> phoneHides }
+
 /** Puts [ext] on the task (or removes the key when it holds nothing). */
 fun Task.withExt(ext: AlertExt): Task = copy(extra = JsonObject(
     if (ext.isEmpty) extra - AlertExt.KEY else extra + (AlertExt.KEY to ext.toJson()),

@@ -219,6 +219,16 @@ class AlertPipelineTest {
         assertNull("no ring for the occurrence that rang while locked", startedRing())
     }
 
+    @Test fun aReminderCanHideItsDetailsOnTheLockScreenWhileThePhoneShowsThem() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "سري", dueAt = now.minusSeconds(5)), now.minusSeconds(60))
+        Repo.store(app).change { s -> s.copy(tasks = s.tasks.map { if (it.id == t.id) it.withExt(AlertExt(unknown = mapOf("lock" to kotlinx.serialization.json.JsonPrimitive("hide")))) else it }) }
+        Engine.sync(app, now)
+        val n = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
+        assertEquals(android.app.Notification.VISIBILITY_PRIVATE, n.visibility)
+        assertEquals("لديك تذكير", n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+    }
+
     @Test fun theChannelsAreTheFixedSetAndTheDueOnesHaveNoSoundOfTheirOwn() {
         val ids = nm.notificationChannels.map { it.id }.toSet()
         assertEquals(setOf("due_normal_v1", "due_alarm_v1", "reminders_v1", "reminders_quiet_v1", "notices_v1", "summary_v1"), ids)
