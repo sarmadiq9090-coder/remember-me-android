@@ -351,6 +351,10 @@
     <string name="home_move_list">القائمة: %1$s</string>
     <string name="bulk_trash_body">تبقى في السلة 30 يومًا ويمكنك استعادتها.</string>
     <string name="move_to_trash">نقل إلى السلة</string>
+    <string name="home_detail_empty">اختر تذكيرًا لعرض تفاصيله</string>
+    <string name="home_alerts">التنبيهات</string>
+    <string name="home_at_time">عند الموعد</string>
+    <string name="home_no_repeat">لا يتكرر</string>
     <plurals name="minutes">
         <item quantity="zero">%1$s دقيقة</item>
         <item quantity="one">دقيقة</item>

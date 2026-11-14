@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -98,6 +99,10 @@ import com.fastkiwi.rememberme.ui.home.SnoozeSheet
 import com.fastkiwi.rememberme.ui.home.StateTag
 import com.fastkiwi.rememberme.ui.home.SwipeableReminderRow
 import com.fastkiwi.rememberme.ui.home.TagKind
+import com.fastkiwi.rememberme.ui.home.ReminderDetail
+import com.fastkiwi.rememberme.ui.home.TwoPane
+import com.fastkiwi.rememberme.ui.home.WidthClass
+import com.fastkiwi.rememberme.ui.home.widthClass
 import com.fastkiwi.rememberme.ui.home.ViewMenuButton
 import com.fastkiwi.rememberme.ui.home.snoozeChoices
 import com.fastkiwi.rememberme.ui.home.snoozeResult
@@ -279,8 +284,16 @@ fun HomeScreen(
     val done = listFor(shownState, Tab.DONE, now, zone)
     val results = if (searching) search(state, query, now, words) else emptyList()
     val visible = if (searching) results else overdue + today + upcoming + (if (showDone) done else emptyList())
+    // Tablets (§3.7): from 840 dp a row shows its details in the pane at the end instead of opening the editor.
+    val width = widthClass()
+    val twoPane = width == WidthClass.EXPANDED
+    var detailId by rememberSaveable { mutableStateOf<String?>(null) }
+    fun open(t: Task) {
+        if (twoPane) detailId = t.id
+        else if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else if (t.completedAt == null) onOpen(t)
+    }
 
-    Scaffold(
+    val listPane: @Composable () -> Unit = { Scaffold(
         topBar = {
             when {
                 selecting -> SelectionTopBar(
@@ -361,7 +374,7 @@ fun HomeScreen(
             val rowActions = RowActions(
                 onClick = { t ->
                     if (selecting) selected = if (t.id in selected) selected - t.id else selected + t.id
-                    else if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else if (t.completedAt == null) onOpen(t)
+                    else open(t)
                 },
                 onComplete = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, t.title), undo) } },
                 onReopen = onReopen,
@@ -377,7 +390,7 @@ fun HomeScreen(
                         onSelectDay = { calDay = it.toEpochDay() },
                         onViewChange = { viewName = it.name },
                         onToday = { calDay = now.atZone(zone).toLocalDate().toEpochDay() },
-                        onOpen = { t -> if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else onOpen(t) },
+                        onOpen = { t -> if (twoPane) detailId = t.id else if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else onOpen(t) },
                         onNewOnDay = onNewOnDay,
                         row = { t -> ReminderRow(t, now, null, rowActions) },
                         hijri = hijri, hijriAdjust = hijriAdjust,
@@ -387,7 +400,8 @@ fun HomeScreen(
                 }
                 return@Column
             }
-            val look = RowLook(selected = if (selecting) selected else null, swipe = swipe && !selecting, reduced = reduced)
+            val look = RowLook(selected = if (selecting) selected else null, swipe = swipe && !selecting, reduced = reduced,
+                current = if (twoPane && !selecting) detailId else null)
             if (searching) {
                 if (results.isEmpty()) Empty(stringResource(if (query.isBlank()) R.string.search_empty_hint else R.string.no_results))
                 else LazyColumn(contentPadding = PaddingValues(top = Dimens.s, bottom = Dimens.xl)) {
@@ -434,6 +448,27 @@ fun HomeScreen(
                 }
             }
         }
+    } }
+
+    when (width) {
+        WidthClass.EXPANDED -> TwoPane(list = listPane) {
+            ReminderDetail(
+                task = detailId?.let { id -> state.tasks.firstOrNull { it.id == id && it.deletedAt == null } },
+                now = now,
+                onDone = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, t.title), undo) } },
+                onSnooze = { t -> snoozeIds = setOf(t.id) },
+                onEdit = onOpen,
+                onTrash = { t -> onTrash(t); detailId = null; showSnack(trashedText) { onUndoTrash(t) } },
+                onToggleStep = { t, stepId ->
+                    change({ s -> s.copy(tasks = s.tasks.map { if (it.id == t.id) toggleStep(it, stepId).copy(updatedAt = Instant.now()) else it }) }) {}
+                },
+            )
+        }
+        // 600–839 dp: one pane, centred, at most 640 dp wide.
+        WidthClass.MEDIUM -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.widthIn(max = Dimens.maxContent).fillMaxSize()) { listPane() }
+        }
+        WidthClass.COMPACT -> listPane()
     }
 
     // ---- Sheets and dialogs ----
@@ -529,13 +564,18 @@ data class RowActions(
 )
 
 /** How rows are drawn: [selected] non-null = selection mode; [swipe] = swipe actions on; [showTags] in search and filters. */
-data class RowLook(val selected: Set<String>? = null, val swipe: Boolean = false, val showTags: Boolean = false, val reduced: Boolean = false)
+data class RowLook(
+    val selected: Set<String>? = null, val swipe: Boolean = false, val showTags: Boolean = false, val reduced: Boolean = false,
+    /** The reminder shown in the tablet's detail pane (highlighted). */
+    val current: String? = null,
+)
 
 private fun LazyListScope.rows(items: List<Task>, now: Instant, section: Tab?, a: RowActions, look: RowLook) {
     itemsIndexed(items, key = { _, t -> "${section?.name}-${t.id}" }) { i, t ->
         val sel = look.selected?.let { t.id in it }
         Box(if (look.reduced) Modifier else Modifier.animateItem()) {
-            GroupItem(i, items.size, color = if (sel == true) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer) {
+            val on = sel == true || (look.selected == null && t.id == look.current)
+            GroupItem(i, items.size, color = if (on) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer) {
                 SwipeableReminderRow(
                     task = t, onDone = a.onComplete, onSnoozeRequest = { a.onSnooze?.invoke(it) },
                     enabled = look.swipe && t.completedAt == null && a.onSnooze != null,
