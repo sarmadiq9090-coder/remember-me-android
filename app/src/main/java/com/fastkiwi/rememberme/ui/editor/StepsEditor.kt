@@ -153,8 +153,7 @@ private fun StepRow(
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { onAdd(i) }),
             singleLine = true,
-            modifier = Modifier.weight(1f).padding(horizontal = Dimens.s).focusRequester(requester)
-                .semantics { contentDescription = step.text.ifEmpty { "${i + 1}" } },
+            modifier = Modifier.weight(1f).padding(horizontal = Dimens.s).focusRequester(requester),
         )
         // The handle: drag up or down by a row's height to move the step one place.
         Box(

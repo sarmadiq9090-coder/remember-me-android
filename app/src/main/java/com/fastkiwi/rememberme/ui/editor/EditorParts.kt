@@ -91,9 +91,15 @@ fun DateTimeChips(
     }
     Row(Modifier.fillMaxWidth().padding(start = Dimens.l, end = Dimens.xs, top = Dimens.s, bottom = Dimens.s), verticalAlignment = Alignment.CenterVertically) {
         Icon(Ms.Event, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = Dimens.l))
-        FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Dimens.s), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
+        // Side by side; stacked at large text (§3.6). (A FlowRow here measured the chips far too narrow.)
+        val chips: @Composable () -> Unit = {
             PickerChip(stringResource(R.string.date), dateLabel, hijri, onDate)
             PickerChip(stringResource(R.string.time), timeLabel, null, onTime)
+        }
+        if (androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Dimens.s)) { chips() }
+        } else {
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Dimens.s), verticalAlignment = Alignment.CenterVertically) { chips() }
         }
         TooltipIconButton(Ms.Close, stringResource(R.string.no_date), onClear)
     }
@@ -126,7 +132,7 @@ fun AlertListEditor(alerts: List<AlertItem>, onToggle: (index: Int, on: Boolean)
                         a.moment?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     }
                     Switch(
-                        checked = a.on, enabled = a.minutes > 0, onCheckedChange = { onToggle(i, it) },
+                        checked = a.on, enabled = a.minutes > 0, onCheckedChange = if (a.minutes > 0) ({ on -> onToggle(i, on) }) else null,
                         modifier = Modifier.semantics { contentDescription = a.title },
                     )
                 }

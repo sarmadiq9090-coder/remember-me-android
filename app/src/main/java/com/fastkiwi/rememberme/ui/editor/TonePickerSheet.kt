@@ -130,6 +130,10 @@ fun TonePickerSheet(
     val errPlay = stringResource(R.string.tone_err_play)
     val errFile = stringResource(R.string.tone_err_file)
     val errLong = stringResource(R.string.tone_err_long)
+    val errBig = stringResource(R.string.tone_err_big)
+    val errEmpty = stringResource(R.string.tone_err_empty)
+    val errNotAudio = stringResource(R.string.tone_err_not_audio)
+    val errMany = stringResource(R.string.tone_err_many)
 
     fun play(key: String, ref: ToneRef?) {
         if (playing == key) { preview.stop(); playing = null; return }
@@ -157,7 +161,13 @@ fun TonePickerSheet(
                 is ImportResult.Ok -> { fileError = null; file = result.ref; selected = result.ref }
                 ImportResult.TooLong -> fileError = errLong
                 ImportResult.CannotPlay -> fileError = errPlay
-                ImportResult.Rejected -> fileError = errFile
+                is ImportResult.Rejected -> fileError = when (result.why) {
+                    Tones.Refusal.TOO_BIG -> errBig
+                    Tones.Refusal.EMPTY -> errEmpty
+                    Tones.Refusal.NOT_AUDIO -> errNotAudio
+                    Tones.Refusal.TOO_MANY -> errMany
+                    null -> errFile
+                }
             }
         }
     }
@@ -251,7 +261,7 @@ private sealed class ImportResult {
     data class Ok(val ref: ToneRef) : ImportResult()
     data object TooLong : ImportResult()
     data object CannotPlay : ImportResult()
-    data object Rejected : ImportResult()
+    data class Rejected(val why: Tones.Refusal?) : ImportResult()
 }
 
 /** Checks that the picked file plays and lasts at most 5 minutes, then keeps a copy (F-014). */
@@ -265,5 +275,5 @@ private fun importTone(context: Context, uri: Uri): ImportResult {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
     }.getOrNull() ?: uri.lastPathSegment.orEmpty()
     val ref = runCatching { Tones.importFile(context, { context.contentResolver.openInputStream(uri)!! }, name) }.getOrNull()
-    return if (ref != null) ImportResult.Ok(ref) else ImportResult.Rejected
+    return if (ref != null) ImportResult.Ok(ref) else ImportResult.Rejected(Tones.lastRefusal)
 }

@@ -13,11 +13,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -53,6 +50,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.selection.selectableGroup
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.Organize
 import com.fastkiwi.rememberme.core.prayer.Method
@@ -181,7 +179,17 @@ fun PrayerTimeSheet(
                     Text(stringResource(R.string.time_mode_prayer), maxLines = 1)
                 }
             }
-            if (!byPrayer) {
+            if (byPrayer && dialog == "city") {
+                // The choosers sit inside the sheet (no second window over it).
+                CityPicker(onPick = { onCity(it.nameEn); dialog = if (settings.method == null) "method" else null })
+                TextButton(onClick = { dialog = null }, modifier = Modifier.padding(horizontal = Dimens.s).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.cancel)) }
+            } else if (byPrayer && dialog == "method") {
+                EditorHeader(stringResource(R.string.prayer_method_title))
+                Column(Modifier.padding(horizontal = Dimens.s).selectableGroup()) {
+                    Method.entries.forEach { m -> RadioRow(methodName(m), settings.prayerMethod == m.name) { onMethod(m.name); dialog = null } }
+                }
+                TextButton(onClick = { dialog = null }, modifier = Modifier.padding(horizontal = Dimens.s).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.cancel)) }
+            } else if (!byPrayer) {
                 Column(Modifier.fillMaxWidth().padding(Dimens.l), horizontalAlignment = Alignment.CenterHorizontally) { TimeInput(state = timeState) }
             } else {
                 EditorHeader(stringResource(R.string.prayer_label))
@@ -245,7 +253,7 @@ fun PrayerTimeSheet(
                 }
             }
             Spacer(Modifier.size(Dimens.m))
-            Column(Modifier.padding(horizontal = Dimens.l)) {
+            if (!byPrayer || dialog == null) Column(Modifier.padding(horizontal = Dimens.l)) {
                 ButtonPair(
                     LocalDensity.current.fontScale >= 1.5f,
                     secondary = { m -> OutlinedButton(onClick = onDismiss, modifier = m.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.cancel)) } },
@@ -263,43 +271,27 @@ fun PrayerTimeSheet(
             }
         }
     }
-
-    when (dialog) {
-        "city" -> CityDialog(onPick = { onCity(it.nameEn); dialog = if (settings.method == null) "method" else null }, onDismiss = { dialog = null })
-        "method" -> ChoiceDialog(
-            stringResource(R.string.prayer_method_title), Method.entries.map { it.name to methodName(it) }, settings.prayerMethod,
-            { onMethod(it) }, { dialog = null },
-        )
-    }
 }
 
-/** A searchable list of the bundled cities (no location permission, F-050). */
+/** A searchable list of the bundled cities (no location permission, F-050), shown inside the sheet. */
 @Composable
-fun CityDialog(onPick: (Place) -> Unit, onDismiss: () -> Unit) {
+fun CityPicker(onPick: (Place) -> Unit) {
     var query by remember { mutableStateOf("") }
     val ar = arabic()
     val q = Organize.fold(query.trim())
     val list = Places.all.filter { q.isEmpty() || Organize.fold(it.nameAr).contains(q) || it.nameEn.lowercase().contains(q) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.prayer_city_title)) },
-        text = {
-            Column {
-                OutlinedTextField(value = query, onValueChange = { query = it }, singleLine = true, label = { Text(stringResource(R.string.prayer_city_search)) },
-                    modifier = Modifier.fillMaxWidth())
-                LazyColumn(Modifier.heightIn(max = 360.dp)) {
-                    items(list) { p ->
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = Dimens.rowCompact).clickable(role = Role.Button) { onPick(p); onDismiss() }.padding(horizontal = Dimens.s),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(if (ar) p.nameAr else p.nameEn, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                            Text(p.country, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
+    EditorHeader(stringResource(R.string.prayer_city_title))
+    OutlinedTextField(value = query, onValueChange = { query = it }, singleLine = true, label = { Text(stringResource(R.string.prayer_city_search)) },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l))
+    Column(Modifier.padding(horizontal = Dimens.s).selectableGroup()) {
+        list.take(60).forEach { p ->
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = Dimens.rowCompact).clickable(role = Role.Button) { onPick(p) }.padding(horizontal = Dimens.l),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(if (ar) p.nameAr else p.nameEn, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                Text(p.country, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
+        }
+    }
 }

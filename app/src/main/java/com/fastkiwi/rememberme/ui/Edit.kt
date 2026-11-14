@@ -614,7 +614,10 @@ private fun alertMoment(at: Instant, due: Instant, now: Instant, zone: ZoneId): 
 @Composable
 fun earlyLabel(minutes: Int): String {
     val context = LocalContext.current
-    return if (minutes == 0) stringResource(R.string.none) else stringResource(R.string.before, L10n.duration(context, minutes.toLong()))
+    if (minutes == 0) return stringResource(R.string.none)
+    // Whole days read as days («قبل يوم»), not «قبل 24 ساعة».
+    val d = if (minutes % 1440 == 0) L10n.plural(context, R.plurals.days, minutes / 1440L) else L10n.duration(context, minutes.toLong())
+    return stringResource(R.string.before, d)
 }
 
 @Composable
