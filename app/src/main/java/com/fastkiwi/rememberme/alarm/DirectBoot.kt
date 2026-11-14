@@ -103,7 +103,7 @@ object DirectBoot {
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
-        runCatching { NotificationManagerCompat.from(dp(c)).notify(LOCKED_ID, n) }
+        try { NotificationManagerCompat.from(dp(c)).notify(LOCKED_ID, n) } catch (_: SecurityException) { /* notifications not allowed */ }
     }
 
     fun cancelLocked(c: Context) = runCatching { c.getSystemService(NotificationManager::class.java).cancel(LOCKED_ID) }

@@ -10,8 +10,31 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.chrono.HijrahChronology
 
-/** The Umm al-Qura Hijri calendar (F-051): known dates, round trips, month ends, the adjustment, yearly repeats. */
+/**
+ * The Umm al-Qura Hijri calendar (F-051): known dates, round trips, month ends, the adjustment, yearly
+ * repeats. Robolectric, because the app uses Android's ICU calendar (android.icu); every day of the table
+ * is compared with the JDK's independent HijrahChronology.
+ */
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [36])
 class HijriTest {
+    @Test fun icuAgreesWithTheJdkOnEveryDayOfTheTable() {
+        val first = LocalDate.from(HijrahChronology.INSTANCE.date(1300, 1, 1))
+        val last = LocalDate.from(HijrahChronology.INSTANCE.date(1600, 12, 1)).plusDays(28)
+        var d = first
+        var mismatches = 0
+        val examples = ArrayList<String>()
+        while (!d.isAfter(last)) {
+            val j = java.time.chrono.HijrahDate.from(d)
+            val expected = HijriDate(j.get(java.time.temporal.ChronoField.YEAR), j.get(java.time.temporal.ChronoField.MONTH_OF_YEAR),
+                j.get(java.time.temporal.ChronoField.DAY_OF_MONTH))
+            val got = Hijri.of(d)
+            if (got != expected) { mismatches++; if (examples.size < 5) examples += "$d: icu=$got jdk=$expected" }
+            d = d.plusDays(1)
+        }
+        assertEquals(examples.joinToString("; "), 0, mismatches)
+    }
+
 
     /**
      * Umm al-Qura dates from aladhan.com's public converter (calendarMethod=UAQ), e.g.

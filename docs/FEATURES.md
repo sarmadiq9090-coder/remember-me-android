@@ -621,10 +621,12 @@ on; locked + hidden details → «لديك تذكير». No permission.
   app's repeats, one VALARM → `remindBefore`); everything else listed in a report, never dropped
   silently; caps 5 MB and 5,000 components; fuzzed. Round-trip: every exported `.ics` re-imports to the
   same occurrences (ical4j check in tests).
-- **F-086 encryption:** container `rm-enc@1`: JSON header (`kdf: "PBKDF2-HMAC-SHA256"`, `iter: 600000`,
-  16-byte salt, 12-byte IV) + AES-256-GCM over the plain backup zip bytes; wrong password = GCM tag
-  failure = refused with its own message; platform crypto only (no library). Windows cannot read it; the
-  export says so.
+- **F-086 encryption:** container `RMBK1` (as built, 2026-11-15): a 62-byte binary header (magic, format
+  version, PBKDF2-HMAC-SHA256 iteration count — 600,000, stored, at most 10,000,000 —, 16-byte salt, 12-byte
+  IV, payload length, key check) authenticated as GCM associated data, then AES-256-GCM over the plain backup
+  zip bytes; file cap 20 MB. A wrong password (key check) and a damaged file (tag or length) give different
+  messages; platform crypto only (no library). Windows cannot read it; the export says so. (The council's
+  draft said a JSON header `rm-enc@1`; the binary header is the same scheme with the header authenticated.)
 - **F-087 auto-backup:** folder from `ACTION_OPEN_DOCUMENT_TREE` with a persistable read/write grant (no
   storage permission); written from the housekeeping window when ≥ 7 days have passed; newest 5 kept in
   that folder; failure → a banner and a Health line. Unencrypted unless the user enables encryption, in

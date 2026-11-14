@@ -353,7 +353,7 @@ object Notifier {
             .putExtra(ActionReceiver.EXTRA_ID, c.id).putExtra(ActionReceiver.EXTRA_COPY, c.copyId), flags())
         val b = NotificationCompat.Builder(l, CH_QUIET)
             .setSmallIcon(R.drawable.ic_check)
-            .setContentTitle(l.getString(R.string.done_undo_title, title))
+            .setContentTitle(l.getString(R.string.done_undo_title, L10n.isolate(l, title)))
             .setSilent(true).setAutoCancel(true).setTimeoutAfter(10_000)
             .addAction(R.drawable.ic_check, l.getString(R.string.undo), undo)
         if (Repo.prefs(context).lockPrivacy) {
