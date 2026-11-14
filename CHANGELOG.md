@@ -6,6 +6,14 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-14
+
+### Added
+
+- Before saving a backup for the Windows app, reminders that repeat every few hours are listed with a
+  warning in Arabic: Remember Me for Windows does not support that repeat yet, so they become one-time
+  there. Save anyway, or cancel.
+
 ## [0.1.0] - 2026-11-14
 
 First build, for the owner only. Not yet tried on a real phone.
