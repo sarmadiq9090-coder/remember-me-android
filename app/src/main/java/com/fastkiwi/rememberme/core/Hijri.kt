@@ -1,15 +1,10 @@
 package com.fastkiwi.rememberme.core
 
-import java.time.DateTimeException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.chrono.HijrahChronology
-import java.time.chrono.HijrahDate
-import java.time.temporal.ChronoField
-import java.time.temporal.ChronoUnit
 
 /** A Hijri (Umm al-Qura) date: month 1 = Muharram … 12 = Dhu al-Hijjah. */
 data class HijriDate(val year: Int, val month: Int, val day: Int)
@@ -17,28 +12,39 @@ data class HijriDate(val year: Int, val month: Int, val day: Int)
 /**
  * Hijri dates for display and for yearly Hijri repeats (F-051).
  *
- * The calendar is the JDK's `HijrahChronology` ("Hijrah-umalqura"), i.e. the Umm al-Qura table used
- * in Saudi Arabia; Android has it from API 26 (our minSdk). The table covers 1 Muharram 1300 AH
- * (1882-11-12) to the end of 1600 AH (2174-11-25). Outside that range nothing throws: both directions
- * fall back to the arithmetic (tabular, "civil") Islamic calendar, which is within a day or two of
- * Umm al-Qura; near the two edges of the table the fallback may disagree with the table by a day.
+ * The calendar is Android's ICU `IslamicCalendar` with the Umm al-Qura calculation (FEATURES.md F-051;
+ * part of Android since API 24, so it is on every supported phone). The Umm al-Qura table covers
+ * 1300–1600 AH; outside it ICU uses the arithmetic ("civil") calendar, within a day or two. The tests
+ * compare every day of the table with the JDK's independent `HijrahChronology`.
  *
  * [adjustDays] (the user's −2…+2 correction for the local announcement) shifts the Hijri day: with
  * +1 the Hijri date shown for a Gregorian day is the one the table gives for the next day.
  */
 object Hijri {
-    private val chrono: HijrahChronology = HijrahChronology.INSTANCE
-    private val yearRange = chrono.range(ChronoField.YEAR)
+    private val utc = android.icu.util.TimeZone.getTimeZone("UTC")
+
+    private fun calendar(): android.icu.util.IslamicCalendar =
+        android.icu.util.IslamicCalendar(utc, android.icu.util.ULocale.ROOT).apply {
+            calculationType = android.icu.util.IslamicCalendar.CalculationType.ISLAMIC_UMALQURA
+        }
 
     /** The Umm al-Qura date of [date], shifted by [adjustDays]. */
     fun of(date: LocalDate, adjustDays: Int = 0): HijriDate {
         val d = date.plusDays(adjustDays.toLong())
-        return try {
-            val h = HijrahDate.from(d)
-            HijriDate(h.get(ChronoField.YEAR), h.get(ChronoField.MONTH_OF_YEAR), h.get(ChronoField.DAY_OF_MONTH))
-        } catch (_: DateTimeException) {
-            Tabular.fromEpochDay(d.toEpochDay())
-        }
+        val c = calendar()
+        c.timeInMillis = d.toEpochDay() * 86_400_000L
+        return HijriDate(c.get(android.icu.util.Calendar.EXTENDED_YEAR), c.get(android.icu.util.Calendar.MONTH) + 1,
+            c.get(android.icu.util.Calendar.DAY_OF_MONTH))
+    }
+
+    /** Days in Hijri [year]/[month] (29 or 30). */
+    fun lengthOfMonth(year: Int, month: Int): Int {
+        val c = calendar()
+        c.clear()
+        c.set(android.icu.util.Calendar.EXTENDED_YEAR, year)
+        c.set(android.icu.util.Calendar.MONTH, month.coerceIn(1, 12) - 1)
+        c.set(android.icu.util.Calendar.DAY_OF_MONTH, 1)
+        return c.getActualMaximum(android.icu.util.Calendar.DAY_OF_MONTH)
     }
 
     /**
@@ -47,17 +53,13 @@ object Hijri {
      */
     fun toGregorian(h: HijriDate, adjustDays: Int = 0): LocalDate {
         val month = h.month.coerceIn(1, 12)
-        val day = h.day.coerceIn(1, 30)
-        val base = if (yearRange.isValidValue(h.year.toLong())) {
-            try {
-                val first = chrono.date(h.year, month, 1)
-                LocalDate.from(first.plus((minOf(day, first.lengthOfMonth()) - 1).toLong(), ChronoUnit.DAYS))
-            } catch (_: DateTimeException) {
-                LocalDate.ofEpochDay(Tabular.toEpochDay(h.year, month, day))
-            }
-        } else {
-            LocalDate.ofEpochDay(Tabular.toEpochDay(h.year, month, day))
-        }
+        val day = minOf(h.day.coerceIn(1, 30), lengthOfMonth(h.year, month))
+        val c = calendar()
+        c.clear()
+        c.set(android.icu.util.Calendar.EXTENDED_YEAR, h.year)
+        c.set(android.icu.util.Calendar.MONTH, month - 1)
+        c.set(android.icu.util.Calendar.DAY_OF_MONTH, day)
+        val base = LocalDate.ofEpochDay(Math.floorDiv(c.timeInMillis, 86_400_000L))
         return base.minusDays(adjustDays.toLong())
     }
 
@@ -91,27 +93,4 @@ object Hijri {
 
     /** English month name; [month] is clamped to 1..12. */
     fun monthNameEn(month: Int): String = namesEn[month.coerceIn(1, 12) - 1]
-
-    /** The arithmetic Islamic calendar (30-year cycle, leap years 2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29). */
-    private object Tabular {
-        /** Julian Day Number of 1 Muharram 1 AH (16 July 622, Julian calendar). */
-        private const val EPOCH_JDN = 1948440L
-        private const val UNIX_EPOCH_JDN = 2440588L
-
-        fun toEpochDay(year: Int, month: Int, day: Int): Long {
-            val y = year.toLong()
-            val monthDays = Math.ceil(29.5 * (month - 1)).toLong()
-            val jdn = day + monthDays + (y - 1) * 354 + Math.floorDiv(3 + 11 * y, 30L) + EPOCH_JDN - 1
-            return jdn - UNIX_EPOCH_JDN
-        }
-
-        fun fromEpochDay(epochDay: Long): HijriDate {
-            val jdn = epochDay + UNIX_EPOCH_JDN
-            val year = Math.floorDiv(30 * (jdn - EPOCH_JDN) + 10646, 10631L).toInt()
-            var month = 12
-            while (month > 1 && toEpochDay(year, month, 1) > epochDay) month--
-            val day = (epochDay - toEpochDay(year, month, 1) + 1).toInt()
-            return HijriDate(year, month, day)
-        }
-    }
 }

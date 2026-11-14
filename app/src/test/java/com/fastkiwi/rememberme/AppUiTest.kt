@@ -277,4 +277,32 @@ class AppUiTest {
             rule.onNodeWithText("تنبيه قبل حفظ النسخة").assertDoesNotExist()
         }
     }
+
+    /** F-083: a restore is read, verified and summarised before anything is replaced; a damaged copy changes nothing. */
+    @Test fun aRestoreIsCheckedAndSummarisedBeforeAnythingIsReplaced() {
+        Repo.store(app).change { Tasks.save(it, TaskInput(title = "on the phone"), Instant.now(), zone).first }
+        val other = Tasks.save(AppState(), TaskInput(title = "from the copy", dueAt = Instant.now().plusSeconds(3600)), Instant.now(), zone).first
+        val zip = java.io.ByteArrayOutputStream().also { com.fastkiwi.rememberme.data.Backup.export(other, it, Instant.now()) }.toByteArray()
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            rule.waitForIdle()
+            sc.onActivity { activity ->
+                val read = activity.readImport { zip.inputStream() }.getOrThrow()
+                org.junit.Assert.assertTrue(read.verified)
+                org.junit.Assert.assertEquals(1, read.active)
+                org.junit.Assert.assertNotNull(read.createdAt)
+                // Reading changed nothing.
+                org.junit.Assert.assertEquals("on the phone", Repo.state(app).tasks.single().title)
+                // A damaged copy is refused with a message, and nothing changes.
+                val bad = zip.copyOf().also { it[it.size / 2] = (it[it.size / 2] + 1).toByte() }
+                org.junit.Assert.assertTrue(activity.readImport { bad.inputStream() }.isFailure)
+                org.junit.Assert.assertEquals("on the phone", Repo.state(app).tasks.single().title)
+                // Applying it keeps the current data as a safety copy first.
+                activity.applyImport(read)
+            }
+            Engine.drain()
+            org.junit.Assert.assertEquals("from the copy", Repo.state(app).tasks.single().title)
+            val kept = Repo.store(app).safetyCopies().first()
+            org.junit.Assert.assertTrue(com.fastkiwi.rememberme.core.Codec.decode(kept.readText()).tasks.any { it.title == "on the phone" })
+        }
+    }
 }
