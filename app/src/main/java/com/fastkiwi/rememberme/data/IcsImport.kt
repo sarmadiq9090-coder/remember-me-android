@@ -93,7 +93,7 @@ object IcsImport {
     /** Reads an .ics file. Throws only [ImportException]. */
     fun read(text: String, zone: ZoneId, now: Instant): IcsImportResult {
         if (text.length > MAX_BYTES || utf8Length(text) > MAX_BYTES) throw ImportException(ImportException.Reason.TOO_LARGE)
-        val tree = parse(if (text.startsWith("﻿")) text.substring(1) else text)
+        val tree = parse(if (text.startsWith("\uFEFF")) text.substring(1) else text)
         val calendars = tree.roots.filter { it.name == "VCALENDAR" }
         if (calendars.isEmpty()) throw ImportException(ImportException.Reason.NOT_ICS)
         return Reader(zone, now, calendars, tree.stopped).run()

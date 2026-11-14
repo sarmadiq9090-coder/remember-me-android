@@ -67,7 +67,7 @@ object Summary {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setAutoCancel(true).setContentIntent(open).build()
-            runCatching { NotificationManagerCompat.from(c).notify(Notifier.MORNING_ID, notification) }
+            try { NotificationManagerCompat.from(c).notify(Notifier.MORNING_ID, notification) } catch (_: SecurityException) { }
         }
         arm(c, now.plusSeconds(60))
     }
