@@ -19,32 +19,49 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.fastkiwi.rememberme.BuildConfig
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.alarm.TestAlarm
+import com.fastkiwi.rememberme.core.AlertPolicy
 import com.fastkiwi.rememberme.data.ScheduleLog
+import com.fastkiwi.rememberme.ui.health.HealthGroup
+import com.fastkiwi.rememberme.ui.health.HealthGroupHeader
+import com.fastkiwi.rememberme.ui.health.HealthItem
+import com.fastkiwi.rememberme.ui.health.HealthModel
+import com.fastkiwi.rememberme.ui.health.HealthRow
+import com.fastkiwi.rememberme.ui.health.HealthStatus
+import com.fastkiwi.rememberme.ui.health.KeyValueRow
+import com.fastkiwi.rememberme.ui.health.MakerSteps
+import com.fastkiwi.rememberme.ui.health.healthRowTag
+import com.fastkiwi.rememberme.ui.health.makerStepText
+import com.fastkiwi.rememberme.ui.health.seconds
+import com.fastkiwi.rememberme.ui.health.tagged
 import java.time.Instant
 
 /** What the health centre shows about the schedule itself (PRD P0.1). */
@@ -57,7 +74,7 @@ data class ScheduleStatus(
     val scheduled: Int,
     /** Overdue reminders waiting for «تم» or «أجّل». */
     val attention: Int,
-    /** Alarm lateness measured from the local log, in ms (alarm-woken runs only). */
+    /** Alarm lateness measured from the local log, in ms (alarm-woken runs only), newest first. */
     val lateness: List<Long> = emptyList(),
 ) {
     /**
@@ -73,10 +90,13 @@ data class ScheduleStatus(
     fun ok(h: Health) = h.essentialOk && (last?.verified ?: true)
 }
 
-/** Builds the compatibility report: device and settings facts only, never reminders (PRD P0.3, D-079). */
+/** Builds the compatibility report: device and settings facts only, never reminders (PRD P0.3, D-079, F-028). */
 object CompatReport {
     /** Bands, so the report never tells how many reminders someone has exactly. */
     fun band(n: Int) = when { n == 0 -> "0"; n <= 10 -> "1-10"; n <= 100 -> "11-100"; else -> "over 100" }
+
+    private fun yn(b: Boolean?) = when (b) { true -> "yes"; false -> "no"; null -> "unknown" }
+    private fun vol(v: Int?, max: Int?) = if (v == null) "unknown" else if (max != null && max > 0) "$v/$max" else "$v"
 
     fun build(context: Context, h: Health, s: ScheduleStatus, test: TestAlarm.Record, results: Map<TestAlarm.Part, TestAlarm.Result>): String = buildString {
         appendLine("compat-report@1")
@@ -84,8 +104,11 @@ object CompatReport {
         appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
         appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         appendLine("Language: ${L10n.current(context).language}")
-        appendLine("Notifications: ${h.notifications}; reminder channel high: ${h.channel}; sound: ${h.channelSound}; vibration: ${h.channelVibrates}; notification volume zero: ${h.volumeZero}")
-        appendLine("Exact alarms: ${h.exact} (${h.exactPermission}); full screen: ${h.fullScreen}; battery unrestricted: ${h.battery}; Do Not Disturb on: ${h.dnd}")
+        appendLine("Notifications: ${h.notifications}; reminder channel high: ${h.channel}; sound: ${h.channelSound}; vibration: ${h.channelVibrates}; important alarm channel audible: ${h.alarmChannelSound}")
+        appendLine("Exact alarms: ${h.exact} (${h.exactPermission}); full screen: ${h.fullScreen}; battery unrestricted: ${h.battery}")
+        appendLine("Ringer: ${h.ringer?.name?.lowercase() ?: "unknown"}; Do Not Disturb: ${h.dndState?.name?.lowercase() ?: "unknown"}; alarms allowed in DND: ${yn(h.dndAlarmsAllowed)}")
+        appendLine("Volume: alarm ${vol(h.alarmVolume, h.alarmVolumeMax)}, notifications ${vol(h.notifVolume, h.notifVolumeMax)}; lock screen hides all: ${yn(h.lockScreenHidesAll)}")
+        appendLine("Tone problems in 7 days: ${h.toneProblems ?: "unknown"}; ringing service refused: ${h.fgsFailures}")
         appendLine("Background restricted: ${h.backgroundRestricted}; standby bucket: ${if (h.bucket == 0) "unknown" else h.bucket}")
         val blocked = s.bootBlocked(h.bootAt, System.currentTimeMillis())
         appendLine("Boot broadcast since the last restart: ${when (blocked) { true -> "blocked"; false -> "seen"; null -> "unknown" }}")
@@ -93,215 +116,209 @@ object CompatReport {
         if (s.lateness.isNotEmpty()) appendLine("Alarm lateness: median ${s.lateness.sorted()[s.lateness.size / 2] / 1000} s, worst ${s.lateness.max() / 1000} s (${s.lateness.size} alarms)")
         appendLine("Timed reminders: ${band(s.scheduled + s.attention)}")
         if (test.startedAt > 0) {
-            val delay = if (test.firedAt > 0) "${(test.firedAt - test.plannedAt) / 1000} s" else "not arrived"
-            appendLine("Alarm test: ${test.api}, delay $delay")
+            val delay = test.lateMs?.let { "${it / 1000} s" } ?: "not arrived"
+            appendLine("Alarm test: ${test.api}, ${test.style.lowercase()}, ${test.delay.lowercase()}, delay $delay, playback ${yn(test.playback)}")
             results.forEach { (part, r) -> appendLine("  ${part.name.lowercase()}: ${r.name.lowercase()}") }
         }
         append("No reminder titles, notes, times, ids, time zone or personal data are included.")
     }
 }
 
-private fun statusOf(r: TestAlarm.Result) = when (r) {
-    TestAlarm.Result.OK -> Status.READY
-    TestAlarm.Result.FAILED -> Status.NEEDED
-    TestAlarm.Result.NOT_ALLOWED -> Status.OFF
-    else -> Status.ADVICE
+/** The title and supporting text of a Health row. */
+private fun rowText(context: Context, item: HealthItem, h: Health, s: ScheduleStatus, now: Instant): Pair<String, String?> {
+    val st = item.status
+    fun r(id: Int) = context.getString(id)
+    val unreadable = r(R.string.unreadable)
+    return when (item.key) {
+        "notifications" -> r(R.string.chk_notifications) to (if (st == HealthStatus.NEEDED) r(R.string.chk_notifications_text) else null)
+        "exact" -> r(R.string.chk_exact) to r(if (h.exactPermission.startsWith("none") || Build.VERSION.SDK_INT < 31) R.string.h_exact_none else R.string.h_exact_perm)
+        "channel" -> r(R.string.h_channel) to (if (st == HealthStatus.NEEDED) r(R.string.h_channel_off) else null)
+        "background" -> r(R.string.chk_background) to r(R.string.chk_background_text)
+        "schedule" -> r(R.string.h_schedule) to r(R.string.h_schedule_bad)
+        "playback" -> r(R.string.h_playback) to r(R.string.h_playback_bad)
+        "fullscreen" -> r(R.string.h_fullscreen) to (if (st == HealthStatus.READY) null else r(R.string.h_fullscreen_off))
+        "battery" -> r(R.string.h_battery) to when {
+            st == HealthStatus.READY -> null
+            h.bucketRestricted -> r(R.string.h_bucket)
+            else -> r(R.string.h_battery_off)
+        }
+        "boot" -> r(R.string.h_boot) to when (st) {
+            HealthStatus.RESTRICTED -> r(R.string.chk_boot_blocked)
+            HealthStatus.READY -> s.lastBoot?.let { context.getString(R.string.chk_boot_seen, L10n.dueText(context, Instant.ofEpochMilli(it.at), now)) }
+            else -> r(R.string.h_boot_unknown)
+        }
+        "lock" -> r(R.string.h_lock) to when (st) {
+            HealthStatus.READY -> r(R.string.h_lock_shows)
+            HealthStatus.OFF -> r(R.string.h_lock_hides)
+            else -> unreadable
+        }
+        "ringer" -> r(R.string.h_ringer) to when (h.ringer) {
+            AlertPolicy.Ringer.NORMAL -> r(R.string.h_ringer_normal)
+            AlertPolicy.Ringer.VIBRATE -> r(R.string.h_ringer_vibrate)
+            AlertPolicy.Ringer.SILENT -> context.getString(R.string.key_value, r(R.string.phone_silent), r(R.string.phone_silent_note))
+            null -> unreadable
+        }
+        "dnd" -> r(R.string.h_dnd) to when (h.dndState) {
+            AlertPolicy.Dnd.OFF -> r(R.string.dnd_off)
+            AlertPolicy.Dnd.PRIORITY_ALARMS_ALLOWED, AlertPolicy.Dnd.ALARMS_ONLY -> r(R.string.dnd_on_alarms) + " " + r(R.string.dnd_normal_note)
+            AlertPolicy.Dnd.PRIORITY_ALARMS_BLOCKED -> r(R.string.dnd_on_blocks)
+            AlertPolicy.Dnd.NONE -> r(R.string.dnd_on_total)
+            AlertPolicy.Dnd.PRIORITY_UNKNOWN, null -> unreadable
+        }
+        "alarm_volume", "notif_volume" -> {
+            val alarm = item.key == "alarm_volume"
+            val v = if (alarm) h.alarmVolume else h.notifVolume
+            val max = if (alarm) h.alarmVolumeMax else h.notifVolumeMax
+            r(if (alarm) R.string.h_alarm_volume else R.string.h_notif_volume) to when {
+                v == null -> unreadable
+                v == 0 -> r(R.string.volume_zero)
+                else -> context.getString(R.string.volume_of, v.toString(), (max ?: v).toString())
+            }
+        }
+        "tones" -> r(R.string.h_tones) to when (val n = h.toneProblems) {
+            null -> unreadable
+            0 -> r(R.string.h_tones_ok)
+            else -> L10n.plural(context, R.plurals.h_tones_bad, n.toLong())
+        }
+        "alarm_channel" -> r(R.string.h_alarm_channel) to r(if (h.alarmChannelSound) R.string.h_alarm_channel_ok else R.string.h_alarm_channel_off)
+        else -> makerStepText(context, item.key)
+    }
 }
 
 /**
- * «صحة التذكيرات» (PRD P0.1): the overall state first, then what Android controls, then what the phone
- * maker controls. It never says "ready" while an essential item is missing, and it rechecks when the
- * app comes back from the system's settings.
+ * «صحة التذكيرات» (DESIGN-SPEC §5.11, F-008, F-013, F-023): a summary, then five groups. Every row says
+ * its state in a word; a row that is not ready says where the setting lives and has exactly one action.
+ * Anything the app cannot read is «غير معروف», never «جاهز». It never says everything essential is ready
+ * while an essential item is missing, and it checks again whenever the app comes back to the front.
+ *
+ * [onFix] gets a system-settings target (see [com.fastkiwi.rememberme.ui.health.HealthFix]).
  */
 @Composable
 fun HealthScreen(
-    health: Health, schedule: ScheduleStatus, maker: Maker?, firstRun: Boolean, now: Instant,
-    onCheck: () -> Unit, onTest: () -> Unit, onReport: () -> Unit,
+    health: Health, schedule: ScheduleStatus, firstRun: Boolean, now: Instant,
+    onCheck: () -> Unit, onTest: () -> Unit, onReport: () -> Unit, onAlertLog: () -> Unit, onDndHelp: () -> Unit,
     onFix: (String) -> Unit, onContinue: () -> Unit, onBack: () -> Unit,
+    onResumeCheck: () -> Unit = {},
+    manufacturer: String = Build.MANUFACTURER, sdk: Int = Build.VERSION.SDK_INT,
 ) {
     val context = LocalContext.current
-    val allow = stringResource(R.string.allow)
-    val open = stringResource(R.string.open_settings)
-    fun st(ok: Boolean, essential: Boolean) = if (ok) Status.READY else if (essential) Status.NEEDED else Status.OFF
-    val ok = schedule.ok(health)
-    Page(stringResource(R.string.health_title), onBack, bottomBar = {
-        if (firstRun) BottomActionBar {
-            if (health.essentialOk) Button(onClick = onContinue, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) { Text(stringResource(R.string.continue_)) }
-            else OutlinedButton(onClick = onContinue, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) { Text(stringResource(R.string.continue_)) }
-        }
-    }) {
-        // The overall state, with words and an icon (never colour alone).
-        Surface(
-            color = if (ok) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.errorContainer,
-            shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l, vertical = Dimens.s),
-        ) {
-            Column(Modifier.padding(Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
-                    Icon(if (ok) Ms.CheckCircle else Ms.WarningAmber, null,
-                        tint = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
-                    Text(stringResource(if (ok) R.string.health_ok_title else R.string.health_bad_title), style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = Dimens.m).semantics { heading() })
-                }
-                val last = schedule.last
-                Text(
-                    if (last == null) stringResource(R.string.health_never_checked)
-                    else stringResource(if (last.verified) R.string.health_last_check_ok else R.string.health_last_check_bad,
-                        L10n.dueText(context, Instant.ofEpochMilli(last.at), now)),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(stringResource(R.string.health_counts, schedule.scheduled.toString(), schedule.attention.toString()), style = MaterialTheme.typography.bodyMedium)
-                if (schedule.lateness.isNotEmpty()) Text(
-                    stringResource(R.string.health_lateness, (schedule.lateness.sorted()[schedule.lateness.size / 2] / 1000).toString(),
-                        (schedule.lateness.max() / 1000).toString()),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (last != null && last.api == "INEXACT") Text(stringResource(R.string.health_inexact), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error)
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
-                    OutlinedButton(onClick = onCheck, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.check_now)) }
-                    Button(onClick = onTest, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.test_now)) }
-                }
-            }
-        }
-        Text(stringResource(R.string.background_intro), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.s))
-        // Android's own settings.
-        val android = buildList<Pair<Status, @Composable () -> Unit>> {
-            val n = st(health.notifications, true)
-            add(n to { CheckRow(n, null, stringResource(R.string.chk_notifications), stringResource(R.string.chk_notifications_text), allow) { onFix("notifications") } })
-            if (health.notifications) {
-                val c = st(health.channel && health.channelSound, true)
-                add(c to { CheckRow(c, null, stringResource(R.string.chk_channel), stringResource(R.string.chk_channel_text), open) { onFix("channel") } })
-            }
-            val e = st(health.exact, true)
-            add(e to { CheckRow(e, null, stringResource(R.string.chk_exact), stringResource(R.string.chk_exact_text), allow) { onFix("exact") } })
-            if (health.backgroundRestricted) add(Status.NEEDED to {
-                CheckRow(Status.NEEDED, null, stringResource(R.string.chk_background), stringResource(R.string.chk_background_text), open) { onFix("app") }
-            })
-            if (health.bucketRestricted) add(Status.NEEDED to {
-                CheckRow(Status.NEEDED, null, stringResource(R.string.chk_bucket), stringResource(R.string.chk_bucket_text), open) { onFix("battery") }
-            })
-            val f = st(health.fullScreen, false)
-            add(f to { CheckRow(f, null, stringResource(R.string.chk_fullscreen), stringResource(R.string.chk_fullscreen_text), allow) { onFix("fullscreen") } })
-            val b = st(health.battery, false)
-            add(b to { CheckRow(b, null, stringResource(R.string.chk_battery), stringResource(R.string.chk_battery_text), allow) { onFix("battery") } })
-            val blocked = schedule.bootBlocked(health.bootAt, now.toEpochMilli())
-            add((if (blocked == true) Status.NEEDED else Status.ADVICE) to {
-                val boot = schedule.lastBoot
-                when {
-                    blocked == true -> CheckRow(Status.NEEDED, Ms.RestartAlt, stringResource(R.string.chk_boot), stringResource(R.string.chk_boot_blocked), open) { onFix("maker") }
-                    boot != null -> CheckRow(Status.READY, Ms.RestartAlt, stringResource(R.string.chk_boot),
-                        stringResource(R.string.chk_boot_seen, L10n.dueText(context, Instant.ofEpochMilli(boot.at), now)), null) {}
-                    else -> CheckRow(Status.ADVICE, Ms.RestartAlt, stringResource(R.string.chk_boot), stringResource(R.string.chk_boot_text), null) {}
-                }
-            })
-            if (health.volumeZero) add(Status.OFF to {
-                CheckRow(Status.OFF, null, stringResource(R.string.chk_volume), stringResource(R.string.chk_volume_text), null) {}
-            })
-            add(Status.ADVICE to { CheckRow(Status.ADVICE, Ms.HourglassEmpty, stringResource(R.string.chk_hibernation), stringResource(R.string.chk_hibernation_text), open) { onFix("hibernation") } })
-            if (health.dnd) add(Status.ADVICE to { CheckRow(Status.ADVICE, Ms.DoNotDisturbOn, stringResource(R.string.chk_dnd), stringResource(R.string.chk_dnd_text), open) { onFix("dnd") } })
-        }
-        SectionHeader(stringResource(R.string.group_android), trailing = {
-            val countable = android.filter { it.first != Status.ADVICE }
-            Text(stringResource(R.string.ready_count, countable.count { it.first == Status.READY }.toString(), countable.size.toString()),
-                style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        })
-        android.forEachIndexed { i, (status, row) ->
-            GroupItem(i, android.size, if (status == Status.NEEDED) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer) { row() }
-        }
-        // The phone maker's own settings: the app cannot read them, so these are steps to check by hand.
-        SectionHeader(stringResource(R.string.group_maker))
-        GroupItem(0, 1) {
-            // Each maker's steps say honestly whether they were tried on a real phone (none yet).
-            if (maker != null) CheckRow(Status.ADVICE, Ms.PhoneAndroid, stringResource(R.string.chk_maker, stringResource(maker.name)),
-                stringResource(maker.steps) + "\n" + stringResource(R.string.maker_untested), open) { onFix("maker") }
-            else CheckRow(Status.ADVICE, Ms.PhoneAndroid, stringResource(R.string.chk_maker_generic), stringResource(R.string.steps_generic), open) { onFix("battery_list") }
-        }
-        TextButton(onClick = onReport, modifier = Modifier.padding(horizontal = Dimens.l).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.compat_share)) }
-        Text(stringResource(R.string.background_footer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.s))
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { onResumeCheck() }
+    var menu by remember { mutableStateOf(false) }
+    val essentials = HealthModel.essentials(health, schedule)
+    val missing = essentials.count { it.status != HealthStatus.READY }
+    val big = LocalDensity.current.fontScale >= 1.5f
+    fun act(target: String) = when (target) {
+        "check" -> onCheck()
+        "dnd_help" -> onDndHelp()
+        "alert_log" -> onAlertLog()
+        else -> onFix(target)
     }
-}
-
-/** «اختبر التنبيه الآن» (PRD P0.4): start, then each part with what it showed and what to do. */
-@Composable
-fun AlarmTestScreen(
-    record: TestAlarm.Record, results: Map<TestAlarm.Part, TestAlarm.Result>,
-    onStart: () -> Unit, onAnswer: (TestAlarm.Part, Boolean) -> Unit, onFix: (String) -> Unit, onReport: () -> Unit, onBack: () -> Unit,
-) {
-    Page(stringResource(R.string.test_screen_title), onBack, bottomBar = {
+    Page(stringResource(R.string.health_title), onBack, actions = {
+        Box {
+            TooltipIconButton(Ms.MoreVert, stringResource(R.string.more_options), { menu = true })
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                DropdownMenuItem(text = { Text(stringResource(R.string.compat_title)) }, onClick = { menu = false; onReport() },
+                    leadingIcon = { Icon(Ms.Share, null) }, modifier = Modifier.heightIn(min = Dimens.touch))
+                DropdownMenuItem(text = { Text(stringResource(R.string.alog_title)) }, onClick = { menu = false; onAlertLog() },
+                    leadingIcon = { Icon(Ms.History, null) }, modifier = Modifier.heightIn(min = Dimens.touch))
+            }
+        }
+    }, bottomBar = {
         BottomActionBar {
-            Button(onClick = onStart, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                Text(stringResource(if (record.startedAt == 0L) R.string.test_start else R.string.test_again))
+            val test: @Composable (Modifier) -> Unit = { m ->
+                // The row's «إصلاح» is the primary while an essential is missing.
+                if (missing > 0) OutlinedButton(onClick = onTest, modifier = m.heightIn(min = 56.dp)) { TestLabel() }
+                else Button(onClick = onTest, modifier = m.heightIn(min = 56.dp)) { TestLabel() }
             }
+            if (firstRun) ButtonPair(big, secondary = test, primary = { m ->
+                if (missing == 0) Button(onClick = onContinue, modifier = m.heightIn(min = 56.dp)) { Text(stringResource(R.string.continue_)) }
+                else OutlinedButton(onClick = onContinue, modifier = m.heightIn(min = 56.dp)) { Text(stringResource(R.string.continue_)) }
+            }) else test(Modifier.fillMaxWidth())
         }
     }) {
-        Text(stringResource(R.string.test_intro, TestAlarm.DELAY_SECONDS.toString()), style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.s))
-        if (record.startedAt == 0L) return@Page
-        SectionHeader(stringResource(R.string.test_results))
-        val parts = results.entries.toList()
-        parts.forEachIndexed { i, (part, r) ->
-            val status = statusOf(r)
-            GroupItem(i, parts.size, if (status == Status.NEEDED) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer) {
-                Column {
-                    CheckRow(status, if (r == TestAlarm.Result.WAITING) Ms.Schedule else Ms.Info,
-                        testPartTitle(part), testPartText(part, r, record), fixLabel(part, r)) { onFix(fixTarget(part)) }
-                    if (r == TestAlarm.Result.ASK && (part == TestAlarm.Part.SOUND || part == TestAlarm.Part.VIBRATION)) {
-                        Row(Modifier.padding(start = 56.dp, bottom = Dimens.m), horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
-                            OutlinedButton(onClick = { onAnswer(part, false) }, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_no)) }
-                            FilledTonalButton(onClick = { onAnswer(part, true) }, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_yes)) }
-                        }
-                    }
-                }
+        SummaryCard(missing, health, schedule, onCheck)
+        @Composable
+        fun group(title: Int, items: List<HealthItem>) {
+            HealthGroupHeader(stringResource(title), HealthModel.readyCount(items))
+            items.forEachIndexed { i, item ->
+                val (t, d) = rowText(context, item, health, schedule, now)
+                val extra = item.tried?.let { stringResource(if (it) R.string.maker_tried else R.string.maker_untried) }
+                HealthRow(item.status, t, d, item.source, item.action?.kind, { item.action?.let { act(it.target) } },
+                    Modifier.tagged(healthRowTag(item.key)), extra, i, items.size)
             }
         }
-        TextButton(onClick = onReport, modifier = Modifier.padding(horizontal = Dimens.l).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.compat_share)) }
+        group(R.string.group_essential, essentials)
+        group(R.string.group_recommended, HealthModel.recommended(health, schedule, now.toEpochMilli()))
+        group(R.string.group_phone_now, HealthModel.phoneNow(health))
+        val maker = MakerSteps.of(manufacturer, sdk)
+        group(R.string.group_maker_short, HealthModel.maker(manufacturer, sdk))
+        Text(
+            if (maker != null) stringResource(R.string.maker_for, stringResource(makerNameRes(maker.first)), Build.VERSION.RELEASE ?: sdk.toString())
+            else stringResource(R.string.background_footer),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = Dimens.xxl, vertical = Dimens.xs),
+        )
+        // «الجدولة»: key/values from the local logs.
+        HealthGroupHeader(stringResource(R.string.group_scheduling), null)
+        val lines = buildList {
+            add(stringResource(R.string.scheduled_n, schedule.scheduled.toString()))
+            add(stringResource(R.string.attention_n, schedule.attention.toString()))
+            add(stringResource(R.string.last_delay, schedule.lateness.firstOrNull()?.let { seconds(context, it) } ?: stringResource(R.string.delay_not_measured)))
+            schedule.last?.takeIf { it.api == "INEXACT" }?.let { add(stringResource(R.string.health_inexact)) }
+        }
+        lines.forEachIndexed { i, l -> KeyValueRow(l, i, lines.size) }
     }
 }
 
 @Composable
-private fun testPartTitle(p: TestAlarm.Part) = stringResource(when (p) {
-    TestAlarm.Part.ALARM -> R.string.part_alarm
-    TestAlarm.Part.NOTIFICATION -> R.string.part_notification
-    TestAlarm.Part.SOUND -> R.string.part_sound
-    TestAlarm.Part.VIBRATION -> R.string.part_vibration
-    TestAlarm.Part.SCREEN -> R.string.part_screen
-    TestAlarm.Part.BUTTONS -> R.string.part_buttons
-})
-
-@Composable
-private fun testPartText(p: TestAlarm.Part, r: TestAlarm.Result, rec: TestAlarm.Record): String = when (r) {
-    TestAlarm.Result.WAITING -> stringResource(R.string.result_waiting)
-    TestAlarm.Result.NOT_ALLOWED -> stringResource(R.string.result_screen_not_allowed)
-    TestAlarm.Result.OK -> if (p == TestAlarm.Part.ALARM) stringResource(R.string.result_alarm_ok, ((rec.firedAt - rec.plannedAt).coerceAtLeast(0) / 1000).toString())
-        else stringResource(R.string.result_ok)
-    TestAlarm.Result.ASK -> stringResource(when (p) {
-        TestAlarm.Part.SOUND -> R.string.ask_sound
-        TestAlarm.Part.VIBRATION -> R.string.ask_vibration
-        TestAlarm.Part.SCREEN -> R.string.ask_screen
-        else -> R.string.ask_buttons
-    })
-    TestAlarm.Result.FAILED -> stringResource(when (p) {
-        TestAlarm.Part.ALARM -> R.string.fail_alarm
-        TestAlarm.Part.NOTIFICATION -> R.string.fail_notification
-        TestAlarm.Part.SOUND -> R.string.fail_sound
-        TestAlarm.Part.VIBRATION -> R.string.fail_vibration
-        TestAlarm.Part.SCREEN -> R.string.fail_screen
-        TestAlarm.Part.BUTTONS -> R.string.fail_buttons
-    })
+private fun TestLabel() {
+    Icon(Ms.NotificationsActive, null, modifier = Modifier.size(20.dp))
+    Spacer(Modifier.size(Dimens.s))
+    Text(stringResource(R.string.test_now))
 }
 
-@Composable
-private fun fixLabel(p: TestAlarm.Part, r: TestAlarm.Result): String? =
-    if (r == TestAlarm.Result.FAILED || r == TestAlarm.Result.NOT_ALLOWED) stringResource(R.string.open_settings).takeIf { p != TestAlarm.Part.BUTTONS } else null
+private fun makerNameRes(key: String) = when (key) {
+    "maker_xiaomi" -> R.string.maker_xiaomi
+    "maker_samsung" -> R.string.maker_samsung
+    "maker_huawei" -> R.string.maker_huawei
+    "maker_oppo" -> R.string.maker_oppo
+    else -> R.string.maker_vivo
+}
 
-private fun fixTarget(p: TestAlarm.Part) = when (p) {
-    TestAlarm.Part.ALARM -> "battery"
-    TestAlarm.Part.NOTIFICATION -> "notifications"
-    TestAlarm.Part.SOUND, TestAlarm.Part.VIBRATION -> "channel"
-    TestAlarm.Part.SCREEN -> "fullscreen"
-    TestAlarm.Part.BUTTONS -> "notifications"
+/** The summary: error container with the plural count when an essential is missing, otherwise primary container. */
+@Composable
+private fun SummaryCard(missing: Int, health: Health, schedule: ScheduleStatus, onCheck: () -> Unit) {
+    val context = LocalContext.current
+    val bad = missing > 0
+    val fg = if (bad) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+    Surface(
+        color = if (bad) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer, contentColor = fg,
+        shape = MaterialTheme.shapes.extraLarge, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l, vertical = Dimens.s),
+    ) {
+        Row(Modifier.padding(Dimens.xl), verticalAlignment = Alignment.Top) {
+            Icon(if (bad) Ms.Warning else Ms.CheckCircle, null, tint = fg)
+            Column(Modifier.weight(1f).padding(start = Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+                Text(
+                    if (bad) L10n.plural(context, R.plurals.essential_off, missing.toLong()) else stringResource(R.string.health_all_ready),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
+                )
+                if (bad) Text(stringResource(R.string.banner_health), style = MaterialTheme.typography.bodyMedium)
+                val at = health.checkedAt.takeIf { it > 0 } ?: schedule.last?.at
+                Text(
+                    if (at == null) stringResource(R.string.health_never_checked)
+                    else stringResource(R.string.last_check, L10n.time(context, Instant.ofEpochMilli(at))),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.size(Dimens.xs))
+                OutlinedButton(onClick = onCheck, modifier = Modifier.heightIn(min = Dimens.touch)) {
+                    Icon(Ms.Refresh, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.size(Dimens.s))
+                    Text(stringResource(R.string.check_now))
+                }
+            }
+        }
+    }
 }
 
 /** The test reminder's own screen, opened by its full-screen intent or a tap on its notification. */
