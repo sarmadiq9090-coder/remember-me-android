@@ -216,5 +216,13 @@ them: [RESEARCH.md](RESEARCH.md).
 - **Encrypted backups** use the RMBK1 container (FEATURES.md F-086).
 - **Design**: [DESIGN-SPEC.md](DESIGN-SPEC.md) 1.0.0 (design council v2): no NavigationBar, Quick Add from the
   FAB, Material Symbols Rounded vendored as drawables (material-icons-extended removed).
-- **Open**: the council's 14-day owner soak on a 1.0.0-rc conflicts with "no intermediate builds"; raised with
-  the manager (default: the soak becomes part of the owner's checklist after delivery).
+- **Manager's decisions (2026-11-15)**:
+  1. One 1.0.0 after every gate. The council's 14-day soak becomes an item of the owner's checklist after
+     delivery, not a condition before it; any reliability defect the owner finds then is fixed at once in 1.0.1.
+  2. FOREGROUND_SERVICE accepted: a short service that stops by itself after at most 2 minutes, or at once on
+     «تم» / «أجّل»; the correct type declared on Android 14+; the reason on the privacy page and in
+     STANDARDS.md. The type is `shortService` (no extra permission; built-in time limit; allowed from
+     BOOT_COMPLETED on Android 15, where `mediaPlayback` is not) — see STANDARDS.md.
+  3. Tones copied into the app accepted: 5 MB at most, the file must really be audio (container check, then
+     Android's extractor), a copy no reminder uses is removed (after a 24 h grace for an unsaved editor), and a
+     backup may include the copies as an option.
