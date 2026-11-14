@@ -136,7 +136,38 @@ class AppUiTest {
             rule.onNodeWithContentDescription("الإعدادات").performClick()
             shot("06-settings-ar")
             rule.onNodeWithText("صحة التذكيرات").performClick()
+            // DESIGN-SPEC §7.4: «صحة التذكيرات» replaces «السماح بالعمل في الخلفية».
+            rule.onNodeWithText("السماح بالعمل في الخلفية").assertDoesNotExist()
+            rule.onNodeWithText("افحص الآن").assertExists()
+            rule.onNodeWithText("اختبر التنبيه الآن").assertExists()
             shot("07-background-ar")
+        }
+    }
+
+    /** Health's ⋮ opens the compatibility report and the alert log; the alert test starts from its sheet and saves no reminder. */
+    @Test fun healthLeadsToTheReportTheLogAndTheTest() {
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithText("صحة التذكيرات").assertExists()
+            rule.onNodeWithContentDescription("خيارات أخرى").performClick()
+            rule.onNodeWithText("تقرير التوافق").performClick()
+            rule.onNodeWithText("ما لا يتضمنه التقرير:").assertExists()
+            rule.onNodeWithText("compat-report@1", substring = true).assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithContentDescription("خيارات أخرى").performClick()
+            rule.onNodeWithText("سجل التنبيهات").performClick()
+            rule.onNodeWithText("لا أحداث بعد.").assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.DndHelp) }
+            rule.onNodeWithText("افتح إعدادات عدم الإزعاج").assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithText("اختبر التنبيه الآن").performClick()
+            rule.onNodeWithText("نوع التنبيه").assertExists()
+            rule.onNode(androidx.compose.ui.test.hasTestTag(com.fastkiwi.rememberme.ui.health.START_TAG)).performClick()
+            rule.waitUntil(5_000) { com.fastkiwi.rememberme.alarm.TestAlarm.record(app).startedAt > 0 }
+            rule.onNodeWithText("سيصل تنبيه تجريبي", substring = true).assertExists()
+            assertTrue("No reminder was added", Repo.state(app).tasks.isEmpty())
+            // Every screen code survives a rotation.
+            for (s in listOf(Screen.DndHelp, Screen.CompatReport, Screen.AlertLog)) assertEquals(s, Screen.of(s.code()))
         }
     }
 
