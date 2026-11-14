@@ -52,6 +52,9 @@ val AppTypography = Typography(
 
 /** The time on each reminder row: the row's hero (tabular digits so a column of times lines up). */
 val RowTime = style(22, 30, FontWeight.Medium).copy(fontFeatureSettings = "tnum")
+val AgendaTime = style(17, 24, FontWeight.Medium).copy(fontFeatureSettings = "tnum")
+val DayNumber = style(16, 24, FontWeight.Medium).copy(fontFeatureSettings = "tnum")
+val HijriNumber = style(12, 16, FontWeight.Normal).copy(fontFeatureSettings = "tnum")
 
 val AppShapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp), small = RoundedCornerShape(8.dp), medium = RoundedCornerShape(12.dp),
@@ -70,7 +73,35 @@ object Dimens {
     val touch = 48.dp
     val groupOuter = 20.dp
     val groupInner = 4.dp
+    // DESIGN-SPEC 1.0.0 §3.3 / §7.1
+    val sheetCorner = 28.dp
+    val rowCompact = 56.dp
+    val timeColumn = 76.dp
+    val alertButton = 64.dp
+    val alertGap = 16.dp
+    val hourHeight = 60.dp
+    val hourLabel = 56.dp
+    val listPane = 440.dp
+    val twoPane = 840.dp
+    val maxContent = 640.dp
+    val compactWidth = 600.dp
 }
+
+/** Behaviour tokens (DESIGN-SPEC §7.1). */
+object Behaviour {
+    const val SwipeThreshold = 0.4f
+    /** SnackbarDuration.Long; widget and notification undo. */
+    const val UndoMillis = 10_000L
+    const val AlertTapGuardMs = 1_000L
+    const val QuickAddDebounceMs = 150L
+    const val MaxEarlyAlerts = 3
+    const val MaxSteps = 50
+    const val MaxQuickAddChoices = 4
+    const val BulkConfirmFrom = 10
+}
+
+val SheetShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+const val ScrimAlpha = 0.32f
 
 // DESIGN-SPEC §2.1: a complete Material 3 scheme generated from the Windows icon's green (#2F6249), with
 // the lavender bell (#C5B3FF) as the tertiary hue. Every role is filled, so no baseline purple shows.
