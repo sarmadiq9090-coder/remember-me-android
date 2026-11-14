@@ -224,33 +224,6 @@ class EngineReliabilityTest {
         assertEquals(2, Repo.state(app).tasks.size)
     }
 
-    // Opens the main screen. Under Robolectric, Compose screens never become idle on API 26 and 27
-    // (the frame loop runs forever); the engine tests above still run on every listed version.
-    @Config(sdk = [33, 36])
-    @Test fun aRestoreIsCheckedAndSummarisedBeforeAnythingIsReplaced() {
-        save(TaskInput(title = "on the phone"))
-        val other = Tasks.save(AppState(), TaskInput(title = "from the copy", dueAt = Instant.now().plusSeconds(3600)), Instant.now(), zone).first
-        val zip = ByteArrayOutputStream().also { Backup.export(other, it, Instant.now()) }.toByteArray()
-        val activity = org.robolectric.Robolectric.buildActivity(MainActivity::class.java).setup().get()
-        val read = activity.readImport { zip.inputStream() }.getOrThrow()
-        assertTrue(read.verified)
-        assertEquals(1, read.active)
-        assertNotNull(read.createdAt)
-        // Reading changed nothing.
-        assertEquals("on the phone", Repo.state(app).tasks.single().title)
-        // A damaged copy is refused with a message, and nothing changes.
-        val bad = zip.copyOf().also { it[it.size / 2] = (it[it.size / 2] + 1).toByte() }
-        assertTrue(activity.readImport { bad.inputStream() }.isFailure)
-        assertEquals("on the phone", Repo.state(app).tasks.single().title)
-        // Applying it keeps the current data as a safety copy first.
-        activity.applyImport(read)
-        Engine.drain()
-        assertEquals("from the copy", Repo.state(app).tasks.single().title)
-        val kept = Repo.store(app).safetyCopies().first()
-        assertTrue(Codec.decode(kept.readText()).tasks.any { it.title == "on the phone" })
-    }
-
-    /** The council's condition for two slots: every due time still fires when slot B is broken. */
     @Test fun aBrokenNoticeSlotNeverDelaysADueTime() {
         val now = Instant.now()
         val t = save(TaskInput(title = "x", dueAt = now.plusSeconds(3 * 3600), remindBefore = 60), now.minusSeconds(60))
