@@ -21,6 +21,12 @@ import com.fastkiwi.rememberme.core.at
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -104,6 +110,23 @@ class QcScreenshotsTest {
         }
     }
 
+    /**
+     * Every window on screen (a sheet or a dialog is its own window), drawn directly: name, name-2, ...
+     * Does not wait for Compose to be idle (a focused field's cursor never is).
+     */
+    private fun shotRoots(name: String) {
+        @Suppress("UNCHECKED_CAST")
+        (scenario as ActivityScenario<android.app.Activity>).onActivity {
+            val wmg = Class.forName("android.view.WindowManagerGlobal").getMethod("getInstance").invoke(null)
+            val views = (wmg.javaClass.getDeclaredField("mViews").apply { isAccessible = true }.get(wmg) as List<*>).filterIsInstance<android.view.View>()
+            views.filter { it.width > 0 && it.height > 0 }.forEachIndexed { i, v ->
+                val bmp = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.ARGB_8888)
+                v.draw(android.graphics.Canvas(bmp))
+                FileOutputStream(File(outDir, if (i == 0) "$name.png" else "$name-${i + 1}.png")).use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            }
+        }
+    }
+
     private fun go(screen: Screen) {
         @Suppress("UNCHECKED_CAST")
         (scenario as ActivityScenario<MainActivity>).onActivity { it.stack = listOf(Screen.Home) + (if (screen == Screen.Home) emptyList() else listOf(screen)) }
@@ -125,6 +148,30 @@ class QcScreenshotsTest {
             go(Screen.Trash); shot("$prefix-07-trash")
             go(Screen.About); shot("$prefix-08-about")
             go(Screen.AlarmTest); shot("$prefix-09-alarm-test")
+            // 1.0.0 screens (F-103: every new screen in ar/en, light/dark, 200 %).
+            go(Screen.Templates); shot("$prefix-10-templates")
+            go(Screen.Lists); shot("$prefix-11-lists")
+            go(Screen.DndHelp); shot("$prefix-12-dnd-help")
+            go(Screen.CompatReport); shot("$prefix-13-compat-report")
+            go(Screen.AlertLog); shot("$prefix-14-alert-log")
+            Repo.prefs(app).historyOn = true
+            go(Screen.History(rent.id)); shot("$prefix-15-history")
+            go(Screen.Home)
+            @Suppress("UNCHECKED_CAST")
+            (scenario as ActivityScenario<MainActivity>).onActivity { it.todayRequest = System.currentTimeMillis() }
+            rule.waitForIdle(); shot("$prefix-16-day")
+            // The other views from the header's view menu (the segment row becomes a dialog row at 200 %).
+            for ((i, v) in (if (en) listOf("Agenda", "Week", "Month") else listOf("أجندة", "أسبوع", "شهر")).withIndex()) {
+                rule.onNodeWithContentDescription(if (en) "View" else "طريقة العرض").performClick()
+                rule.onAllNodesWithText(v).onLast().performClick()
+                shot("$prefix-${17 + i}-" + listOf("agenda", "week", "month")[i])
+            }
+        }
+        // Quick Add, opened as the launcher shortcut does (a sheet: its own window).
+        ActivityScenario.launch<MainActivity>(com.fastkiwi.rememberme.ui.quick.QuickEntry.quickAddIntent(app,
+            if (en) "remind me to call mum in an hour" else "ذكرني أتصل بأمي بعد ساعة")).also { scenario = it }.use {
+            rule.mainClock.advanceTimeBy(300)
+            shotRoots("$prefix-20-quickadd")
         }
         val due = Tasks.due(Repo.state(app), Instant.now()).first()
         val intent = Intent(app, AlertActivity::class.java).putExtra(AlertActivity.EXTRA_ID, due.id)
