@@ -75,6 +75,8 @@ unlock after a restart: device-protected file `boot_times` (only due times and w
 RememberMe-backup-<time>/backup.json   {"app": "Remember Me", "kind": "manual", "createdAt", "algorithm": "sha256",
                                         "files": {"data.json": "<sha256 of the exact bytes>"}, "source": "android"}
 RememberMe-backup-<time>/data.json     the data, attachments removed (Windows-only files are not on the phone)
+RememberMe-backup-<time>/tones/<sha256>.<ext>   only with «تضمين النغمات المختارة من ملفاتي» (off by default):
+                                        the tone copies in use, listed in backup.json "files"; Windows ignores them
 ```
 
 Restore accepts this zip, a zip of a Windows backup folder, or a bare `data.json`; the checksum is verified when

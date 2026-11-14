@@ -22,10 +22,15 @@ class SettingsPrefs(context: Context) {
         get() = p.getString("importantStyle", "alarm")?.takeIf { it == "alarm" || it == "normal" } ?: "alarm"
         set(v) = p.edit { putString("importantStyle", if (v == "normal") "normal" else "alarm") }
 
-    /** «السحب على التذكيرات» (DESIGN-SPEC §5.2): the same key as Home's HomePrefs, on by default. */
+    /** «السحب على التذكيرات» (DESIGN-SPEC §5.2): Home's own setting ([HomePrefs.swipe]), on by default. */
     var swipeOn: Boolean
-        get() = p.getBoolean("swipeOn", true)
-        set(v) = p.edit { putBoolean("swipeOn", v) }
+        get() = p.getBoolean(HomePrefs.KEY_SWIPE, true)
+        set(v) = p.edit { putBoolean(HomePrefs.KEY_SWIPE, v) }
+
+    /** «تضمين النغمات المختارة من ملفاتي»: backups carry the tone copies in use (off; Windows ignores them). */
+    var backupTones: Boolean
+        get() = p.getBoolean("backupTones", false)
+        set(v) = p.edit { putBoolean("backupTones", v) }
 
     /** «تشفير النسخة» (F-086): backups are sealed with the saved password ([BackupPassword]). */
     var encryptBackups: Boolean

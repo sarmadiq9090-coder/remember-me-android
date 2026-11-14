@@ -460,6 +460,8 @@
     <string name="set_export_hint_encrypted">ملف مشفّر تختار مكانه. ذكرني لويندوز لا يفتحه بعد.</string>
     <string name="set_export_intro">ذكرني لويندوز لا يدعم كل ما في هذه النسخة. هذا ما يتغيّر هناك:</string>
     <string name="set_export_phone_same">على هذا الهاتف يبقى كل شيء كما هو.</string>
+    <string name="set_backup_tones">تضمين النغمات المختارة من ملفاتي</string>
+    <string name="set_backup_tones_hint">تُستعاد مع النسخة على هاتف آخر. ذكرني لويندوز يتجاهلها</string>
     <string name="set_safety_copies">نسخ الأمان</string>
     <string name="set_ics_import">استيراد تقويم (.ics)</string>
     <string name="set_ics_import_hint">يضيف المواعيد تذكيرات، مع تقرير بما لم يُفهم</string>
@@ -522,7 +524,7 @@
     <string name="set_perm_battery">طلب استثناء البطارية</string>
     <string name="set_perm_battery_why">ليفتح لك أندرويد سؤال «بلا قيود على البطارية» فلا تتأخر التذكيرات. لا يحدث شيء دون موافقتك.</string>
     <string name="set_perm_fgs">خدمة قصيرة في المقدمة</string>
-    <string name="set_perm_fgs_why">لتشغيل نغمة التذكير حتى تنتهي، ولو أغلقت التطبيق.</string>
+    <string name="set_perm_fgs_why">لتشغيل النغمة التي اخترتها للتذكير في خدمة قصيرة تتوقف وحدها بعد مدة الرنين (دقيقتان على الأكثر)، أو فورًا عند «تم» أو «أجّل» أو سحب الإشعار أو زر الصوت. لا يبقى بعدها شيء يعمل في الخلفية، ولا إنترنت.</string>
     <string name="set_never_internet">لا إنترنت: لا يرسل التطبيق شيئًا ولا يستقبل</string>
     <string name="set_never_location">لا موقع: مدينة الصلاة تختارها أنت</string>
     <string name="set_never_files">لا وصول إلى ملفاتك إلا الملف الذي تختاره بنفسك</string>
@@ -717,6 +719,14 @@
         <item quantity="few">عُدّلت %1$s تذكيرات</item>
         <item quantity="many">عُدّل %1$s تذكيرًا</item>
         <item quantity="other">عُدّل %1$s تذكير</item>
+    </plurals>
+    <plurals name="set_tones_included">
+        <item quantity="zero">%1$s نغمة من ملفاتك تُستعاد معها</item>
+        <item quantity="one">نغمة واحدة من ملفاتك تُستعاد معها</item>
+        <item quantity="two">نغمتان من ملفاتك تُستعادان معها</item>
+        <item quantity="few">%1$s نغمات من ملفاتك تُستعاد معها</item>
+        <item quantity="many">%1$s نغمة من ملفاتك تُستعاد معها</item>
+        <item quantity="other">%1$s نغمة من ملفاتك تُستعاد معها</item>
     </plurals>
     <plurals name="set_results_n">
         <item quantity="zero">%1$s نتيجة</item>

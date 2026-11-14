@@ -219,6 +219,21 @@ class SettingsLogicTest {
         assertEquals(0, (read(zip(s), prayer = true) as RestoreReader.Result.Ready).summary.prayerWithoutSettings)
     }
 
+    @Test fun toneCopiesInTheBackupAreNotMissing() {
+        val bytes = "ID3 tone bytes".toByteArray()
+        val sha = Backup.sha256(bytes)
+        val s = state(TaskInput(title = "t", dueAt = now.plusSeconds(60))).let { st ->
+            st.copy(tasks = st.tasks.map { it.withExt(AlertExt(tone = ToneRef("file", sha, "my.mp3"))) })
+        }
+        val missingAll: (ToneRef) -> Boolean = { true }
+        val without = RestoreReader.read(zip(s), null, now, missingAll, true) as RestoreReader.Result.Ready
+        assertEquals(1, without.summary.missingTones)
+        val withTones = ByteArrayOutputStream().also { Backup.export(s, it, now, mapOf("$sha.mp3" to bytes)) }.toByteArray()
+        val r = RestoreReader.read(withTones, null, now, missingAll, true) as RestoreReader.Result.Ready
+        assertEquals(1, r.summary.tones)
+        assertEquals(0, r.summary.missingTones)
+    }
+
     @Test fun restoreRefusalsAndPasswords() {
         val plain = zip(state(TaskInput(title = "a")))
         val sealed = BackupCrypto.encrypt(plain, "سر 123".toCharArray())

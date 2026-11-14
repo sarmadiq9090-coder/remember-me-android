@@ -77,6 +77,8 @@ object RestoreReader {
         val missingTones: Int,
         /** Prayer-relative reminders while this phone has no prayer method or city chosen. */
         val prayerWithoutSettings: Int,
+        /** Tone copies included in the backup (restored with it). */
+        val tones: Int = 0,
     )
 
     /** A little more than [Backup.MAX_BYTES], for the encryption header. */
@@ -141,7 +143,11 @@ object RestoreReader {
             source = sourceOf(plain), createdAt = imported.createdAt, verified = imported.verified, encrypted = encrypted,
             active = imported.active, repeating = active.count { it.repeat != Repeat.NONE }, done = imported.done,
             trash = imported.trashed, notes = imported.notes, droppedAttachments = imported.droppedAttachments,
-            missingTones = ext.count { e -> e.tone?.let { it.kind != "default" && it.kind != "silent" && toneMissing(it) } == true },
+            // A tone copy that comes with the backup is not missing.
+            missingTones = ext.count { e ->
+                e.tone?.let { t -> t.kind != "default" && t.kind != "silent" && !(t.kind == "file" && imported.tones.keys.any { it.substringBefore('.') == t.ref }) && toneMissing(t) } == true
+            },
+            tones = imported.tones.size,
             prayerWithoutSettings = if (prayerSetUp) 0 else active.count { AlertExt.of(it).prayer != null },
         ))
     }

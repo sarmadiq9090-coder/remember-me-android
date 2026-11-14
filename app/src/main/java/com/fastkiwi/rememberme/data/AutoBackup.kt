@@ -50,17 +50,17 @@ object AutoBackup {
     fun toPrune(names: List<String>): List<String> =
         names.filter { it.startsWith(PREFIX) && (it.endsWith(".zip") || it.endsWith(".rmbk")) }.sortedDescending().drop(KEEP)
 
-    /** The backup bytes: the Windows-format zip, sealed with [password] when given. */
-    fun bytes(state: AppState, now: Instant, password: CharArray?): ByteArray {
+    /** The backup bytes: the Windows-format zip (with [tones] copies when given), sealed with [password] when given. */
+    fun bytes(state: AppState, now: Instant, password: CharArray?, tones: Map<String, ByteArray> = emptyMap()): ByteArray {
         val out = ByteArrayOutputStream()
-        Backup.export(state, out, now)
+        Backup.export(state, out, now, tones)
         val zip = out.toByteArray()
         return if (password == null) zip else BackupCrypto.encrypt(zip, password)
     }
 
     /** Writes one backup into [folder] and prunes; throws on any failure. */
-    fun writeTo(folder: Folder, state: AppState, now: Instant, password: CharArray?) {
-        val data = bytes(state, now, password)
+    fun writeTo(folder: Folder, state: AppState, now: Instant, password: CharArray?, tones: Map<String, ByteArray> = emptyMap()) {
+        val data = bytes(state, now, password, tones)
         folder.write(fileName(now, password != null), if (password != null) "application/octet-stream" else "application/zip", data)
         for (old in toPrune(folder.names())) runCatching { folder.delete(old) }
     }
@@ -85,7 +85,8 @@ object AutoBackup {
         val ok = runCatching {
             val password = if (sp.encryptBackups) BackupPassword.load(app) ?: error("no password") else null
             try {
-                writeTo(TreeFolder(app, Uri.parse(uri)), Repo.state(app), now, password)
+                val state = Repo.state(app)
+                writeTo(TreeFolder(app, Uri.parse(uri)), state, now, password, if (sp.backupTones) Tones.forBackup(app, state) else emptyMap())
             } finally {
                 password?.fill('\u0000')
             }

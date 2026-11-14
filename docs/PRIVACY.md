@@ -17,7 +17,7 @@ receives nothing, and it collects no statistics. There are no ads and no account
 | `RECEIVE_BOOT_COMPLETED` | To set your reminders' alarms again after the phone restarts. |
 | `VIBRATE` | So the phone vibrates with a reminder if you want. |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | So Android can ask you to allow unrestricted battery use and reminders are not delayed. Nothing happens without your yes. |
-| `FOREGROUND_SERVICE` | To play a reminder's tone to the end, even if you close the app (a short service). |
+| `FOREGROUND_SERVICE` | To play the reminder's chosen tone in a short service (type `shortService`) that stops by itself after the ring length (2 minutes at most), or at once on «تم», «أجّل», a swipe of the notification or a volume key. Nothing keeps running in the background afterwards; no internet. |
 
 ## What we never do
 
@@ -37,6 +37,7 @@ work offline when it can. The first use says this before anything starts.
 
 ## Copies and files
 
+- A backup can include the tones you chose from your files (off by default; Windows ignores them).
 - A backup is saved only where you choose. It is not encrypted unless you turn on «تشفير النسخة» (then a lost
   password cannot be recovered, and Remember Me for Windows cannot open it yet).
 - The weekly automatic copy goes to a folder you choose. If that folder syncs to an account, the app of that account

@@ -117,6 +117,8 @@ S = [
 ("set_export_hint_encrypted", "ملف مشفّر تختار مكانه. ذكرني لويندوز لا يفتحه بعد.", "An encrypted file saved where you choose. Remember Me for Windows cannot open it yet."),
 ("set_export_intro", "ذكرني لويندوز لا يدعم كل ما في هذه النسخة. هذا ما يتغيّر هناك:", "Remember Me for Windows does not support everything in this copy. This is what changes there:"),
 ("set_export_phone_same", "على هذا الهاتف يبقى كل شيء كما هو.", "On this phone everything stays as it is."),
+("set_backup_tones", "تضمين النغمات المختارة من ملفاتي", "Include tones chosen from my files"),
+("set_backup_tones_hint", "تُستعاد مع النسخة على هاتف آخر. ذكرني لويندوز يتجاهلها", "Restored with the copy on another phone. Remember Me for Windows ignores them"),
 ("set_safety_copies", "نسخ الأمان", "Safety copies"),
 ("set_ics_import", "استيراد تقويم (.ics)", "Import a calendar (.ics)"),
 ("set_ics_import_hint", "يضيف المواعيد تذكيرات، مع تقرير بما لم يُفهم", "Adds the events as reminders, with a report of what was not understood"),
@@ -181,7 +183,7 @@ S = [
 ("set_perm_battery", "طلب استثناء البطارية", "Battery exception request"),
 ("set_perm_battery_why", "ليفتح لك أندرويد سؤال «بلا قيود على البطارية» فلا تتأخر التذكيرات. لا يحدث شيء دون موافقتك.", "So Android can ask you to allow unrestricted battery use and reminders are not delayed. Nothing happens without your yes."),
 ("set_perm_fgs", "خدمة قصيرة في المقدمة", "Short foreground service"),
-("set_perm_fgs_why", "لتشغيل نغمة التذكير حتى تنتهي، ولو أغلقت التطبيق.", "To play a reminder's tone to the end, even if you close the app."),
+("set_perm_fgs_why", "لتشغيل النغمة التي اخترتها للتذكير في خدمة قصيرة تتوقف وحدها بعد مدة الرنين (دقيقتان على الأكثر)، أو فورًا عند «تم» أو «أجّل» أو سحب الإشعار أو زر الصوت. لا يبقى بعدها شيء يعمل في الخلفية، ولا إنترنت.", "To play the reminder's chosen tone in a short service that stops by itself after the ring length (2 minutes at most), or at once on Done, Snooze, a swipe or a volume key. Nothing keeps running in the background afterwards, and there is no internet."),
 ("set_never_internet", "لا إنترنت: لا يرسل التطبيق شيئًا ولا يستقبل", "No internet: the app sends and receives nothing"),
 ("set_never_location", "لا موقع: مدينة الصلاة تختارها أنت", "No location: you choose the prayer city"),
 ("set_never_files", "لا وصول إلى ملفاتك إلا الملف الذي تختاره بنفسك", "No access to your files except the one you pick"),
@@ -264,6 +266,8 @@ S = [
 ]
 
 P = {
+"set_tones_included": ({"zero": "%1$s نغمة من ملفاتك تُستعاد معها", "one": "نغمة واحدة من ملفاتك تُستعاد معها", "two": "نغمتان من ملفاتك تُستعادان معها", "few": "%1$s نغمات من ملفاتك تُستعاد معها", "many": "%1$s نغمة من ملفاتك تُستعاد معها", "other": "%1$s نغمة من ملفاتك تُستعاد معها"},
+                       {"one": "%1$s tone from your files is restored with it", "other": "%1$s tones from your files are restored with it"}),
 "set_results_n": ({"zero": "%1$s نتيجة", "one": "نتيجة واحدة", "two": "نتيجتان", "few": "%1$s نتائج", "many": "%1$s نتيجة", "other": "%1$s نتيجة"},
                   {"one": "%1$s result", "other": "%1$s results"}),
 "set_tag_cd": ({"zero": "%1$s، %2$s تذكير", "one": "%1$s، تذكير واحد", "two": "%1$s، تذكيران", "few": "%1$s، %2$s تذكيرات", "many": "%1$s، %2$s تذكيرًا", "other": "%1$s، %2$s تذكير"},

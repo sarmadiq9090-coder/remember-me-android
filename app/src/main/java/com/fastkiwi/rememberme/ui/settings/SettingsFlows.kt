@@ -84,6 +84,9 @@ class SettingsFlows(private val activity: ComponentActivity) {
     var dialog by mutableStateOf<Dialog?>(null)
         private set
 
+    /** «تضمين النغمات المختارة من ملفاتي» (off by default; Windows ignores the copies). */
+    fun setBackupTones(on: Boolean) { SettingsPrefs(context).backupTones = on; version++ }
+
     /** Bumped when a phone setting changed here (encryption, the backup folder), so Settings reads it again. */
     var version by mutableIntStateOf(0)
         private set
@@ -119,7 +122,9 @@ class SettingsFlows(private val activity: ComponentActivity) {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
                     val pw = if (encrypted) BackupPassword.load(context) ?: error("no password") else null
-                    val bytes = try { AutoBackup.bytes(Repo.state(context), Instant.now(), pw) } finally { pw?.fill('\u0000') }
+                    val state = Repo.state(context)
+                    val tones = if (SettingsPrefs(context).backupTones) Tones.forBackup(context, state) else emptyMap()
+                    val bytes = try { AutoBackup.bytes(state, Instant.now(), pw, tones) } finally { pw?.fill('\u0000') }
                     activity.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(bytes) }
                     Repo.prefs(context).lastExport = System.currentTimeMillis()
                 }.isSuccess
@@ -164,6 +169,8 @@ class SettingsFlows(private val activity: ComponentActivity) {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
                     Repo.store(context).safetyCopy()
+                    // Tone copies first, so the restored reminders find them.
+                    runCatching { Tones.restore(context, imported.tones) }
                     Repo.change(context) { imported.state }
                 }.isSuccess
             }
@@ -443,6 +450,7 @@ private fun RestoreDialog(s: RestoreReader.Summary, current: Int, onRestore: () 
                     CountTile(stringResource(R.string.set_c_trash), s.trash, Modifier.weight(1f))
                 }
                 if (s.notes > 0) Line(Ms.Notes, stringResource(R.string.set_notes_kept))
+                if (s.tones > 0) Line(Ms.MusicNote, pluralStringResource(R.plurals.set_tones_included, s.tones, s.tones.toString()))
                 val warn = MaterialTheme.colorScheme.error
                 if (s.droppedAttachments > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_attachments_dropped, s.droppedAttachments, s.droppedAttachments.toString()), warn)
                 if (s.missingTones > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_tones_missing, s.missingTones, s.missingTones.toString()), warn)

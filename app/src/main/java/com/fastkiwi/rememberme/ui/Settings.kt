@@ -117,7 +117,7 @@ private data class PhoneValues(
     val importantStyle: String, val fullScreen: String, val ringSeconds: Int, val vibrate: Boolean, val pattern: String,
     val lockPrivacy: Boolean, val pin: Boolean, val hijri: Boolean, val hijriAdjust: Int, val swipe: Boolean,
     val prayerMethod: String, val prayerAsr: String, val prayerCity: String, val summary: Int, val history: Boolean,
-    val autoComplete: Boolean, val encrypt: Boolean, val autoBackup: String, val lastAutoBackup: Long, val autoBackupFailed: Boolean,
+    val autoComplete: Boolean, val encrypt: Boolean, val backupTones: Boolean, val autoBackup: String, val lastAutoBackup: Long, val autoBackupFailed: Boolean,
 ) {
     companion object {
         fun read(c: Context): PhoneValues {
@@ -125,7 +125,7 @@ private data class PhoneValues(
             val s = SettingsPrefs(c)
             return PhoneValues(p.normalTone, p.importantTone, s.importantStyle, p.fullScreenMode, p.ringSeconds, p.vibrateDefault, p.vibrationPattern,
                 p.lockPrivacy, p.pinDefault, p.hijriDisplay, p.hijriAdjust, s.swipeOn, p.prayerMethod, p.prayerAsr, p.prayerCity, p.summaryMinutes,
-                p.historyOn, p.autoCompleteSteps, s.encryptBackups, p.autoBackupUri, p.lastAutoBackup, s.autoBackupFailedAt > 0)
+                p.historyOn, p.autoCompleteSteps, s.encryptBackups, s.backupTones, p.autoBackupUri, p.lastAutoBackup, s.autoBackupFailedAt > 0)
         }
     }
 }
@@ -243,6 +243,7 @@ fun SettingsScreen(
         "export" to stringResource(if (v.encrypt) R.string.set_export_hint_encrypted else R.string.export_hint),
         "auto_backup" to autoBackupText,
         "encrypt" to stringResource(R.string.set_encrypt_hint),
+        "backup_tones" to stringResource(R.string.set_backup_tones_hint),
         "ics_import" to stringResource(R.string.set_ics_import_hint),
         "ics_export" to stringResource(R.string.export_ics_hint),
         "about" to stringResource(R.string.version_text, BuildConfig.VERSION_NAME),
@@ -253,7 +254,7 @@ fun SettingsScreen(
         if (!prayerShown) addAll(listOf("prayer_method", "prayer_asr", "prayer_city"))
         if (v.summary < 0) add("summary_time")
         if (safety.isEmpty()) add("safety")
-        if (flows == null) addAll(listOf("export", "auto_backup", "encrypt", "restore", "ics_import", "ics_export", "delete_all"))
+        if (flows == null) addAll(listOf("export", "auto_backup", "encrypt", "backup_tones", "restore", "ics_import", "ics_export", "delete_all"))
     }
 
     /** Opens a row's own control: its dialog, its screen, or (switches) nothing more than the highlight. */
@@ -287,7 +288,7 @@ fun SettingsScreen(
         "week" to Ms.DateRange, "hijri" to Ms.CalendarMonth, "hijri_adjust" to Ms.Tune, "swipe" to Ms.Swipe, "prayer_method" to Ms.Mosque,
         "prayer_asr" to Ms.Mosque, "prayer_city" to Ms.Mosque, "summary" to Ms.WbTwilight, "summary_time" to Ms.Schedule,
         "lists" to Ms.ListIcon, "templates" to Ms.DashboardCustomize, "history" to Ms.History, "history_clear" to Ms.Delete,
-        "autocomplete" to Ms.Checklist, "export" to Ms.Download, "auto_backup" to Ms.Backup, "encrypt" to Ms.Lock,
+        "autocomplete" to Ms.Checklist, "export" to Ms.Download, "auto_backup" to Ms.Backup, "encrypt" to Ms.Lock, "backup_tones" to Ms.LibraryMusic,
         "restore" to Ms.SettingsBackupRestore, "safety" to Ms.History, "ics_import" to Ms.Upload, "ics_export" to Ms.Event,
         "compat" to Ms.ReceiptLong, "alert_log" to Ms.Notes, "trash" to Ms.Delete, "delete_all" to Ms.Delete, "privacy" to Ms.VerifiedUser,
         "licences" to Ms.Info, "about" to Ms.Info, "health" to Ms.HealthAndSafety,
@@ -419,6 +420,7 @@ fun SettingsScreen(
                     add { row("export", stringResource(R.string.export)) }
                     add { row("auto_backup", stringResource(R.string.set_auto_backup)) }
                     add { switch("encrypt", stringResource(R.string.set_encrypt), v.encrypt) { flows.setEncrypt(it) } }
+                    add { switch("backup_tones", stringResource(R.string.set_backup_tones), v.backupTones) { flows.setBackupTones(it) } }
                     add { row("restore", stringResource(R.string.import_)) }
                 }
                 if (safety.isNotEmpty()) add { row("safety", stringResource(R.string.set_safety_copies)) }

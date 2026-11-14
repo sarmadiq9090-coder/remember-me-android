@@ -460,6 +460,8 @@
     <string name="set_export_hint_encrypted">An encrypted file saved where you choose. Remember Me for Windows cannot open it yet.</string>
     <string name="set_export_intro">Remember Me for Windows does not support everything in this copy. This is what changes there:</string>
     <string name="set_export_phone_same">On this phone everything stays as it is.</string>
+    <string name="set_backup_tones">Include tones chosen from my files</string>
+    <string name="set_backup_tones_hint">Restored with the copy on another phone. Remember Me for Windows ignores them</string>
     <string name="set_safety_copies">Safety copies</string>
     <string name="set_ics_import">Import a calendar (.ics)</string>
     <string name="set_ics_import_hint">Adds the events as reminders, with a report of what was not understood</string>
@@ -522,7 +524,7 @@
     <string name="set_perm_battery">Battery exception request</string>
     <string name="set_perm_battery_why">So Android can ask you to allow unrestricted battery use and reminders are not delayed. Nothing happens without your yes.</string>
     <string name="set_perm_fgs">Short foreground service</string>
-    <string name="set_perm_fgs_why">To play a reminder\'s tone to the end, even if you close the app.</string>
+    <string name="set_perm_fgs_why">To play the reminder\'s chosen tone in a short service that stops by itself after the ring length (2 minutes at most), or at once on Done, Snooze, a swipe or a volume key. Nothing keeps running in the background afterwards, and there is no internet.</string>
     <string name="set_never_internet">No internet: the app sends and receives nothing</string>
     <string name="set_never_location">No location: you choose the prayer city</string>
     <string name="set_never_files">No access to your files except the one you pick</string>
@@ -657,6 +659,10 @@
     <plurals name="bulk_changed_msg">
         <item quantity="one">%1$s reminder changed</item>
         <item quantity="other">%1$s reminders changed</item>
+    </plurals>
+    <plurals name="set_tones_included">
+        <item quantity="one">%1$s tone from your files is restored with it</item>
+        <item quantity="other">%1$s tones from your files are restored with it</item>
     </plurals>
     <plurals name="set_results_n">
         <item quantity="one">%1$s result</item>

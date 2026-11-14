@@ -51,6 +51,7 @@ object SettingsIndex {
         SettingEntry("export", R.string.export, R.string.section_data, R.string.set_syn_backup),
         SettingEntry("auto_backup", R.string.set_auto_backup, R.string.section_data, R.string.set_syn_backup),
         SettingEntry("encrypt", R.string.set_encrypt, R.string.section_data, R.string.set_syn_encrypt),
+        SettingEntry("backup_tones", R.string.set_backup_tones, R.string.section_data, R.string.set_syn_tone),
         SettingEntry("restore", R.string.import_, R.string.section_data, R.string.set_syn_backup),
         SettingEntry("safety", R.string.set_safety_copies, R.string.section_data, R.string.set_syn_backup),
         SettingEntry("ics_import", R.string.set_ics_import, R.string.section_data, R.string.set_syn_calendar),
