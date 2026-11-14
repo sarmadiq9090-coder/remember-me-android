@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.core.app.NotificationManagerCompat
 import com.fastkiwi.rememberme.Repo
 import com.fastkiwi.rememberme.alarm.AlarmReceiver
@@ -62,7 +63,7 @@ object DeleteAll {
             PendingIntent.getBroadcast(c, code, intent, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let { am.cancel(it); it.cancel() }
         }
         for (slot in listOf(Engine.SLOT_A, Engine.HOUSEKEEPING, Engine.SLOT_B)) {
-            cancel(app, slot, Intent(app, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE).setData(Uri.parse("rememberme://slot/$slot")))
+            cancel(app, slot, Intent(app, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE).setData("rememberme://slot/$slot".toUri()))
         }
         cancel(app, SUMMARY_SLOT, Intent(app, AlarmReceiver::class.java).setAction(Summary.ACTION))
         runCatching {

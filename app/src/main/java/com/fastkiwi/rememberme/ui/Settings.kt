@@ -150,6 +150,7 @@ fun SettingsScreen(
     tick: Long = 0,
 ) {
     val context = LocalContext.current
+    val res = androidx.compose.ui.platform.LocalResources.current
     var bump by remember { mutableIntStateOf(0) }
     val v = remember(bump, tick, flows?.version) { PhoneValues.read(context) }
     fun changed(engine: Boolean = true) { bump++; if (engine) cb.onPhoneChanged() }
@@ -200,10 +201,10 @@ fun SettingsScreen(
     val asrs = com.fastkiwi.rememberme.ui.settings.PrayerNames.asr(context)
 
     fun tone(t: com.fastkiwi.rememberme.core.ToneRef?, alarm: Boolean): String = when (t?.kind) {
-        null, "default" -> context.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification)
-        "silent" -> context.getString(R.string.set_tone_silent)
-        "bundled" -> context.getString(R.string.set_tone_bundled, t.ref.removePrefix("chime-"))
-        else -> t.title.ifEmpty { context.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification) }
+        null, "default" -> res.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification)
+        "silent" -> res.getString(R.string.set_tone_silent)
+        "bundled" -> res.getString(R.string.set_tone_bundled, t.ref.removePrefix("chime-"))
+        else -> t.title.ifEmpty { res.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification) }
     }
     val vibrationCode = if (!v.vibrate) "off" else v.pattern
     val prayerShown = m.prayerUsed || v.prayerMethod.isNotEmpty() || v.prayerCity.isNotEmpty()
@@ -310,7 +311,7 @@ fun SettingsScreen(
             Modifier.fillMaxWidth()
                 .onGloballyPositioned { tops[key] = it.positionInRoot().y }
                 .then(if (hl) Modifier.background(MaterialTheme.colorScheme.primaryContainer) else Modifier)
-                .semantics { if (hl) stateDescription = context.getString(R.string.set_found) },
+                .semantics { if (hl) stateDescription = res.getString(R.string.set_found) },
         ) { content() }
     }
 
@@ -337,7 +338,7 @@ fun SettingsScreen(
     ) { pad ->
         if (searching) {
             BackHandler { searching = false; query = "" }
-            val hits = com.fastkiwi.rememberme.ui.settings.SettingsIndex.search(query, { context.getString(it) }, { values[it] }, hidden)
+            val hits = com.fastkiwi.rememberme.ui.settings.SettingsIndex.search(query, { res.getString(it) }, { values[it] }, hidden)
             com.fastkiwi.rememberme.ui.settings.SettingsSearchResults(Modifier.padding(pad), query, hits, { icons[it] ?: Ms.Settings }) { key ->
                 searching = false
                 query = ""

@@ -174,7 +174,7 @@ object RestoreReader {
 
     /** True when the data says `version` above 1 (written by a newer app). */
     fun newerFormat(bytes: ByteArray): Boolean = runCatching {
-        val text = dataJson(bytes).first?.removePrefix("﻿") ?: return false
+        val text = dataJson(bytes).first?.removePrefix(Char(0xFEFF).toString()) ?: return false
         val root = Codec.json.parseToJsonElement(text) as JsonObject
         ((root["version"] as JsonPrimitive).intOrNull ?: 0) > 1
     }.getOrDefault(false)

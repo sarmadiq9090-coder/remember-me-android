@@ -38,7 +38,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -97,7 +96,7 @@ fun ListsScreen(
     onTrash: () -> Unit = {},
     onBack: () -> Unit,
 ) {
-    val context = LocalContext.current
+    val res = androidx.compose.ui.platform.LocalResources.current
     var reorder by rememberSaveable { mutableStateOf(false) }
     var topMenu by remember { mutableStateOf(false) }
     var rowMenu by remember { mutableStateOf<String?>(null) }
@@ -208,7 +207,7 @@ fun ListsScreen(
                                 Modifier.heightIn(min = Dimens.touch)
                                     .combinedClickable(role = Role.Button, onLongClick = { tagMenu = tag }, onClick = open)
                                     .semantics(mergeDescendants = true) {
-                                        contentDescription = context.resources.getQuantityString(R.plurals.set_tag_cd, n, tag, n.toString())
+                                        contentDescription = res.getQuantityString(R.plurals.set_tag_cd, n, tag, n.toString())
                                         customActions = listOf(
                                             CustomAccessibilityAction(renameLabel) { renameTag = tag; true },
                                             CustomAccessibilityAction(deleteLabel) { deleteTag = tag; true },

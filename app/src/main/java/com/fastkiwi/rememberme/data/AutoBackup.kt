@@ -2,6 +2,7 @@ package com.fastkiwi.rememberme.data
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import android.provider.DocumentsContract
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -86,7 +87,7 @@ object AutoBackup {
             val password = if (sp.encryptBackups) BackupPassword.load(app) ?: error("no password") else null
             try {
                 val state = Repo.state(app)
-                writeTo(TreeFolder(app, Uri.parse(uri)), state, now, password, if (sp.backupTones) Tones.forBackup(app, state) else emptyMap())
+                writeTo(TreeFolder(app, uri.toUri()), state, now, password, if (sp.backupTones) Tones.forBackup(app, state) else emptyMap())
             } finally {
                 password?.fill('\u0000')
             }
@@ -103,7 +104,7 @@ object AutoBackup {
         val prefs = Repo.prefs(context)
         val uri = prefs.autoBackupUri
         if (uri.isNotEmpty()) runCatching {
-            context.contentResolver.releasePersistableUriPermission(Uri.parse(uri),
+            context.contentResolver.releasePersistableUriPermission(uri.toUri(),
                 android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         }
         prefs.autoBackupUri = ""
@@ -115,12 +116,12 @@ object AutoBackup {
     fun folderName(context: Context): String? {
         val uri = Repo.prefs(context).autoBackupUri.takeIf { it.isNotEmpty() } ?: return null
         return runCatching {
-            val tree = Uri.parse(uri)
+            val tree = uri.toUri()
             val doc = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
             context.contentResolver.query(doc, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { c ->
                 if (c.moveToFirst()) c.getString(0) else null
             }
-        }.getOrNull() ?: runCatching { DocumentsContract.getTreeDocumentId(Uri.parse(uri)).substringAfterLast(':').substringAfterLast('/') }.getOrNull()
+        }.getOrNull() ?: runCatching { DocumentsContract.getTreeDocumentId(uri.toUri()).substringAfterLast(':').substringAfterLast('/') }.getOrNull()
     }
 
     /** A document tree through DocumentsContract (no androidx.documentfile dependency). */
