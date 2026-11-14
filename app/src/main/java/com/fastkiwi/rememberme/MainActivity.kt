@@ -36,7 +36,14 @@ import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.ui.AboutScreen
 import com.fastkiwi.rememberme.ui.AppTheme
 import com.fastkiwi.rememberme.ui.HealthScreen
-import com.fastkiwi.rememberme.ui.AlarmTestScreen
+// [health] begin
+import com.fastkiwi.rememberme.ui.health.AlarmTestScreen
+import com.fastkiwi.rememberme.ui.health.AlertLogScreen
+import com.fastkiwi.rememberme.ui.health.CompatReportScreen
+import com.fastkiwi.rememberme.ui.health.DndHelpScreen
+import com.fastkiwi.rememberme.ui.health.HealthFix
+import com.fastkiwi.rememberme.ui.health.TestResults
+// [health] end
 import com.fastkiwi.rememberme.ui.ScheduleStatus
 import com.fastkiwi.rememberme.ui.CompatReport
 import com.fastkiwi.rememberme.alarm.TestAlarm
@@ -69,6 +76,11 @@ sealed class Screen {
     data object Trash : Screen()
     data object About : Screen()
     data object AlarmTest : Screen()
+    // [health] begin
+    data object DndHelp : Screen()
+    data object CompatReport : Screen()
+    data object AlertLog : Screen()
+    // [health] end
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -79,6 +91,11 @@ sealed class Screen {
         Trash -> "trash"
         About -> "about"
         AlarmTest -> "alarmtest"
+        // [health] begin
+        DndHelp -> "dndhelp"
+        CompatReport -> "compatreport"
+        AlertLog -> "alertlog"
+        // [health] end
     }
 
     companion object {
@@ -90,6 +107,11 @@ sealed class Screen {
             code == "trash" -> Trash
             code == "about" -> About
             code == "alarmtest" -> AlarmTest
+            // [health] begin
+            code == "dndhelp" -> DndHelp
+            code == "compatreport" -> CompatReport
+            code == "alertlog" -> AlertLog
+            // [health] end
             else -> null
         }
     }
@@ -251,10 +273,16 @@ class MainActivity : AppCompatActivity() {
             log.lateness())
     }
 
-    private fun testResults(rec: TestAlarm.Record, now: Instant): Map<TestAlarm.Part, TestAlarm.Result> {
-        val h = health ?: Health.check(this)
-        return TestAlarm.evaluate(rec, now.toEpochMilli(), h.channel, h.channelSound, h.channelVibrates, h.dnd)
+    // [health] begin
+    private fun testResults(rec: TestAlarm.Record, now: Instant): Map<TestAlarm.Part, TestAlarm.Result> =
+        TestResults.of(rec, health ?: Health.check(this), now.toEpochMilli())
+
+    /** A Health or alert-test fix: Health's own system screens first, then the shared ones (and the permission request). */
+    private fun healthFix(what: String) {
+        if (what == "dnd_help") { push(Screen.DndHelp); return }
+        if (!HealthFix.open(this, what)) fix(what)
     }
+    // [health] end
 
     private fun report(state: AppState, now: Instant): String {
         val h = Health.check(this)
@@ -438,8 +466,9 @@ class MainActivity : AppCompatActivity() {
                 onAbout = { push(Screen.About) },
                 onBack = { pop() },
             )
+            // [health] begin
             Screen.Background -> HealthScreen(
-                health ?: Health.check(this), scheduleStatus(state, now), Makers.current(), firstRun = onboarding, now = now,
+                health ?: Health.check(this), scheduleStatus(state, now), firstRun = onboarding, now = now,
                 onCheck = {
                     lifecycleScope.launch(Dispatchers.IO) {
                         runCatching { Engine.sync(ctx, reason = "check") }
@@ -447,21 +476,33 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 onTest = { push(Screen.AlarmTest) },
-                onReport = { reportText = report(state, now) },
-                onFix = ::fix, onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() },
+                onReport = { push(Screen.CompatReport) },
+                onAlertLog = { push(Screen.AlertLog) },
+                onDndHelp = { push(Screen.DndHelp) },
+                onFix = ::healthFix, onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() },
+                onResumeCheck = { refreshHealth() },
             )
             Screen.AlarmTest -> {
-                // While a test runs, refresh every second so each part's result appears as it happens.
+                // While a test runs, refresh every second so the countdown and each part's result appear as they happen.
                 LaunchedEffect(Unit) { while (true) { delay(1000); tick = System.currentTimeMillis() } }
                 val rec = TestAlarm.record(this)
-                AlarmTestScreen(rec, testResults(rec, now),
-                    onStart = { TestAlarm.start(ctx); tick = System.currentTimeMillis() },
+                AlarmTestScreen(rec, testResults(rec, now), now.toEpochMilli(),
+                    onStart = { style, wait -> TestAlarm.start(ctx, Instant.now(), style, wait, zone); refreshHealth(); tick = System.currentTimeMillis() },
                     onAnswer = { part, yes ->
                         if (part == TestAlarm.Part.SOUND) TestAlarm.answer(ctx, sound = yes) else TestAlarm.answer(ctx, vibration = yes)
                         tick = System.currentTimeMillis()
                     },
-                    onFix = ::fix, onReport = { reportText = report(state, now) }, onBack = { pop() })
+                    onFix = ::healthFix,
+                    onCancel = { TestAlarm.cancel(ctx); tick = System.currentTimeMillis() },
+                    onDone = { pop() }, onBack = { pop() })
             }
+            Screen.DndHelp -> (health ?: Health.check(this)).let { h -> DndHelpScreen(h.dndState, h.dndAlarmsAllowed, onBack = { pop() }) }
+            Screen.CompatReport -> CompatReportScreen(report(state, now), onBack = { pop() })
+            Screen.AlertLog -> {
+                var entries by androidx.compose.runtime.remember { mutableStateOf(com.fastkiwi.rememberme.data.AlertLog(ctx).entries()) }
+                AlertLogScreen(entries, onClear = { com.fastkiwi.rememberme.data.AlertLog(ctx).clear(); entries = emptyList() }, onBack = { pop() }, now = now)
+            }
+            // [health] end
             Screen.Trash -> TrashScreen(state, now,
                 onRestore = { t -> act { s -> Tasks.restore(s, t.id) } },
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },
