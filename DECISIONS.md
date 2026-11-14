@@ -198,3 +198,23 @@ them: [RESEARCH.md](RESEARCH.md).
 ## D-014 Licence
 - Closed source under D-051: no open-source licence file. Third-party notices are kept in
   [THIRD_PARTY.md](THIRD_PARTY.md) and `LICENSES/`.
+
+## D-020 One release 1.0.0 with every approved feature (brain D-079 amendment, 2026-11-15)
+- **Decision (owner via the manager)**: «اريد فقط اصدار واحد فيه كل ميزات». One 1.0.0 (versionCode 3, same key)
+  with every feature [docs/FEATURES.md](docs/FEATURES.md) approved; gates run once on the complete build
+  (tests and lint, independent bug hunt, `torture/` suite, black-box user test, QC). No intermediate builds.
+- **Alerts**: the due channels are silent; a short foreground service (`RingService`, `shortService`, the only
+  new permission FOREGROUND_SERVICE) plays the chosen tone, at most 2 minutes; if it cannot start, the same
+  notification goes on the fallback channel with the phone's own sound. «منبّه مهم» uses alarm audio and rings
+  in silent/vibrate mode, never through Do Not Disturb unless the user's DND settings allow alarms (no DND
+  access requested). Channel ids are fixed from 1.0.0 (`due_normal_v1`, `due_alarm_v1`, `reminders_v1`,
+  `reminders_quiet_v1`, `notices_v1`, `summary_v1`); never a channel per tone.
+- **Tones from files** are copied into `files/tones/<sha256>.<ext>` (5 MB, 10 at most) instead of keeping a
+  persistable grant, so a moved or deleted file never silences a reminder.
+- **Before the first unlock** (F-026) only due times and the style are kept in device-protected storage.
+- **Hijri** uses Android's ICU Umm al-Qura calendar; tests compare every day of 1300–1600 AH with the JDK.
+- **Encrypted backups** use the RMBK1 container (FEATURES.md F-086).
+- **Design**: [DESIGN-SPEC.md](DESIGN-SPEC.md) 1.0.0 (design council v2): no NavigationBar, Quick Add from the
+  FAB, Material Symbols Rounded vendored as drawables (material-icons-extended removed).
+- **Open**: the council's 14-day owner soak on a 1.0.0-rc conflicts with "no intermediate builds"; raised with
+  the manager (default: the soak becomes part of the owner's checklist after delivery).
