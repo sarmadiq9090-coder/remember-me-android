@@ -20,6 +20,9 @@ class ReminderWidget : AppWidgetProvider() {
 
     companion object {
         private val ROWS = intArrayOf(R.id.w_row1, R.id.w_row2, R.id.w_row3, R.id.w_row4)
+        private val TIMES = intArrayOf(R.id.w_time1, R.id.w_time2, R.id.w_time3, R.id.w_time4)
+        private val TITLES = intArrayOf(R.id.w_title1, R.id.w_title2, R.id.w_title3, R.id.w_title4)
+        private val WARNS = intArrayOf(R.id.w_warn1, R.id.w_warn2, R.id.w_warn3, R.id.w_warn4)
 
         fun refresh(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
@@ -47,7 +50,19 @@ class ReminderWidget : AppWidgetProvider() {
                     if (t == null) v.setViewVisibility(row, View.GONE) else {
                         v.setViewVisibility(row, View.VISIBLE)
                         val late = !t.dueAt!!.isAfter(now)
-                        v.setTextViewText(row, (if (late) "● " else "") + t.title + " — " + L10n.dueText(c, t.dueAt, now))
+                        val zone = Repo.zone()
+                        val sameDay = t.dueAt.atZone(zone).toLocalDate() == now.atZone(zone).toLocalDate()
+                        // The time, and under it «متأخر», «غدًا» or the date; nothing extra for later today.
+                        val label = when {
+                            late -> c.getString(R.string.late_short, "").trim()
+                            sameDay -> null
+                            else -> L10n.dayText(c, t.dueAt, now)
+                        }
+                        v.setTextViewText(TIMES[i], listOfNotNull(L10n.time(c, t.dueAt), label).joinToString("\n"))
+                        v.setTextColor(TIMES[i], c.getColor(if (late) R.color.widget_error else R.color.widget_on_surface))
+                        v.setTextViewText(TITLES[i], t.title)
+                        v.setViewVisibility(WARNS[i], if (late) View.VISIBLE else View.GONE)
+                        v.setContentDescription(row, L10n.join(c, listOf(t.title, L10n.dueText(c, t.dueAt, now), label.takeIf { late })))
                     }
                 }
                 manager.updateAppWidget(id, v)

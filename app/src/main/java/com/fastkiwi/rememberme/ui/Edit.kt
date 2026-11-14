@@ -1,45 +1,56 @@
 package com.fastkiwi.rememberme.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.automirrored.rounded.Label
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.OutlinedFlag
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -50,14 +61,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.fastkiwi.rememberme.R
@@ -80,6 +96,10 @@ import java.time.ZoneOffset
 fun defaultDue(now: Instant, zone: ZoneId): LocalDateTime =
     now.atZone(zone).toLocalDateTime().withMinute(0).withSecond(0).withNano(0).plusHours(1)
 
+/**
+ * The reminder editor (DESIGN-SPEC §3.2): close at the top start, ⋮ «حذف» when editing, the fields in
+ * two groups («الموعد», «التفاصيل»), and one «حفظ» at the bottom, above the keyboard.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun EditScreen(
@@ -106,11 +126,13 @@ fun EditScreen(
     var priority by rememberSaveable { mutableStateOf(task?.priority?.code ?: "normal") }
     var category by rememberSaveable { mutableStateOf(task?.category?.code ?: "personal") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
-    var pickDate by rememberSaveable { mutableStateOf(false) }
-    var pickTime by rememberSaveable { mutableStateOf(false) }
+    var dialog by rememberSaveable { mutableStateOf<String?>(null) }
+    var menu by remember { mutableStateOf(false) }
     // What the editor opened with: a Done or snooze made meanwhile must not be undone by its old time.
     fun reminderKey() = listOf(timed, date, time, repeat, days, everyDays, everyHours).joinToString("|")
+    fun allKey() = listOf(reminderKey(), title, body, early, priority, category).joinToString("|")
     val openedKey = rememberSaveable { reminderKey() }
+    val openedAll = rememberSaveable { allKey() }
     val openedAt = rememberSaveable { task?.updatedAt?.toEpochMilli() ?: 0L }
 
     val localDate = LocalDate.parse(date)
@@ -118,6 +140,8 @@ fun EditScreen(
     val dueAt = if (timed) localToInstant(LocalDateTime.of(localDate, localTime), zone) else null
     val rep = Repeat.of(repeat)
     val dayList = days.split(',').mapNotNull { it.toIntOrNull() }
+    val changed = allKey() != openedAll
+    val bigText = LocalDensity.current.fontScale >= 1.5f
 
     fun save() {
         val input = TaskInput(
@@ -128,108 +152,154 @@ fun EditScreen(
         )
         error = onSave(input)
     }
+    fun close() { if (changed) dialog = "discard" else onBack() }
+    BackHandler(enabled = changed) { dialog = "discard" }
 
-    val timedLabel = stringResource(R.string.remind_at_time)
-    val noneLabel = stringResource(R.string.none)
-    val beforeLabel = stringResource(R.string.before)
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text(stringResource(if (task == null) R.string.new_reminder else R.string.edit_reminder)) },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) } },
-            actions = {
-                if (task != null) IconButton(onClick = { onDelete(task) }) { Icon(Icons.Filled.Delete, stringResource(R.string.delete)) }
-                TextButton(onClick = ::save, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.save)) }
-            },
-        )
-    }) { pad ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(if (task == null) R.string.new_reminder else R.string.edit_reminder)) },
+                navigationIcon = { TooltipIconButton(Icons.Rounded.Close, stringResource(R.string.back), ::close) },
+                actions = {
+                    if (task != null) Box {
+                        TooltipIconButton(Icons.Rounded.MoreVert, stringResource(R.string.more_options), { menu = true })
+                        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                            DropdownMenuItem(text = { Text(stringResource(R.string.delete)) }, onClick = { menu = false; onDelete(task) })
+                        }
+                    }
+                },
+            )
+        },
+        bottomBar = {
+            Box(Modifier.imePadding()) {
+                BottomActionBar {
+                    Button(onClick = ::save, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        Icon(Icons.Rounded.Check, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.size(Dimens.s))
+                        Text(stringResource(R.string.save))
+                    }
+                }
+            }
+        },
+    ) { pad ->
         Column(
-            Modifier.padding(pad).fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            Modifier.padding(pad).fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = Dimens.l),
+            verticalArrangement = Arrangement.spacedBy(Dimens.s),
         ) {
             OutlinedTextField(
                 value = title, onValueChange = { title = it.take(200); error = null }, label = { Text(stringResource(R.string.title)) },
-                isError = error != null, supportingText = error?.let { { Text(it) } }, singleLine = false, maxLines = 3,
+                isError = error != null, supportingText = error?.let { { Text(it) } }, maxLines = 3,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l),
             )
             OutlinedTextField(
                 value = body, onValueChange = { body = it.take(20_000) }, label = { Text(stringResource(R.string.note)) },
-                minLines = 2, maxLines = 8, modifier = Modifier.fillMaxWidth(),
+                minLines = 2, maxLines = 8, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l),
             )
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.remind_at_time), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Switch(checked = timed, onCheckedChange = { timed = it }, modifier = Modifier.semantics { contentDescription = timedLabel })
-            }
+            SectionHeader(stringResource(R.string.schedule_section))
+            val rows = mutableListOf<@Composable () -> Unit>()
+            rows += { SwitchRow(Icons.Rounded.Alarm, stringResource(R.string.remind_at_time), null, timed) { timed = it } }
             if (timed) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(onClick = { pickDate = true }, modifier = Modifier.weight(1.4f).heightIn(min = 48.dp)) {
-                        Icon(Icons.Filled.CalendarMonth, null, modifier = Modifier.padding(end = 6.dp))
-                        Text(L10n.date(context, dueAt!!, zone), maxLines = 2)
-                    }
-                    OutlinedButton(onClick = { pickTime = true }, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
-                        Icon(Icons.Filled.Schedule, null, modifier = Modifier.padding(end = 6.dp))
-                        Text(L10n.time(context, dueAt!!, zone))
-                    }
-                }
-                if (task == null && !dueAt!!.isAfter(now)) Text(stringResource(R.string.time_passed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-
-                Choice(
-                    label = stringResource(R.string.repeat),
-                    options = Repeat.entries.map { it.code to repeatLabel(it) },
-                    selected = repeat, onSelect = { repeat = it },
-                )
+                rows += { SettingsRow(Icons.Rounded.Event, stringResource(R.string.date), L10n.date(context, dueAt!!, zone), { dialog = "date" }, overline = true) }
+                rows += { SettingsRow(Icons.Rounded.Schedule, stringResource(R.string.time), L10n.time(context, dueAt!!, zone), { dialog = "time" }, overline = true) }
+                rows += { SettingsRow(Icons.Rounded.Repeat, stringResource(R.string.repeat), repeatLabel(rep), { dialog = "repeat" }, overline = true) }
                 when (rep) {
-                    Repeat.DAYS -> FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        L10n.weekdays(weekStart).forEach { d ->
-                            val on = d in dayList || (dayList.isEmpty() && d == jsDay(localDate))
-                            FilterChip(selected = on, onClick = {
-                                val base = dayList.ifEmpty { listOf(jsDay(localDate)) }
-                                val next = if (on) base - d else base + d
-                                days = next.distinct().sorted().joinToString(",")
-                            }, label = { Text(L10n.weekdayName(context, d)) }, modifier = Modifier.heightIn(min = 48.dp))
+                    Repeat.DAYS -> rows += {
+                        Column(Modifier.padding(horizontal = Dimens.l, vertical = Dimens.m)) {
+                            FlowRow(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                                L10n.weekdays(weekStart).forEach { d ->
+                                    val on = d in dayList || (dayList.isEmpty() && d == jsDay(localDate))
+                                    WeekdayToggle(L10n.weekdayLetter(context, d), L10n.weekdayName(context, d), on) {
+                                        val base = dayList.ifEmpty { listOf(jsDay(localDate)) }
+                                        val next = if (on) base - d else base + d
+                                        if (next.isNotEmpty()) days = next.distinct().sorted().joinToString(",")
+                                    }
+                                }
+                            }
+                            val chosen = dayList.ifEmpty { listOf(jsDay(localDate)) }
+                            Text(
+                                L10n.daysSummary(context, weekStart, chosen),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = Dimens.s),
+                            )
                         }
                     }
-                    Repeat.INTERVAL -> Stepper(stringResource(R.string.every_n_days), everyDays, 2, 365) { everyDays = it }
-                    Repeat.HOURS -> {
-                        Stepper(stringResource(R.string.every_n_hours), everyHours, 1, 23) { everyHours = it }
-                        Text(stringResource(R.string.hours_windows_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Repeat.INTERVAL -> rows += { Stepper(stringResource(R.string.every_n_days), everyDays, 2, 365) { everyDays = it } }
+                    Repeat.HOURS -> rows += {
+                        Column {
+                            Stepper(stringResource(R.string.every_n_hours), everyHours, 1, 23) { everyHours = it }
+                            Text(stringResource(R.string.hours_note_short), style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = Dimens.l, end = Dimens.l, bottom = Dimens.m))
+                        }
                     }
                     else -> Unit
                 }
-                Choice(
-                    label = stringResource(R.string.early_notice),
-                    options = (listOf(0) + EARLY_MINUTES).map { it.toString() to (if (it == 0) noneLabel else beforeLabel.replace("%1\$s", L10n.duration(context, it.toLong()))) },
-                    selected = early.toString(), onSelect = { early = it.toInt() },
-                )
+                rows += { SettingsRow(Icons.Rounded.Notifications, stringResource(R.string.early_notice), earlyLabel(early), { dialog = "early" }, overline = true) }
             }
-            Text(stringResource(R.string.priority), style = MaterialTheme.typography.titleMedium)
-            Segments(Priority.entries.map { it.code to stringResource(when (it) { Priority.NORMAL -> R.string.priority_normal; Priority.MEDIUM -> R.string.priority_medium; Priority.HIGH -> R.string.priority_high }) }, priority) { priority = it }
-            Text(stringResource(R.string.category), style = MaterialTheme.typography.titleMedium)
-            Segments(Category.entries.map { it.code to stringResource(when (it) { Category.PERSONAL -> R.string.cat_personal; Category.WORK -> R.string.cat_work; Category.STUDY -> R.string.cat_study }) }, category) { category = it }
-            Button(onClick = ::save, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text(stringResource(R.string.save)) }
+            Group(rows)
+            if (timed && task == null && !dueAt!!.isAfter(now)) Row(Modifier.padding(horizontal = Dimens.xxl), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.size(Dimens.s))
+                Text(stringResource(R.string.time_passed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            }
+            SectionHeader(stringResource(R.string.details_section))
+            val priorities = Priority.entries.map { it.code to priorityName(it) }
+            val categories = Category.entries.map { it.code to categoryName(it) }
+            if (bigText) {
+                Group(listOf(
+                    { SettingsRow(Icons.Rounded.Flag, stringResource(R.string.priority), priorities.first { it.first == priority }.second, { dialog = "priority" }, overline = true) },
+                    { SettingsRow(Icons.AutoMirrored.Rounded.Label, stringResource(R.string.category), categories.first { it.first == category }.second, { dialog = "category" }, overline = true) },
+                ))
+            } else {
+                Column(Modifier.padding(horizontal = Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
+                    Text(stringResource(R.string.priority), style = MaterialTheme.typography.titleSmall)
+                    Segments(priorities, priority, icons = mapOf("medium" to Icons.Rounded.OutlinedFlag, "high" to Icons.Rounded.Flag)) { priority = it }
+                    Spacer(Modifier.height(Dimens.s))
+                    Text(stringResource(R.string.category), style = MaterialTheme.typography.titleSmall)
+                    Segments(categories, category) { category = it }
+                }
+            }
+            Spacer(Modifier.height(Dimens.l))
         }
     }
 
-    if (pickDate) {
-        val state = rememberDatePickerState(initialSelectedDateMillis = localDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
-        DatePickerDialog(
-            onDismissRequest = { pickDate = false },
-            confirmButton = { TextButton(onClick = {
-                state.selectedDateMillis?.let { date = Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
-                pickDate = false
-            }) { Text(stringResource(R.string.ok)) } },
-            dismissButton = { TextButton(onClick = { pickDate = false }) { Text(stringResource(R.string.cancel)) } },
-        ) { DatePicker(state = state) }
-    }
-    if (pickTime) {
-        val state = rememberTimePickerState(localTime.hour, localTime.minute, L10n.is24(context))
-        AlertDialog(
-            onDismissRequest = { pickTime = false },
-            confirmButton = { TextButton(onClick = { time = LocalTime.of(state.hour, state.minute).toString(); pickTime = false }) { Text(stringResource(R.string.ok)) } },
-            dismissButton = { TextButton(onClick = { pickTime = false }) { Text(stringResource(R.string.cancel)) } },
-            text = { TimePicker(state = state) },
+    when (dialog) {
+        "date" -> {
+            val state = rememberDatePickerState(initialSelectedDateMillis = localDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
+            DatePickerDialog(
+                onDismissRequest = { dialog = null },
+                dismissButton = { TextButton(onClick = { dialog = null }) { Text(stringResource(R.string.cancel)) } },
+                confirmButton = { TextButton(onClick = {
+                    state.selectedDateMillis?.let { date = Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
+                    dialog = null
+                }) { Text(stringResource(R.string.ok)) } },
+            ) { DatePicker(state = state) }
+        }
+        "time" -> {
+            val state = rememberTimePickerState(localTime.hour, localTime.minute, L10n.is24(context))
+            AlertDialog(
+                onDismissRequest = { dialog = null },
+                dismissButton = { TextButton(onClick = { dialog = null }) { Text(stringResource(R.string.cancel)) } },
+                confirmButton = { TextButton(onClick = { time = LocalTime.of(state.hour, state.minute).toString(); dialog = null }) { Text(stringResource(R.string.ok)) } },
+                text = { TimePicker(state = state) },
+            )
+        }
+        "repeat" -> ChoiceDialog(
+            stringResource(R.string.repeat), Repeat.entries.map { it.code to repeatLabel(it) }, repeat, { repeat = it }, { dialog = null },
+            supporting = mapOf(Repeat.HOURS.code to stringResource(R.string.hours_note_short)),
         )
+        "early" -> ChoiceDialog(stringResource(R.string.early_notice), (listOf(0) + EARLY_MINUTES).map { it.toString() to earlyLabel(it) }, early.toString(), { early = it.toInt() }, { dialog = null })
+        "priority" -> ChoiceDialog(stringResource(R.string.priority), Priority.entries.map { it.code to priorityName(it) }, priority, { priority = it }, { dialog = null })
+        "category" -> ChoiceDialog(stringResource(R.string.category), Category.entries.map { it.code to categoryName(it) }, category, { category = it }, { dialog = null })
+        "discard" -> ConfirmDialog(stringResource(R.string.discard_title), null, stringResource(R.string.discard), onBack, { dialog = null },
+            dismissLabel = stringResource(R.string.keep_editing))
     }
+}
+
+@Composable
+fun earlyLabel(minutes: Int): String {
+    val context = LocalContext.current
+    return if (minutes == 0) stringResource(R.string.none) else stringResource(R.string.before, L10n.duration(context, minutes.toLong()))
 }
 
 @Composable
@@ -244,32 +314,38 @@ fun repeatLabel(r: Repeat): String = stringResource(when (r) {
     Repeat.YEARLY -> R.string.repeat_yearly
 })
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** A round weekday toggle: 44 dp drawn in a 48 dp target; the letter shown, the full name spoken. */
 @Composable
-fun Choice(label: String, options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit) {
-    var open by rememberSaveable { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
-        OutlinedTextField(
-            value = options.firstOrNull { it.first == selected }?.second ?: "", onValueChange = {}, readOnly = true,
-            label = { Text(label) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(open) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-        )
-        ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            options.forEach { (code, text) ->
-                DropdownMenuItem(text = { Text(text) }, onClick = { onSelect(code); open = false }, modifier = Modifier.heightIn(min = 48.dp))
-            }
+fun WeekdayToggle(letter: String, name: String, on: Boolean, onToggle: () -> Unit) {
+    val selected = stringResource(R.string.weekday_selected)
+    val notSelected = stringResource(R.string.weekday_not_selected)
+    Box(
+        Modifier.size(Dimens.touch)
+            .toggleable(value = on, role = Role.Checkbox) { onToggle() }
+            .semantics { contentDescription = name; stateDescription = if (on) selected else notSelected },
+        contentAlignment = Alignment.Center,
+    ) {
+        val shape = CircleShape
+        Box(
+            Modifier.size(42.dp).background(if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLowest, shape)
+                .let { if (on) it else it.border(1.dp, MaterialTheme.colorScheme.outline, shape) },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(letter, style = MaterialTheme.typography.titleMedium.copy(fontWeight = if (on) FontWeight.Bold else FontWeight.Normal),
+                color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Segments(options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit) {
+fun Segments(options: List<Pair<String, String>>, selected: String, icons: Map<String, androidx.compose.ui.graphics.vector.ImageVector> = emptyMap(), onSelect: (String) -> Unit) {
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
         options.forEachIndexed { i, (code, text) ->
             SegmentedButton(
                 selected = code == selected, onClick = { onSelect(code) },
                 shape = SegmentedButtonDefaults.itemShape(i, options.size), modifier = Modifier.heightIn(min = 48.dp),
+                icon = { SegmentedButtonDefaults.Icon(code == selected) { icons[code]?.let { Icon(it, null, Modifier.size(18.dp)) } } },
             ) { Text(text, maxLines = 1) }
         }
     }
@@ -277,11 +353,10 @@ fun Segments(options: List<Pair<String, String>>, selected: String, onSelect: (S
 
 @Composable
 fun Stepper(label: String, value: Int, min: Int, max: Int, onChange: (Int) -> Unit) {
-    val context = LocalContext.current
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        IconButton(onClick = { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min) { Icon(Icons.Filled.Remove, stringResource(R.string.decrease)) }
-        Text(value.toString(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 8.dp))
-        IconButton(onClick = { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max) { Icon(Icons.Filled.Add, stringResource(R.string.increase)) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l, vertical = Dimens.xs)) {
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        TooltipIconButton(Icons.Rounded.Remove, stringResource(R.string.decrease), { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min)
+        Text(value.toString(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = Dimens.s))
+        TooltipIconButton(Icons.Rounded.Add, stringResource(R.string.increase), { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max)
     }
 }

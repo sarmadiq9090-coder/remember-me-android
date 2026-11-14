@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="brand_dark">#123B2A</color>
+    <!-- Widget colours: the app's light scheme (values-night has the dark one). -->
+    <color name="widget_surface">#F7FAF5</color>
+    <color name="widget_container">#EBEFEA</color>
+    <color name="widget_on_surface">#181D1A</color>
+    <color name="widget_muted">#404943</color>
+    <color name="widget_error">#BA1A1A</color>
+    <color name="widget_primary">#246A4B</color>
+    <color name="widget_on_primary">#FFFFFF</color>
 </resources>

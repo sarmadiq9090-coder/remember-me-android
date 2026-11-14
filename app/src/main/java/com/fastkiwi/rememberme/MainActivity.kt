@@ -27,6 +27,8 @@ import com.fastkiwi.rememberme.core.Completion
 import com.fastkiwi.rememberme.core.TaskException
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.data.Backup
+import com.fastkiwi.rememberme.data.Ics
+import com.fastkiwi.rememberme.ui.SnackRequest
 import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.ui.AboutScreen
 import com.fastkiwi.rememberme.ui.AppTheme
@@ -87,6 +89,24 @@ class MainActivity : AppCompatActivity() {
     private var health by mutableStateOf<Health?>(null)
     private var tick by mutableLongStateOf(System.currentTimeMillis())
     private var safety by mutableStateOf(listOf<File>())
+    /** A snackbar for Home to show (the undo of a delete made in the editor). */
+    private var homeSnack by mutableStateOf<SnackRequest?>(null)
+    /** The permissions screen was opened by the first start (it then has «متابعة»). */
+    private var onboarding by mutableStateOf(false)
+
+    private val icsExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
+        uri ?: return@registerForActivityResult
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    contentResolver.openOutputStream(uri, "wt")!!.use {
+                        it.write(Ics.export(Repo.state(this@MainActivity), Repo.zone(), Instant.now()).toByteArray(Charsets.UTF_8))
+                    }
+                }.isSuccess
+            }
+            toast(if (ok) R.string.export_done else R.string.export_failed)
+        }
+    }
 
     private val notifPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { refreshHealth() }
     private val exporter = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
@@ -145,11 +165,15 @@ class MainActivity : AppCompatActivity() {
         if (!prefs.onboarded) {
             prefs.onboarded = true
             stack = stack + Screen.Background
+            onboarding = true
             askNotifications()
         }
         setContent {
             val state by Repo.store(this).state.collectAsState()
-            AppTheme(Repo.theme(state)) { Root(state) }
+            val reduced = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+            AppTheme(Repo.theme(state)) {
+                androidx.compose.runtime.CompositionLocalProvider(com.fastkiwi.rememberme.ui.LocalReducedMotion provides reduced) { Root(state) }
+            }
             LaunchedEffect(Unit) {
                 // The lists show "late by" and move items between tabs as time passes.
                 while (true) { delay(30_000); tick = System.currentTimeMillis() }
@@ -255,6 +279,8 @@ class MainActivity : AppCompatActivity() {
                     onHealth = { push(Screen.Background) },
                     onBackup = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
                     onDismissBackup = { prefs.backupNudgeDismissed = System.currentTimeMillis(); tick = System.currentTimeMillis() },
+                    snack = homeSnack,
+                    onSnackShown = { homeSnack = null },
                 )
             }
             is Screen.Edit -> {
@@ -278,12 +304,18 @@ class MainActivity : AppCompatActivity() {
                             })
                         }
                     },
-                    onDelete = { t -> act { s -> Tasks.trash(s, t.id, Instant.now()) }; pop() },
+                    onDelete = { t ->
+                        act { s -> Tasks.trash(s, t.id, Instant.now()) }
+                        homeSnack = SnackRequest(getString(R.string.moved_to_trash)) { act { s -> Tasks.restore(s, t.id) } }
+                        pop()
+                    },
                     onBack = { pop() },
                 )
             }
             Screen.Settings -> SettingsScreen(
-                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state), prefs.lockPrivacy),
+                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state), prefs.lockPrivacy,
+                    essentialOff = (health ?: Health.check(this)).let { h -> listOf(h.notifications, h.channel, h.exact).count { !it } },
+                    trashCount = state.tasks.count { it.deletedAt != null }),
                 safety = safety,
                 onLanguage = { prefs.language = it; L10n.apply(this); Notifier.channels(this); Engine.syncAsync(this) },
                 onTheme = { setSetting("theme", JsonPrimitive(it)) },
@@ -299,6 +331,7 @@ class MainActivity : AppCompatActivity() {
                 onLockPrivacy = { prefs.lockPrivacy = it; tick = System.currentTimeMillis(); Engine.syncAsync(this) },
                 onBackground = { push(Screen.Background) },
                 onExport = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
+                onExportIcs = { icsExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics") },
                 onImport = { importer.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*")) },
                 onRestoreSafety = { f ->
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -310,7 +343,8 @@ class MainActivity : AppCompatActivity() {
                 onAbout = { push(Screen.About) },
                 onBack = { pop() },
             )
-            Screen.Background -> BackgroundScreen(health ?: Health.check(this), Makers.current(), onFix = ::fix, onBack = { pop() })
+            Screen.Background -> BackgroundScreen(health ?: Health.check(this), Makers.current(), firstRun = onboarding, onFix = ::fix,
+                onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() })
             Screen.Trash -> TrashScreen(state, now,
                 onRestore = { t -> act { s -> Tasks.restore(s, t.id) } },
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },

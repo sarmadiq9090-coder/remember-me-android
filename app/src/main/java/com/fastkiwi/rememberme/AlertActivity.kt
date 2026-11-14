@@ -78,6 +78,8 @@ class AlertActivity : AppCompatActivity() {
             onSnooze = { at -> act { s -> runCatching { Tasks.snooze(s, task.id, at, Instant.now(), due, checked = true) }.getOrNull() } },
             onEdit = { openInApp(task.id) },
             onLater = { finish() },
+            // Lock-screen privacy: the title and note wait for the unlock.
+            hidden = Repo.prefs(this).lockPrivacy && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
         )
     }
 

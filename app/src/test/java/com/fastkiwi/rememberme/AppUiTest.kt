@@ -23,6 +23,14 @@ import com.fastkiwi.rememberme.core.TaskInput
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.core.at
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollToNodeAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.performScrollToNode
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -108,19 +116,21 @@ class AppUiTest {
         sample(now)
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             rule.onNodeWithText("ذكرني").assertExists()
-            // Overdue reminders exist, so the app opens on the Overdue tab.
-            rule.onNodeWithText("دواء الضغط").assertExists()
-            shot("01-overdue-ar")
-            rule.onNodeWithText("اليوم").performClick()
-            rule.onNodeWithText("اجتماع الفريق").assertExists()
-            shot("02-today-ar")
-            rule.onNodeWithText("القادمة").performClick()
-            rule.onNodeWithText("دفع الإيجار").assertExists()
-            shot("03-upcoming-ar")
-            rule.onNodeWithText("تذكير جديد", useUnmergedTree = true).performClick()
+            // One list with sections (DESIGN-SPEC V1): Overdue first, then Today, then Upcoming.
+            rule.onNodeWithText("المتأخرة").assertExists()
+            rule.onNodeWithText("دواء الضغط", useUnmergedTree = true).assertExists()
+            rule.onNodeWithText("اليوم").assertExists()
+            shot("01-home-ar")
+            rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription("دفع الإيجار", substring = true))
+            rule.onNodeWithText("القادمة").assertExists()
+            shot("02-home-scrolled-ar")
+            // Scrolled down, the button is an icon: it still has its name.
+            rule.onNode(hasContentDescription("تذكير جديد") or hasText("تذكير جديد"), useUnmergedTree = true).performClick()
             rule.onNodeWithText("العنوان").performTextInput("موعد طبيب الأسنان")
             shot("04-new-reminder-ar")
-            rule.onAllNodesWithText("حفظ")[0].performClick()
+            // One «حفظ» only, at the bottom.
+            rule.onAllNodesWithText("حفظ").assertCountEquals(1)
+            rule.onNodeWithText("حفظ").performClick()
             rule.waitUntil(10_000) { Repo.state(app).tasks.any { it.title == "موعد طبيب الأسنان" && it.dueAt != null } }
             rule.onNodeWithContentDescription("الإعدادات").performClick()
             shot("06-settings-ar")
@@ -146,12 +156,59 @@ class AppUiTest {
         }
     }
 
+    /** DESIGN-SPEC §3.3: on a repeating reminder «تم» (primary) is at the end: left of «تخطَّ هذه المرة» in Arabic. */
+    @Test fun theReminderScreenPutsDoneAtTheEnd() {
+        val now = Instant.now()
+        sample(now)
+        val repeating = Tasks.due(Repo.state(app), now).first { it.repeat != Repeat.NONE }
+        val intent = Intent(app, AlertActivity::class.java).putExtra(AlertActivity.EXTRA_ID, repeating.id)
+        ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
+            rule.onAllNodesWithText("تم").assertCountEquals(1)
+            val done = rule.onNodeWithText("تم", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val skip = rule.onNodeWithText("تخطَّ هذه المرة", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue("Done $done should be left of Skip $skip in RTL", done.right <= skip.left + 1)
+            // Every clickable thing on the screen is at least 48 × 48 dp.
+            assertTouchTargets()
+        }
+    }
+
+    /** Every node with a click or toggle action is at least 48 × 48 dp (WCAG 2.5.8, Android core quality). */
+    private fun assertTouchTargets() {
+        val density = app.resources.displayMetrics.density
+        val nodes = rule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
+        for (n in nodes) {
+            val w = n.size.width / density
+            val h = n.size.height / density
+            val label = n.config.getOrNull(androidx.compose.ui.semantics.SemanticsProperties.ContentDescription)?.joinToString()
+                ?: n.config.getOrNull(androidx.compose.ui.semantics.SemanticsProperties.Text)?.joinToString()
+            assertTrue("Touch target \"$label\" is ${w}x$h dp", w >= 47.5f && h >= 47.5f)
+        }
+    }
+
+    @Test fun homeAndEditorTouchTargetsAndRowSemantics() {
+        val now = Instant.now()
+        sample(now)
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
+            assertTouchTargets()
+            // A row speaks its title, time and lateness, and offers «تم» as an action for TalkBack.
+            val row = rule.onNode(hasContentDescription("دواء الضغط، ", substring = true) and hasClickAction()).fetchSemanticsNode()
+            val desc = row.config[androidx.compose.ui.semantics.SemanticsProperties.ContentDescription].joinToString()
+            assertTrue(desc, desc.contains("متأخر") && desc.contains("، "))
+            assertFalse(desc, desc.contains("·"))
+            val actions = row.config[androidx.compose.ui.semantics.SemanticsActions.CustomActions].map { it.label }
+            assertTrue(actions.toString(), "تم" in actions)
+            rule.onNodeWithText("تذكير جديد", useUnmergedTree = true).performClick()
+            rule.waitForIdle()
+            assertTouchTargets()
+        }
+    }
+
     @Test fun searchFindsArabicWithoutDiacriticsOrHamza() {
         sample(Instant.now())
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             rule.onNodeWithContentDescription("بحث").performClick()
             rule.onNodeWithText("ابحث…").performTextInput("الايجار")
-            rule.onNodeWithText("دفع الإيجار").assertExists()
+            rule.onNodeWithText("دفع الإيجار", useUnmergedTree = true).assertExists()
         }
     }
 
@@ -169,8 +226,8 @@ class AppUiTest {
         }
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             rule.onNodeWithText("Remember Me").assertExists()
-            rule.onNodeWithText("Today").performClick()
-            rule.onNodeWithText("Team meeting").assertExists()
+            rule.onNodeWithText("Today").assertExists()
+            rule.onNodeWithText("Team meeting", useUnmergedTree = true).assertExists()
             shot("08-today-en")
         }
     }

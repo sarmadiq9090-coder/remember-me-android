@@ -1,19 +1,27 @@
 package com.fastkiwi.rememberme.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,13 +45,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.Repeat
 import com.fastkiwi.rememberme.core.SnoozePreset
@@ -67,10 +80,11 @@ fun presetLabel(context: android.content.Context, p: SnoozePreset, now: Instant,
 }
 
 /**
- * The reminder screen: the oldest due reminder first, with Done, Skip (for repeats) and the six snooze
- * choices. It stays until every due reminder is dealt with.
+ * The reminder screen (DESIGN-SPEC §3.3): the due time is the hero, then the title; the dock at the
+ * bottom never scrolls: the six snooze choices (2 × 3) and «تخطَّ هذه المرة» · «تم» (primary at the end).
+ * It stays until every due reminder is dealt with. [hidden]: lock-screen privacy, the title is not shown.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertScreen(
     task: Task,
@@ -83,53 +97,107 @@ fun AlertScreen(
     onSnooze: (Instant) -> Unit,
     onEdit: () -> Unit,
     onLater: () -> Unit,
+    hidden: Boolean = false,
 ) {
     val context = LocalContext.current
     val zone = ZoneId.systemDefault()
     var picking by rememberSaveable { mutableStateOf(false) }
-    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
-        Column(
-            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(Icons.Filled.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            if (count > 1) Text(stringResource(R.string.n_of_m, position.toString(), count.toString()), style = MaterialTheme.typography.labelLarge)
-            Text(
-                task.title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
-            )
-            val late = L10n.late(context, task.dueAt!!, now)
-            Text(
-                listOfNotNull(L10n.dueText(context, task.dueAt, now), late).joinToString(" · "),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (late != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            L10n.repeatText(context, task)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            if (task.body.isNotBlank()) Text(task.body, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth())
-            Button(onClick = onDone, modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp)) {
-                Icon(Icons.Filled.Check, null, modifier = Modifier.padding(end = 8.dp))
-                Text(stringResource(R.string.done), style = MaterialTheme.typography.titleLarge)
-            }
-            if (task.repeat != Repeat.NONE) OutlinedButton(onClick = onSkip, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
-                Text(stringResource(R.string.skip_this_time))
-            }
-            Text(stringResource(R.string.remind_me_again), style = MaterialTheme.typography.titleMedium, modifier = Modifier.fillMaxWidth())
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                presets.forEach { p ->
-                    val at = snoozeTime(p, now, zone)
-                    val enabled = p is SnoozePreset.Pick || at != null
-                    OutlinedButton(
-                        onClick = { if (p is SnoozePreset.Pick) picking = true else at?.let(onSnooze) },
-                        enabled = enabled,
-                        colors = ButtonDefaults.outlinedButtonColors(),
-                        modifier = Modifier.heightIn(min = 52.dp),
-                    ) { Text(presetLabel(context, p, now, zone)) }
+    val bigText = LocalDensity.current.fontScale >= 1.5f
+    val due = task.dueAt!!
+    val minutesLate = (now.toEpochMilli() - due.toEpochMilli()) / 60_000
+    val late = minutesLate >= 1
+    val title = if (hidden) stringResource(R.string.reminder) else task.title
+    val snoozeGrid: @Composable () -> Unit = {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.m)) {
+                    presets.chunked(if (bigText) 1 else 2).forEach { pair ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.m)) {
+                            pair.forEach { p ->
+                                val at = snoozeTime(p, now, zone)
+                                OutlinedButton(
+                                    onClick = { if (p is SnoozePreset.Pick) picking = true else at?.let(onSnooze) },
+                                    enabled = p is SnoozePreset.Pick || at != null,
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                                    modifier = Modifier.weight(1f).heightIn(min = Dimens.touch),
+                                ) { Text(presetLabel(context, p, now, zone), textAlign = TextAlign.Center) }
+                            }
+                        }
+                    }
+        }
+    }
+    Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }) {
+        Column(Modifier.fillMaxSize()) {
+            // Top row: the queue at the start; edit and «لاحقًا» at the end.
+            Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = Dimens.l, vertical = Dimens.s), verticalAlignment = Alignment.CenterVertically) {
+                if (count > 1) Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+                    Text(stringResource(R.string.n_of_m, position.toString(), count.toString()), style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = Dimens.l, vertical = Dimens.s))
+                }
+                Spacer(Modifier.weight(1f))
+                TooltipIconButton(Icons.Rounded.Edit, stringResource(R.string.open_task), onEdit)
+                val laterDesc = stringResource(R.string.keep_waiting)
+                TextButton(onClick = onLater, modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = laterDesc }) {
+                    Text(stringResource(R.string.later))
                 }
             }
-            TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.open_task)) }
-            TextButton(onClick = onLater, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.keep_waiting)) }
+            // The hero scrolls if the text is large; the dock below never does.
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dimens.l),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Dimens.m),
+            ) {
+                Spacer(Modifier.size(Dimens.l))
+                Box(Modifier.size(64.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Rounded.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
+                }
+                TimeText(due, MaterialTheme.typography.displayLarge, if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, ampmSize = 28)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (late) Icon(Icons.Rounded.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp).padding(end = Dimens.xs))
+                    Text(
+                        if (late) L10n.lateLine(context, due, now)
+                        else stringResource(R.string.due_now),
+                        style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
+                        color = if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
+                    modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite })
+                if (!hidden) {
+                    TaskMeta(task, center = true)
+                    if (task.body.isNotBlank()) Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
+                        Text(task.body, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(Dimens.l))
+                    }
+                }
+                // At large text the dock keeps only «تم» (and «تخطَّ»), so the time and title stay visible;
+                // the snooze choices scroll with the reminder instead.
+                if (bigText) {
+                    Text(stringResource(R.string.remind_me_again), style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth())
+                    snoozeGrid()
+                }
+                Spacer(Modifier.size(Dimens.l))
+            }
+            // The dock.
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)) {
+                Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.m)) {
+                    if (!bigText) {
+                        Text(stringResource(R.string.remind_me_again), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        snoozeGrid()
+                    }
+                    val done: @Composable (Modifier) -> Unit = { m ->
+                        Button(onClick = onDone, modifier = m.heightIn(min = 64.dp)) {
+                            Icon(Icons.Rounded.Check, null, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.size(Dimens.s))
+                            Text(stringResource(R.string.done), style = MaterialTheme.typography.labelLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+                        }
+                    }
+                    if (task.repeat == Repeat.NONE) done(Modifier.fillMaxWidth())
+                    else ButtonPair(
+                        stacked = bigText,
+                        secondary = { m -> OutlinedButton(onClick = onSkip, modifier = m.heightIn(min = 64.dp)) { Text(stringResource(R.string.skip_this_time), textAlign = TextAlign.Center) } },
+                        primary = done,
+                    )
+                }
+            }
         }
     }
     if (picking) SnoozePicker(now, zone, onPick = { picking = false; onSnooze(it) }, onCancel = { picking = false })
@@ -146,8 +214,8 @@ fun SnoozePicker(now: Instant, zone: ZoneId, onPick: (Instant) -> Unit, onCancel
         val state = rememberDatePickerState(initialSelectedDateMillis = today.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
         DatePickerDialog(
             onDismissRequest = onCancel,
-            confirmButton = { TextButton(onClick = { day = state.selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() } ?: today.toString() }) { Text(stringResource(R.string.ok)) } },
             dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) } },
+            confirmButton = { TextButton(onClick = { day = state.selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() } ?: today.toString() }) { Text(stringResource(R.string.ok)) } },
         ) { DatePicker(state = state) }
     } else {
         val base = now.atZone(zone).toLocalTime().plusHours(1).withMinute(0)
@@ -155,11 +223,11 @@ fun SnoozePicker(now: Instant, zone: ZoneId, onPick: (Instant) -> Unit, onCancel
         var error by rememberSaveable { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = onCancel,
+            dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) } },
             confirmButton = { TextButton(onClick = {
                 val at = localToInstant(LocalDateTime.of(LocalDate.parse(day), LocalTime.of(state.hour, state.minute)), zone)
                 if (at.isAfter(Instant.now())) onPick(at) else error = true
             }) { Text(stringResource(R.string.ok)) } },
-            dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) } },
             text = {
                 Column {
                     TimePicker(state = state)

@@ -21,6 +21,7 @@ import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.Repo
 import com.fastkiwi.rememberme.core.Codec
 import com.fastkiwi.rememberme.core.Task
+import com.fastkiwi.rememberme.core.snoozeTime
 import com.fastkiwi.rememberme.ui.L10n
 import java.time.Instant
 
@@ -100,13 +101,15 @@ object Notifier {
         val open = PendingIntent.getActivity(context, code(t.id, 1), alertIntent(context, t.id), flags())
         val title = t.title
         val late = L10n.late(c, t.dueAt!!, now)
-        val text = listOfNotNull(late ?: c.getString(R.string.due_now), t.body.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }).joinToString(" · ")
+        // «حان الوقت، 2:00 م، كل يوم» or «متأخر 22 ساعة، …», joined with the language's separator (never «·»).
+        val status = if (late != null) c.getString(R.string.late_short, L10n.duration(c, (now.toEpochMilli() - t.dueAt.toEpochMilli()) / 60_000)) else c.getString(R.string.due_now)
+        val text = L10n.join(c, listOf(status, L10n.time(c, t.dueAt), L10n.repeatText(c, t)))
         val channel = if (loud && sound) CH_ALERT else CH_QUIET
         val b = NotificationCompat.Builder(c, channel)
             .setSmallIcon(R.drawable.ic_stat_bell)
             .setContentTitle(title)
             .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(late ?: c.getString(R.string.due_now), t.body.takeIf { it.isNotBlank() }).joinToString("\n")))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(text, t.body.takeIf { it.isNotBlank() }).joinToString("\n")))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
@@ -116,11 +119,11 @@ object Notifier {
             .setWhen(t.dueAt.toEpochMilli())
             .setShowWhen(true)
             .setGroup(GROUP)
-            .setColor(0xFF2F6249.toInt())
+            .setColor(0xFF246A4B.toInt())
             .setContentIntent(open)
             .setDeleteIntent(action(context, ActionReceiver.DISMISSED, t))
             .addAction(R.drawable.ic_check, c.getString(R.string.done), action(context, ActionReceiver.DONE, t))
-            .addAction(R.drawable.ic_snooze, c.getString(R.string.snooze), action(context, ActionReceiver.SNOOZE, t))
+            .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), action(context, ActionReceiver.SNOOZE, t))
         // Lock screen: title by default; with privacy on, only «تذكير».
         if (Repo.prefs(context).lockPrivacy) {
             b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
@@ -131,6 +134,14 @@ object Notifier {
         try {
             NotificationManagerCompat.from(context).notify(TAG_DUE + t.id, 0, b.build())
         } catch (_: SecurityException) { /* permission withdrawn meanwhile */ }
+    }
+
+    /** «أجّل 10 دقائق»: says what the button does (the first snooze choice that applies now). */
+    fun snoozeLabel(c: Context, now: Instant): String {
+        val zone = Repo.zone()
+        val preset = Repo.presets(Repo.state(c)).firstOrNull { snoozeTime(it, now, zone) != null }
+            ?: return c.getString(R.string.snooze_for, L10n.duration(c, 10))
+        return c.getString(R.string.snooze_for, com.fastkiwi.rememberme.ui.presetLabel(c, preset, now, zone))
     }
 
     fun postSummary(context: Context, count: Int) {

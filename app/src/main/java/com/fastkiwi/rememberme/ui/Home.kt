@@ -2,53 +2,52 @@ package com.fastkiwi.rememberme.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PriorityHigh
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -60,21 +59,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.AppState
-import com.fastkiwi.rememberme.core.Repeat
 import com.fastkiwi.rememberme.core.Task
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -82,7 +90,7 @@ import java.time.ZoneId
 
 enum class Tab { OVERDUE, TODAY, UPCOMING, DONE }
 
-/** Which tab a task belongs to. Tasks without a time are listed under Upcoming, after the dated ones. */
+/** Which section a task belongs to. Tasks without a time are listed under Upcoming, after the dated ones. */
 fun tabOf(t: Task, now: Instant, zone: ZoneId): Tab? {
     if (t.deletedAt != null) return null
     if (t.completedAt != null) return Tab.DONE
@@ -121,6 +129,9 @@ fun fold(s: String): String = buildString(s.length) {
     }
 }
 
+/** A snackbar another screen asks Home to show (a delete from the editor, with its undo). */
+data class SnackRequest(val text: String, val undo: (() -> Unit)?)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -139,22 +150,38 @@ fun HomeScreen(
     onHealth: () -> Unit,
     onBackup: () -> Unit,
     onDismissBackup: () -> Unit,
+    snack: SnackRequest? = null,
+    onSnackShown: () -> Unit = {},
 ) {
     val zone = ZoneId.systemDefault()
-    val overdue = listFor(state, Tab.OVERDUE, now, zone)
-    var tab by rememberSaveable { mutableStateOf(if (overdue.isNotEmpty()) Tab.OVERDUE else Tab.TODAY) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
+    var showDone by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val doneText = stringResource(R.string.marked_done)
     val trashedText = stringResource(R.string.moved_to_trash)
     val undoText = stringResource(R.string.undo)
+    val listState = rememberLazyListState()
 
-    fun snack(text: String, undo: () -> Unit) {
+    fun showSnack(text: String, undo: (() -> Unit)?) {
         scope.launch {
-            val r = snackbar.showSnackbar(text, undoText, withDismissAction = true, duration = SnackbarDuration.Long)
-            if (r == SnackbarResult.ActionPerformed) undo()
+            snackbar.currentSnackbarData?.dismiss()
+            val r = snackbar.showSnackbar(text, if (undo != null) undoText else null, withDismissAction = true, duration = SnackbarDuration.Long)
+            if (r == SnackbarResult.ActionPerformed) undo?.invoke()
+        }
+    }
+    LaunchedEffect(snack) { if (snack != null) { showSnack(snack.text, snack.undo); onSnackShown() } }
+
+    // The FAB shows its label at the top and while scrolling up; an icon while scrolling down.
+    var expanded by remember { mutableStateOf(true) }
+    LaunchedEffect(listState) {
+        var pi = 0
+        var po = 0
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }.collect { (i, o) ->
+            expanded = (i == 0 && o == 0) || i < pi || (i == pi && o < po)
+            pi = i
+            po = o
         }
     }
 
@@ -164,138 +191,200 @@ fun HomeScreen(
                 val focus = remember { FocusRequester() }
                 LaunchedEffect(Unit) { focus.requestFocus() }
                 TopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = { searching = false; query = "" }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.close_search))
-                        }
-                    },
+                    navigationIcon = { TooltipIconButton(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.close_search), { searching = false; query = "" }) },
                     title = {
                         TextField(
                             value = query, onValueChange = { query = it.take(200) }, singleLine = true,
                             placeholder = { Text(stringResource(R.string.search_hint)) },
-                            colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent),
-                            modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                            shape = CircleShape,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                            ),
+                            modifier = Modifier.fillMaxWidth().padding(end = Dimens.s).focusRequester(focus),
                         )
                     },
-                    actions = {
-                        if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Filled.Close, stringResource(R.string.clear)) }
-                    },
+                    actions = { if (query.isNotEmpty()) TooltipIconButton(Icons.Rounded.Close, stringResource(R.string.clear), { query = "" }) },
                 )
             } else {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.app_name), modifier = Modifier.semantics { heading() }) },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            BrandMark(32.dp)
+                            Spacer(Modifier.size(Dimens.m))
+                            Text(stringResource(R.string.app_name), modifier = Modifier.semantics { heading() })
+                        }
+                    },
                     actions = {
-                        IconButton(onClick = { searching = true }) { Icon(Icons.Filled.Search, stringResource(R.string.search)) }
-                        IconButton(onClick = onSettings) { Icon(Icons.Filled.Settings, stringResource(R.string.settings)) }
+                        TooltipIconButton(Icons.Rounded.Search, stringResource(R.string.search), { searching = true })
+                        TooltipIconButton(Icons.Rounded.Settings, stringResource(R.string.settings), onSettings)
                     },
                 )
             }
         },
         floatingActionButton = {
-            if (!searching) ExtendedFloatingActionButton(onClick = onNew, icon = { Icon(Icons.Filled.Add, null) }, text = { Text(stringResource(R.string.new_reminder)) })
+            if (!searching) ExtendedFloatingActionButton(
+                onClick = onNew, expanded = expanded,
+                // Collapsed to an icon while scrolling down: then the icon carries the label for TalkBack.
+                icon = { Icon(Icons.Rounded.Add, if (expanded) null else stringResource(R.string.new_reminder)) },
+                text = { Text(stringResource(R.string.new_reminder)) },
+                containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary,
+            )
         },
+        floatingActionButtonPosition = FabPosition.Center,
         snackbarHost = { SnackbarHost(snackbar) },
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
-            if (!health.essentialOk) Banner(stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
-            else if (backupNudge) Banner(stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
-            val items: List<Task>
-            if (searching) {
-                items = search(state, query)
-            } else {
-                PrimaryScrollableTabRow(selectedTabIndex = tab.ordinal, edgePadding = 8.dp) {
-                    Tab.entries.forEach { t ->
-                        val label = stringResource(when (t) { Tab.OVERDUE -> R.string.tab_overdue; Tab.TODAY -> R.string.tab_today; Tab.UPCOMING -> R.string.tab_upcoming; Tab.DONE -> R.string.tab_done })
-                        Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.heightIn(min = 48.dp), text = {
-                            if (t == Tab.OVERDUE && overdue.isNotEmpty()) {
-                                BadgedBox(badge = { Badge { Text(overdue.size.toString()) } }) { Text(label, modifier = Modifier.padding(end = 12.dp)) }
-                            } else Text(label)
-                        })
-                    }
-                }
-                items = listFor(state, tab, now, zone)
+            if (!searching) {
+                if (!health.essentialOk) StatusBanner(Icons.Rounded.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
+                else if (backupNudge) StatusBanner(null, stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
             }
-            if (items.isEmpty()) {
-                Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(if (searching) (if (query.isBlank()) R.string.search_empty_hint else R.string.no_results) else when (tab) {
-                            Tab.OVERDUE -> R.string.empty_overdue; Tab.TODAY -> R.string.empty_today
-                            Tab.UPCOMING -> R.string.empty_upcoming; Tab.DONE -> R.string.empty_done
-                        }),
-                        style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            val rowActions = RowActions(
+                onClick = { t -> if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else if (t.completedAt == null) onOpen(t) },
+                onComplete = { t -> onComplete(t) { undo -> showSnack(doneText, undo) } },
+                onReopen = onReopen,
+                onTrash = { t -> onTrash(t); showSnack(trashedText) { onUndoTrash(t) } },
+            )
+            if (searching) {
+                val results = search(state, query)
+                if (results.isEmpty()) Empty(stringResource(if (query.isBlank()) R.string.search_empty_hint else R.string.no_results))
+                else LazyColumn(contentPadding = PaddingValues(top = Dimens.s, bottom = Dimens.xl)) {
+                    rows(results, now, null, rowActions)
                 }
-            } else {
-                LazyColumn(contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(items, key = { it.id }) { t ->
-                        TaskRow(t, now,
-                            onClick = { if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else if (t.completedAt == null) onOpen(t) },
-                            onComplete = { onComplete(t) { undo -> snack(doneText, undo) } },
-                            onReopen = { onReopen(t) },
-                            onTrash = { onTrash(t); snack(trashedText) { onUndoTrash(t) } },
-                        )
+                return@Column
+            }
+            val overdue = listFor(state, Tab.OVERDUE, now, zone)
+            val today = listFor(state, Tab.TODAY, now, zone)
+            val upcoming = listFor(state, Tab.UPCOMING, now, zone)
+            val done = listFor(state, Tab.DONE, now, zone)
+            if (overdue.isEmpty() && today.isEmpty() && upcoming.isEmpty() && done.isEmpty()) {
+                EmptyAll()
+                return@Column
+            }
+            LazyColumn(state = listState, contentPadding = PaddingValues(bottom = Dimens.fabClearance)) {
+                if (overdue.isNotEmpty()) {
+                    item(key = "h-overdue") { SectionHeader(stringResource(R.string.tab_overdue), overdue.size, error = true) }
+                    rows(overdue, now, Tab.OVERDUE, rowActions)
+                }
+                item(key = "h-today") { SectionHeader(stringResource(R.string.tab_today), today.size.takeIf { it > 0 }) }
+                if (today.isEmpty()) item(key = "today-empty") {
+                    Text(stringResource(R.string.empty_today_inline), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = Dimens.xxl, vertical = Dimens.s))
+                } else rows(today, now, Tab.TODAY, rowActions)
+                if (upcoming.isNotEmpty()) {
+                    item(key = "h-upcoming") { SectionHeader(stringResource(R.string.tab_upcoming), upcoming.size) }
+                    rows(upcoming, now, Tab.UPCOMING, rowActions)
+                }
+                if (done.isNotEmpty()) {
+                    item(key = "h-done") {
+                        val state = stringResource(if (showDone) R.string.section_done_hide else R.string.section_done_show)
+                        Box(Modifier.semantics { stateDescription = state }) {
+                            SectionHeader(stringResource(R.string.tab_done), done.size, onClick = { showDone = !showDone }) {
+                                Icon(if (showDone) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                     }
+                    if (showDone) rows(done, now, Tab.DONE, rowActions)
                 }
             }
         }
     }
 }
 
-@Composable
-fun Banner(text: String, action: String, alarm: Boolean, onClick: () -> Unit, onDismiss: (() -> Unit)? = null) {
-    val bg = if (alarm) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
-    val fg = if (alarm) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
-    Row(
-        Modifier.fillMaxWidth().background(bg).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (alarm) Icon(Icons.Filled.Warning, null, tint = fg)
-        Text(text, color = fg, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
-        TextButton(onClick = onClick, modifier = Modifier.heightIn(min = 48.dp)) { Text(action, color = fg) }
-        if (onDismiss != null) IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, stringResource(R.string.not_now), tint = fg) }
+data class RowActions(val onClick: (Task) -> Unit, val onComplete: (Task) -> Unit, val onReopen: (Task) -> Unit, val onTrash: (Task) -> Unit)
+
+private fun LazyListScope.rows(items: List<Task>, now: Instant, section: Tab?, a: RowActions) {
+    itemsIndexed(items, key = { _, t -> "${section?.name}-${t.id}" }) { i, t ->
+        GroupItem(i, items.size) { ReminderRow(t, now, section, a) }
     }
 }
 
 @Composable
-fun TaskRow(t: Task, now: Instant, onClick: () -> Unit, onComplete: () -> Unit, onReopen: () -> Unit, onTrash: () -> Unit) {
+private fun Empty(text: String) {
+    Box(Modifier.fillMaxSize().padding(Dimens.xxl), contentAlignment = Alignment.Center) {
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+private fun EmptyAll() {
+    Column(Modifier.fillMaxSize().padding(horizontal = Dimens.xxl).padding(bottom = Dimens.fabClearance),
+        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.size(120.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(56.dp))
+        }
+        Spacer(Modifier.height(Dimens.xl))
+        Text(stringResource(R.string.empty_all_title), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(Dimens.s))
+        Text(stringResource(R.string.empty_all_body), style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+    }
+}
+
+/** One reminder: the Done circle at the start, the time as the row's hero, the title under it, then repeat and priority. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions) {
     val context = LocalContext.current
-    val dark = isSystemInDarkTheme()
-    val overdue = t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)
-    val when_ = t.dueAt?.let { L10n.dueText(context, it, now) } ?: stringResource(R.string.no_time)
-    val late = if (overdue) L10n.late(context, t.dueAt!!, now) else null
-    val repeat = L10n.repeatText(context, t)
-    val summary = listOfNotNull(t.title, when_, late, repeat, if (t.priority.code == "high") stringResource(R.string.priority_high) else null).joinToString(", ")
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = if (overdue) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.55f) else MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = false) { contentDescription = summary },
+    val haptics = LocalHapticFeedback.current
+    val done = t.completedAt != null
+    val overdue = !done && t.dueAt != null && !t.dueAt.isAfter(now)
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val timeColor = when { overdue -> MaterialTheme.colorScheme.error; done -> muted; else -> MaterialTheme.colorScheme.onSurface }
+    // The label after the time: how late, or which day, or nothing for today.
+    val label = L10n.rowLabel(context, t, now, section == Tab.TODAY)
+    val doneLabel = stringResource(R.string.mark_done_named, t.title)
+    val doneAction = stringResource(R.string.done)
+    val summary = L10n.rowSummary(context, t, now, label, if (t.priority.code != "normal") priorityName(t.priority) else null)
+    var menu by remember { mutableStateOf(false) }
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = Dimens.rowMin)
+            .semantics(mergeDescendants = false) {
+                contentDescription = summary
+                role = Role.Button
+                if (!done) customActions = listOf(CustomAccessibilityAction(doneAction) { a.onComplete(t); true })
+            }
+            .clickable(enabled = !done) { a.onClick(t) }
+            .padding(start = Dimens.xs, end = Dimens.l, top = Dimens.s, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(Modifier.heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(6.dp).fillMaxHeight().heightIn(min = 64.dp).background(priorityColor(t.priority.code, dark)))
-            Column(Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 10.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (t.priority.code == "high") Icon(Icons.Filled.PriorityHigh, null, tint = priorityColor("high", dark), modifier = Modifier.padding(end = 4.dp))
-                    Text(t.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        // The Done target: 48 dp, a 22 dp circle drawn inside.
+        Box(
+            Modifier.size(Dimens.touch)
+                .toggleable(value = done, role = Role.Checkbox, enabled = !done) {
+                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                    a.onComplete(t)
                 }
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    listOfNotNull(if (t.completedAt != null) L10n.dueText(context, t.completedAt, now) else when_, late).joinToString(" · "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (repeat != null && t.repeat != Repeat.NONE) Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Repeat, null, modifier = Modifier.padding(end = 4.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(repeat, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                .semantics { contentDescription = doneLabel },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (done) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, null,
+                tint = if (done) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, modifier = Modifier.size(26.dp),
+            )
+        }
+        Column(Modifier.weight(1f).padding(start = Dimens.xs).clearAndSetSemantics { }) {
+            FlowRow(itemVerticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                when {
+                    done -> Text(label!!, style = MaterialTheme.typography.bodyMedium, color = muted)
+                    t.dueAt == null -> Text(stringResource(R.string.no_time), style = MaterialTheme.typography.bodyMedium, color = muted)
+                    else -> {
+                        TimeText(t.dueAt, RowTime, timeColor)
+                        if (label != null) Text(label, style = MaterialTheme.typography.bodyMedium,
+                            color = if (overdue) MaterialTheme.colorScheme.error else muted, modifier = Modifier.padding(bottom = 2.dp))
+                    }
                 }
             }
-            if (t.completedAt == null) {
-                IconButton(onClick = onComplete) {
-                    Icon(Icons.Outlined.Circle, stringResource(R.string.mark_done_named, t.title), tint = MaterialTheme.colorScheme.primary)
-                }
-            } else {
-                if (t.sourceId == null) IconButton(onClick = onReopen) { Icon(Icons.Filled.Restore, stringResource(R.string.reopen_named, t.title)) }
-                else Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(12.dp))
-                IconButton(onClick = onTrash) { Icon(Icons.Filled.Delete, stringResource(R.string.delete_named, t.title)) }
+            Text(t.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                color = if (done) muted else MaterialTheme.colorScheme.onSurface)
+            if (!done) Box(Modifier.padding(top = 2.dp)) { TaskMeta(t) }
+        }
+        if (done) Box {
+            TooltipIconButton(Icons.Rounded.MoreVert, stringResource(R.string.more_options), { menu = true })
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                if (t.sourceId == null) DropdownMenuItem(text = { Text(stringResource(R.string.reopen)) }, onClick = { menu = false; a.onReopen(t) })
+                DropdownMenuItem(text = { Text(stringResource(R.string.delete)) }, onClick = { menu = false; a.onTrash(t) })
             }
         }
     }

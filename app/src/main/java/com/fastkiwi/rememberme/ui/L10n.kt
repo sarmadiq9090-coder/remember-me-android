@@ -62,6 +62,65 @@ object L10n {
         return f.format(at.atZone(zone))
     }
 
+    /** The time as its digits and, on a 12-hour phone, the separate «م/ص» or "PM/AM" (drawn smaller). */
+    fun timeParts(context: Context, at: Instant, zone: ZoneId = Repo.zone()): Pair<String, String?> {
+        val z = at.atZone(zone)
+        if (is24(context)) return DateTimeFormatter.ofPattern("H:mm", current(context)).format(z) to null
+        return DateTimeFormatter.ofPattern("h:mm", current(context)).format(z) to DateTimeFormatter.ofPattern("a", current(context)).format(z)
+    }
+
+    /** The day of [at] relative to today: «اليوم», «غدًا», «أمس», a weekday and date, with the year only when different. */
+    fun dayText(context: Context, at: Instant, now: Instant = Instant.now(), zone: ZoneId = Repo.zone()): String {
+        val day = at.atZone(zone).toLocalDate()
+        val today = now.atZone(zone).toLocalDate()
+        return when (day) {
+            today -> context.getString(R.string.today)
+            today.plusDays(1) -> context.getString(R.string.tomorrow)
+            today.minusDays(1) -> context.getString(R.string.yesterday)
+            else -> DateTimeFormatter.ofPattern(if (day.year == today.year) "EEEE d MMMM" else "EEEE d MMMM yyyy", current(context)).format(day)
+        }
+    }
+
+    /** Joins metadata with the interface's separator: «، » in Arabic, ", " in English (never «·»). */
+    fun join(context: Context, parts: List<String?>): String = parts.filterNotNull().filter { it.isNotBlank() }
+        .joinToString(context.getString(R.string.list_separator))
+
+    /** «متأخر ساعتين», or with the day first when it was not today: «أمس، متأخر 22 ساعة». */
+    fun lateLine(context: Context, due: Instant, now: Instant, zone: ZoneId = Repo.zone()): String {
+        val minutes = (now.toEpochMilli() - due.toEpochMilli()) / 60_000
+        val late = if (minutes < 1) context.getString(R.string.due_now) else context.getString(R.string.late_short, duration(context, minutes))
+        val sameDay = due.atZone(zone).toLocalDate() == now.atZone(zone).toLocalDate()
+        return if (sameDay) late else join(context, listOf(dayText(context, due, now, zone), late))
+    }
+
+    /** The label after a row's time: done when, how late, which day, or nothing for later today. */
+    fun rowLabel(context: Context, t: Task, now: Instant, today: Boolean): String? = when {
+        t.completedAt != null -> context.getString(R.string.done_on, join(context, listOf(dayText(context, t.completedAt, now), time(context, t.completedAt))))
+        t.dueAt == null -> null
+        !t.dueAt.isAfter(now) -> lateLine(context, t.dueAt, now)
+        today -> null
+        else -> dayText(context, t.dueAt, now)
+    }
+
+    /** What TalkBack reads for a row: title, when, how late, repeat, priority, joined with «، ». */
+    fun rowSummary(context: Context, t: Task, now: Instant, label: String?, priority: String?): String {
+        val done = t.completedAt != null
+        val overdue = !done && t.dueAt != null && !t.dueAt.isAfter(now)
+        return join(context, listOf(
+            t.title,
+            if (done) label else t.dueAt?.let { dueText(context, it, now) } ?: context.getString(R.string.no_time),
+            if (overdue) label else null, repeatText(context, t), priority,
+        ))
+    }
+
+    /** «كل الأحد، الثلاثاء، الخميس» in the order of the week. */
+    fun daysSummary(context: Context, weekStart: Int, days: List<Int>): String =
+        context.getString(R.string.repeat_days_on, weekdays(weekStart).filter { it in days }.joinToString(context.getString(R.string.list_separator)) { weekdayName(context, it) })
+
+    /** "Copy from Today, 5:30 PM" for a safety copy. */
+    fun safetyLabel(context: Context, f: java.io.File): String =
+        context.getString(R.string.safety_copy_from, dueText(context, Instant.ofEpochMilli(f.lastModified())))
+
     /** "Today 5:30 PM", "Tomorrow 9:00 AM", "Thursday 20 November, 8:00 PM". */
     fun dueText(context: Context, at: Instant, now: Instant = Instant.now(), zone: ZoneId = Repo.zone()): String {
         val day = at.atZone(zone).toLocalDate()
@@ -102,6 +161,12 @@ object L10n {
     fun weekdayName(context: Context, jsDay: Int, short: Boolean = false): String {
         val dow = java.time.DayOfWeek.of(if (jsDay == 0) 7 else jsDay)
         return dow.getDisplayName(if (short) java.time.format.TextStyle.SHORT else java.time.format.TextStyle.FULL, current(context))
+    }
+
+    /** One letter for a weekday toggle (س ح ن ث ر خ ج; S M T W T F S). */
+    fun weekdayLetter(context: Context, jsDay: Int): String {
+        val dow = java.time.DayOfWeek.of(if (jsDay == 0) 7 else jsDay)
+        return dow.getDisplayName(java.time.format.TextStyle.NARROW, current(context))
     }
 
     fun repeatText(context: Context, t: Task, zone: ZoneId = Repo.zone()): String? = when (t.repeat) {

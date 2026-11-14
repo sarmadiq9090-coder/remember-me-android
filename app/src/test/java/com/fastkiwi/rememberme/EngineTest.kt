@@ -98,7 +98,7 @@ class EngineTest {
         assertTrue("Ongoing", n.flags and android.app.Notification.FLAG_ONGOING_EVENT != 0)
         assertEquals(2, n.actions.size)
         assertEquals("تم", n.actions[0].title.toString())
-        assertEquals("أجّل", n.actions[1].title.toString())
+        assertEquals("أجّل 10 دقائق", n.actions[1].title.toString())
         assertNotNull(n.deleteIntent)
         // Swiped away: it comes back on the next run, quietly.
         nm.cancel(Notifier.TAG_DUE + t.id, 0)
