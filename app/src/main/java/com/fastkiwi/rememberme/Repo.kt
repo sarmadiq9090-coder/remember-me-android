@@ -1,0 +1,52 @@
+package com.fastkiwi.rememberme
+
+import android.content.Context
+import com.fastkiwi.rememberme.alarm.Engine
+import com.fastkiwi.rememberme.core.AppState
+import com.fastkiwi.rememberme.core.Codec
+import com.fastkiwi.rememberme.core.Planner
+import com.fastkiwi.rememberme.core.SnoozePreset
+import com.fastkiwi.rememberme.data.Prefs
+import com.fastkiwi.rememberme.data.Store
+import java.io.File
+import java.time.ZoneId
+
+/**
+ * The one data store of the process. The activity, the notification buttons and the alarm receiver
+ * all change data through [change], which writes durably and then re-plans the alarms (D-001).
+ */
+object Repo {
+    @Volatile private var store: Store? = null
+    @Volatile private var prefs: Prefs? = null
+
+    fun store(context: Context): Store = store ?: synchronized(this) {
+        store ?: Store(File(context.applicationContext.filesDir, "data")).also { store = it }
+    }
+
+    fun prefs(context: Context): Prefs = prefs ?: synchronized(this) {
+        prefs ?: Prefs(context.applicationContext).also { prefs = it }
+    }
+
+    fun state(context: Context): AppState = store(context).state.value
+
+    /** Changes data, then re-arms the alarm and refreshes notifications and the widget. */
+    fun change(context: Context, block: (AppState) -> AppState): AppState {
+        val next = store(context).change(block)
+        Engine.sync(context.applicationContext)
+        return next
+    }
+
+    fun zone(): ZoneId = ZoneId.systemDefault()
+
+    // Shared settings (data.json "settings", the same as on Windows).
+    fun sound(s: AppState) = Codec.settingBool(s.settings, "sound") ?: true
+    fun remindAgain(s: AppState) = Codec.settingInt(s.settings, "remindAgain")?.takeIf { it in Planner.REMIND_AGAIN } ?: 0
+    fun presets(s: AppState) = SnoozePreset.fromSettings(s.settings)
+    /** 6 = Saturday (default), 0 = Sunday, 1 = Monday. */
+    fun weekStart(s: AppState) = Codec.settingInt(s.settings, "weekStart")?.takeIf { it in listOf(0, 1, 6) } ?: 6
+    fun theme(s: AppState) = Codec.settingStr(s.settings, "theme")?.takeIf { it in listOf("system", "light", "dark") } ?: "system"
+    fun arabicMonths(s: AppState) = Codec.settingStr(s.settings, "arabicMonths")?.takeIf { it in listOf("auto", "levant", "standard") } ?: "auto"
+
+    /** For tests: forget the singletons so a fresh store is opened. */
+    fun resetForTests() = synchronized(this) { store = null; prefs = null }
+}

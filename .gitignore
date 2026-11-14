@@ -1,0 +1,18 @@
+# Toolchain and caches (local only)
+.tools/
+.gradle-home/
+.gradle/
+.kotlin/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+# Signing material - NEVER commit
+keystore/
+*.jks
+*.keystore
+keystore.properties
+# Deliverables are handed over privately
+dist/

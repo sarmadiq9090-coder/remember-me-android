@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="new" android:enabled="true" android:icon="@mipmap/ic_launcher" android:shortcutShortLabel="@string/new_reminder">
+        <intent android:action="com.fastkiwi.rememberme.NEW" android:targetPackage="com.fastkiwi.rememberme" android:targetClass="com.fastkiwi.rememberme.MainActivity" />
+    </shortcut>
+</shortcuts>
