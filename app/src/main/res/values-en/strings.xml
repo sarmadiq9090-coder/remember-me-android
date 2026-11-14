@@ -293,6 +293,24 @@
     <string name="summary_first">First at %1$s: %2$s</string>
     <string name="done_undo_title">Done: “%1$s”</string>
     <string name="alarm_rings_until">%1$s, rings until you respond</string>
+    <string name="cal_view_label">View</string>
+    <string name="cal_view_agenda">Agenda</string>
+    <string name="cal_view_day">Day</string>
+    <string name="cal_view_week">Week</string>
+    <string name="cal_view_month">Month</string>
+    <string name="cal_prev_day">Previous day</string>
+    <string name="cal_next_day">Next day</string>
+    <string name="cal_prev_week">Previous week</string>
+    <string name="cal_next_week">Next week</string>
+    <string name="cal_prev_month">Previous month</string>
+    <string name="cal_next_month">Next month</string>
+    <string name="cal_now_at">Now %1$s</string>
+    <string name="cal_more_n">+%1$s more</string>
+    <string name="cal_nothing">Nothing</string>
+    <string name="cal_range">%1$s to %2$s</string>
+    <string name="cal_late">Late</string>
+    <string name="cal_snoozed">Snoozed</string>
+    <string name="cal_agenda_empty">No upcoming reminders</string>
     <plurals name="minutes">
         <item quantity="one">%1$s minute</item>
         <item quantity="other">%1$s minutes</item>
@@ -316,5 +334,9 @@
     <plurals name="reminders_waiting">
         <item quantity="one">%1$s reminder waiting</item>
         <item quantity="other">%1$s reminders waiting</item>
+    </plurals>
+    <plurals name="cal_reminders_n">
+        <item quantity="one">%1$s reminder</item>
+        <item quantity="other">%1$s reminders</item>
     </plurals>
 </resources>
