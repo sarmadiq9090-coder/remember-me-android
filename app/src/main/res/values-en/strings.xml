@@ -353,6 +353,10 @@
     <string name="tone_note">A normal reminder follows notification volume; on a silent phone it only vibrates.</string>
     <string name="tone_note_alarm">An important alarm follows alarm volume, even on a silent phone.</string>
     <string name="tone_err_file">The file was not kept: up to 5 MB per file and 10 custom tones.</string>
+    <string name="tone_err_big">The file is larger than 5 MB.</string>
+    <string name="tone_err_not_audio">This file is not audio.</string>
+    <string name="tone_err_empty">The file is empty.</string>
+    <string name="tone_err_many">You have 10 custom tones. Remove one first.</string>
     <string name="tone_err_long">The file is longer than 5 minutes.</string>
     <string name="tone_err_play">This file cannot be played.</string>
     <string name="vibration">Vibration</string>

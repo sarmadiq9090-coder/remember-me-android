@@ -353,6 +353,10 @@
     <string name="tone_note">في «تذكير عادي» يتبع الصوت مستوى صوت الإشعارات؛ إن كان الهاتف صامتًا سيهتز فقط.</string>
     <string name="tone_note_alarm">في «منبّه مهم» يتبع الصوت مستوى صوت المنبّه، حتى والهاتف صامت.</string>
     <string name="tone_err_file">لم يُحفظ الملف: الحد 5 MB للملف و10 نغمات خاصة.</string>
+    <string name="tone_err_big">الملف أكبر من 5 MB.</string>
+    <string name="tone_err_not_audio">هذا الملف ليس صوتًا.</string>
+    <string name="tone_err_empty">الملف فارغ.</string>
+    <string name="tone_err_many">وصلت إلى 10 نغمات خاصة. احذف واحدة أولًا.</string>
     <string name="tone_err_long">الملف أطول من 5 دقائق.</string>
     <string name="tone_err_play">تعذّر تشغيل هذا الملف.</string>
     <string name="vibration">الاهتزاز</string>
