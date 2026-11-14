@@ -72,6 +72,10 @@ sealed class Screen {
     // [quick] begin
     data object Templates : Screen()
     // [quick] end
+    // [editor] begin
+    /** A reminder's change history (F-072). */
+    data class History(val id: String) : Screen()
+    // [editor] end
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -85,6 +89,9 @@ sealed class Screen {
         // [quick] begin
         Templates -> "templates"
         // [quick] end
+        // [editor] begin
+        is History -> "history:$id"
+        // [editor] end
     }
 
     companion object {
@@ -99,6 +106,9 @@ sealed class Screen {
             // [quick] begin
             code == "templates" -> Templates
             // [quick] end
+            // [editor] begin
+            code.startsWith("history:") -> History(code.removePrefix("history:"))
+            // [editor] end
             else -> null
         }
     }
@@ -225,6 +235,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         L10n.apply(this)
         super.onCreate(savedInstanceState)
+        // [editor] begin
+        com.fastkiwi.rememberme.data.EditorPrefs.install(this)
+        // [editor] end
         enableEdgeToEdge()
         val saved = savedInstanceState?.getStringArrayList(KEY_STACK)?.mapNotNull(Screen::of)
         if (!saved.isNullOrEmpty() && saved.first() == Screen.Home) stack = saved else handle(intent)
@@ -498,8 +511,31 @@ class MainActivity : AppCompatActivity() {
                         pop()
                     },
                     onBack = { pop() },
+                    // [editor] begin
+                    initial = if (screen.id == null) editPrefill?.let { f -> f.input.copy(ext = if (f.ext.isEmpty) f.input.ext else f.ext) } else null,
+                    onDuplicate = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input); push(Screen.Edit(null)) },
+                    // [lead] «حفظ كقالب» (F-047): named after the title; renamed from «قوالبي» by a long press.
+                    onSaveAsTemplate = { input ->
+                        com.fastkiwi.rememberme.data.saveUserTemplate(ctx, input, input.title.ifBlank { getString(R.string.app_name) }, input.ext)
+                        Toast.makeText(ctx, getString(R.string.template_saved), Toast.LENGTH_SHORT).show()
+                    },
+                    onHistory = { t -> push(Screen.History(t.id)) },
+                    onDndHelp = { fix("dnd") },
+                    // [editor] end
+                )
+                // [editor] begin: the editor keeps the prefill in its saved state; the next new reminder starts empty.
+                if (screen.id == null && editPrefill != null) LaunchedEffect(screen) { editPrefill = null }
+                // [editor] end
+            }
+            // [editor] begin
+            is Screen.History -> {
+                val task = state.task(screen.id)
+                com.fastkiwi.rememberme.ui.editor.HistoryScreen(
+                    title = task?.title.orEmpty(), events = com.fastkiwi.rememberme.data.History.of(this).events(screen.id),
+                    now = now, zone = zone, onBack = { pop() },
                 )
             }
+            // [editor] end
             Screen.Settings -> SettingsScreen(
                 m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state), prefs.lockPrivacy,
                     essentialOff = (health ?: Health.check(this)).let { h -> listOf(h.notifications, h.channel, h.exact).count { !it } },
