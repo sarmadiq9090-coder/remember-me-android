@@ -49,6 +49,11 @@ S = [
 ("home_move_list", "القائمة: %1$s", "List: %1$s"),
 ("bulk_trash_body", "تبقى في السلة 30 يومًا ويمكنك استعادتها.", "They stay in the trash for 30 days and can be restored."),
 ("move_to_trash", "نقل إلى السلة", "Move to trash"),
+# Tablet detail pane (§3.7)
+("home_detail_empty", "اختر تذكيرًا لعرض تفاصيله", "Choose a reminder to see its details"),
+("home_alerts", "التنبيهات", "Alerts"),
+("home_at_time", "عند الموعد", "At the time"),
+("home_no_repeat", "لا يتكرر", "Does not repeat"),
 ]
 
 P = {

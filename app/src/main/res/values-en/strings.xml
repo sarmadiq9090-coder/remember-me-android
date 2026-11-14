@@ -483,6 +483,10 @@
     <string name="home_move_list">List: %1$s</string>
     <string name="bulk_trash_body">They stay in the trash for 30 days and can be restored.</string>
     <string name="move_to_trash">Move to trash</string>
+    <string name="home_detail_empty">Choose a reminder to see its details</string>
+    <string name="home_alerts">Alerts</string>
+    <string name="home_at_time">At the time</string>
+    <string name="home_no_repeat">Does not repeat</string>
     <string name="template_saved">Saved to “My templates”</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>

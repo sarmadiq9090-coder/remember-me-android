@@ -189,11 +189,10 @@ class QuickUiTest {
             rule.onNodeWithText("العنوان: اتصل بأمي").assertExists()
             rule.onNodeWithText("خيارات أكثر").performClick()
             rule.waitForIdle()
-            sc.onActivity { a ->
-                assertEquals(Screen.Edit(null), a.stack.last())
-                assertEquals("اتصل بأمي", a.editPrefill!!.input.title)
-                assertNotNull(a.editPrefill!!.input.dueAt)
-            }
+            sc.onActivity { a -> assertEquals(Screen.Edit(null), a.stack.last()) }
+            // The editor opened with the fields (it consumes the prefill once).
+            rule.onNode(androidx.compose.ui.test.hasSetTextAction() and androidx.compose.ui.test.hasText("اتصل بأمي")).assertExists()
+            rule.onNodeWithText("أضف موعدًا").assertDoesNotExist()
             assertTrue(Repo.state(app).tasks.isEmpty())
         }
     }
@@ -251,12 +250,9 @@ class QuickUiTest {
             assertTouchTargets()
             rule.onNodeWithText("عيد ميلاد").performScrollTo().performClick()
             rule.waitForIdle()
-            sc.onActivity { a ->
-                assertEquals(Screen.Edit(null), a.stack.last())
-                assertEquals("عيد ميلاد", a.editPrefill!!.input.title)
-                assertEquals(Repeat.YEARLY, a.editPrefill!!.input.repeat)
-                assertEquals(1440, a.editPrefill!!.input.remindBefore)
-            }
+            sc.onActivity { a -> assertEquals(Screen.Edit(null), a.stack.last()) }
+            rule.onNode(androidx.compose.ui.test.hasSetTextAction() and androidx.compose.ui.test.hasText("عيد ميلاد")).assertExists()
+            rule.onNodeWithText("كل سنة", substring = true).assertExists()
             assertTrue(Repo.state(app).tasks.isEmpty())
         }
     }
