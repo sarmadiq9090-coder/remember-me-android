@@ -16,3 +16,6 @@ keystore/
 keystore.properties
 # Deliverables are handed over privately
 dist/
+
+# Encrypted keystore backup for the owner
+keystore-backup/

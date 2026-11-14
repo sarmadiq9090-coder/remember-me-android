@@ -31,6 +31,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollTo
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -253,6 +254,27 @@ class AppUiTest {
             rule.onNodeWithText("second reminder").performTextReplacement("second reminder, edited")
             sc.recreate()
             rule.onNodeWithText("second reminder, edited").assertExists()
+        }
+    }
+
+    /** D-011: before a Windows-format export, every-N-hours reminders are listed, because Windows makes them one-time. */
+    @Test fun exportWarnsAboutHourlyRemindersFirst() {
+        val now = Instant.now()
+        Repo.store(app).change {
+            var s: AppState = it
+            s = Tasks.save(s, TaskInput(title = "شرب الماء", dueAt = now.plusSeconds(3600), repeat = Repeat.HOURS, everyHours = 2), now, zone).first
+            s = Tasks.save(s, TaskInput(title = "اجتماع", dueAt = now.plusSeconds(7200)), now, zone).first
+            s
+        }
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            sc.onActivity { it.push(Screen.Settings) }
+            // The row is below the fold of Settings: scroll to it, then tap.
+            rule.onNodeWithText("حفظ نسخة").performScrollTo().performClick()
+            rule.onNodeWithText("تنبيه قبل حفظ النسخة").assertExists()
+            rule.onNodeWithText("• شرب الماء", substring = true).assertExists()
+            rule.onNodeWithText("اجتماع", substring = true).assertDoesNotExist()
+            rule.onNodeWithText("إلغاء").performClick()
+            rule.onNodeWithText("تنبيه قبل حفظ النسخة").assertDoesNotExist()
         }
     }
 }

@@ -24,6 +24,9 @@ import com.fastkiwi.rememberme.alarm.Engine
 import com.fastkiwi.rememberme.alarm.Notifier
 import com.fastkiwi.rememberme.core.AppState
 import com.fastkiwi.rememberme.core.Completion
+import com.fastkiwi.rememberme.core.Repeat
+import com.fastkiwi.rememberme.ui.ConfirmDialog
+import androidx.compose.ui.res.stringResource
 import com.fastkiwi.rememberme.core.TaskException
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.data.Backup
@@ -91,6 +94,8 @@ class MainActivity : AppCompatActivity() {
     private var safety by mutableStateOf(listOf<File>())
     /** A snackbar for Home to show (the undo of a delete made in the editor). */
     private var homeSnack by mutableStateOf<SnackRequest?>(null)
+    /** Titles of every-N-hours reminders to warn about before a Windows-format export (D-011), or null. */
+    private var exportWarning by mutableStateOf<List<String>?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
 
@@ -214,6 +219,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Saves the Windows-format backup. Reminders that repeat every few hours are Android-only and become
+     * one-time on Windows, so they are listed first and the user decides (D-011).
+     */
+    fun startExport() {
+        val hourly = Repo.state(this).tasks.filter { it.deletedAt == null && it.completedAt == null && it.repeat == Repeat.HOURS }
+        if (hourly.isEmpty()) exporter.launch(Backup.folderName(Instant.now()) + ".zip") else exportWarning = hourly.map { it.title }
+    }
+
     private fun toast(id: Int) = Toast.makeText(this, id, Toast.LENGTH_LONG).show()
 
     fun push(s: Screen) { stack = stack + s }
@@ -251,6 +265,15 @@ class MainActivity : AppCompatActivity() {
         val screen = stack.last()
         // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
         key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
+        exportWarning?.let { titles ->
+            ConfirmDialog(
+                title = stringResource(R.string.export_hours_title),
+                text = stringResource(R.string.export_hours_body) + "\n" + titles.joinToString("\n") { "• $it" },
+                confirm = stringResource(R.string.export_anyway),
+                onConfirm = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
+                onDismiss = { exportWarning = null },
+            )
+        }
     }
 
     @Composable
@@ -277,7 +300,7 @@ class MainActivity : AppCompatActivity() {
                     onUndoTrash = { t -> act { s -> Tasks.restore(s, t.id) } },
                     onSettings = { push(Screen.Settings) },
                     onHealth = { push(Screen.Background) },
-                    onBackup = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
+                    onBackup = { startExport() },
                     onDismissBackup = { prefs.backupNudgeDismissed = System.currentTimeMillis(); tick = System.currentTimeMillis() },
                     snack = homeSnack,
                     onSnackShown = { homeSnack = null },
@@ -330,7 +353,7 @@ class MainActivity : AppCompatActivity() {
                 },
                 onLockPrivacy = { prefs.lockPrivacy = it; tick = System.currentTimeMillis(); Engine.syncAsync(this) },
                 onBackground = { push(Screen.Background) },
-                onExport = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
+                onExport = { startExport() },
                 onExportIcs = { icsExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics") },
                 onImport = { importer.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*")) },
                 onRestoreSafety = { f ->

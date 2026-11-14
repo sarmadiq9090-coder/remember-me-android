@@ -190,6 +190,9 @@
     <string name="section_data">بياناتك</string>
     <string name="section_about">حول</string>
     <string name="theme">السمة</string>
+    <string name="export_hours_title">تنبيه قبل حفظ النسخة</string>
+    <string name="export_hours_body">هذه التذكيرات تتكرر كل بضع ساعات، وهذا خاص بأندرويد. إن استعدت هذه النسخة في ذكرني لويندوز فستصبح هناك لمرة واحدة (وتبقى كما هي في الهاتف):</string>
+    <string name="export_anyway">حفظ النسخة</string>
     <string name="export_hint">ملف zip تختار مكانه. الملف غير مشفّر.</string>
     <string name="export_ics">تصدير إلى تقويم (ics)</string>
     <string name="export_ics_hint">يفتحه أي تطبيق تقويم. للقراءة فقط، لا يُستعاد منه.</string>

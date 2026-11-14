@@ -190,6 +190,9 @@
     <string name="section_data">Your data</string>
     <string name="section_about">About</string>
     <string name="theme">Theme</string>
+    <string name="export_hours_title">Before you save the copy</string>
+    <string name="export_hours_body">These reminders repeat every few hours, which only the Android app supports. If you restore this copy in Remember Me for Windows, they become one-time there (they stay as they are on the phone):</string>
+    <string name="export_anyway">Save the copy</string>
     <string name="export_hint">A zip file saved where you choose. It is not encrypted.</string>
     <string name="export_ics">Export to a calendar (ics)</string>
     <string name="export_ics_hint">Any calendar app opens it. Read only: it cannot be restored from.</string>

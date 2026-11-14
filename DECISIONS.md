@@ -117,27 +117,36 @@ them: [RESEARCH.md](RESEARCH.md).
 - SemVer `0.1.0` (pre-1.0: not yet tried on real phones), `versionCode 1`, which must only ever grow.
   Package `com.fastkiwi.rememberme`. Release builds only, signed with the release key, never the debug key.
 - **Signing key custody** (council risk 1): if the key is lost, every update needs an uninstall, and an
-  uninstall deletes the owner's data. The key is in the git-ignored `keystore/` folder on this PC only.
-  The manager should move it, with its passwords, into the owner's password manager and a GitHub
-  Environment secret. A Google Play release would use Play App Signing with an upload key; plan it then.
+  uninstall deletes the owner's data. **Decision (manager)**: the key stays local (git-ignored `keystore/`);
+  no GitHub secret, because the repo is local and closed source. An encrypted backup for the owner's
+  password manager is in the git-ignored `keystore-backup/`: a ZIP with AES-256 encryption (WinZip AE-2,
+  opens in 7-Zip), made with Windows' built-in `tar` (libarchive) because 7-Zip is not installed on this
+  PC and installing it needs the owner's approval. A test decrypt gave byte-identical files and a wrong
+  passphrase was rejected. The passphrase is only in the git-ignored `keystore/README-local.txt`.
 - **Verdict**: approve, with the custody note.
 
-## D-011 Every N hours (open: needs the manager's decision)
+## D-011 Every N hours (decided by the manager, 2026-11-14)
 - The task brief asks for repeats every N hours. The Windows app has no such repeat, and its
   `validateState` turns an unknown repeat into one-time, so such a reminder **becomes one-time on
   Windows** after a file move. The council voted to hide it until Windows supports `'hours'`.
-- **Applied**: the brief wins for now. The option exists (`repeat: "hours"`, `repeatHours` 1-23, elapsed
-  hours, not wall-clock) and the editor says under it, in the user's language, that Windows does not
-  support it yet. **Proposal**: add `'hours'` to the Windows `REPEATS` and `nextOccurrence` at its next
-  train, or hide the option here. The manager decides.
+- **Decision (manager)**: keep it on Android. The option exists (`repeat: "hours"`, `repeatHours` 1-23,
+  elapsed hours, not wall-clock) and the editor says under it that Windows does not support it yet.
+- **Before a Windows-format export**, the app lists every active reminder that repeats every few hours and
+  says in Arabic that it will become one-time in Remember Me for Windows; the user saves anyway or
+  cancels (`MainActivity.startExport`, tested by `AppUiTest.exportWarnsAboutHourlyRemindersFirst`). The
+  `.ics` export needs no warning (RRULE `FREQ=HOURLY`).
+- **Windows backlog**: support `'hours'` (`repeatHours` 1-23, elapsed hours from the current occurrence,
+  the same rule as `core/Repeat.kt`) in the next Windows release; recorded in the Windows repo's
+  `ROADMAP.md` on the local branch `claude/hourly-repeat-backlog` (not pushed).
 
 ## D-012 Time-zone moves follow the Windows rule
 - A repeat's time of day comes from `repeatFrom`, an instant, read in the phone's current zone (exactly
   as on Windows), so both apps compute the same moment from one file. Consequence: a daily 09:00 made in
   Baghdad comes back at 10:00 after moving to Dubai (still 09:00 Baghdad time). One-time reminders are
   fixed instants. Pinned by `RepeatTest.timeZoneMoveFollowsTheWindowsRuleAndOneTimeIsAnInstant`.
-- **Follow-up for both apps**: store the wall-clock time of the series (for example `repeatTime: "09:00"`)
-  so a traveller keeps 09:00 local. Changing only one app would make them disagree.
+- **Decision (manager)**: keep the Windows rule, so both apps agree.
+- **Future item for both apps together**: store the wall-clock time of the series (for example
+  `repeatTime: "09:00"`) so a traveller keeps 09:00 local. Changing only one app would make them disagree.
 
 ## D-013 Scope of v0.1.0
 - In: reminders (add, edit, delete to a 30-day trash, restore), all Windows repeat modes plus hourly,
@@ -176,6 +185,11 @@ them: [RESEARCH.md](RESEARCH.md).
   no way back. Three of its S3 findings were fixed afterwards: an early notice not withdrawn when the
   reminder moves later, the channel's lock-screen override, and the weekday fallback in local time. The
   rest are listed in the bug-hunt report (commit d880ed3) as known minor items.
+
+## D-019 No store submission
+- **Decision (manager)**: Google Play is not planned. The notes on `USE_EXACT_ALARM`, `USE_FULL_SCREEN_INTENT`
+  and the battery-optimisation dialog (D-004, D-006) stay as the record of what a store submission would
+  need.
 
 ## D-018 Standards record
 - [STANDARDS.md](STANDARDS.md) lists each standard as met, partial or gap. It is honest about what
