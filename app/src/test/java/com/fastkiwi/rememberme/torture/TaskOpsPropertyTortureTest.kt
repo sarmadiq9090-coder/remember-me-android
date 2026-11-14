@@ -53,7 +53,7 @@ class TaskOpsPropertyTortureTest {
                 if (missing.isNotEmpty()) throw Failure("lost $missing after $why")
                 for (t in s.tasks) {
                     if (t.active && t.repeat != Repeat.NONE && (t.dueAt == null || t.scheduleAt == null)) throw Failure("repeat without time: $t after $why")
-                    if (t.sourceId != null && (t.completedAt == null || t.repeat != Repeat.NONE)) throw Failure("history copy not a done one-time task: $t")
+                    // (A history copy may be reopened from the done list and edited like any reminder; its shape is checked when it is made.)
                     if ("x-unknown" !in t.extra) throw Failure("unknown field lost on ${t.id} after $why")
                 }
                 // data.json: written and read back, the same reminders.

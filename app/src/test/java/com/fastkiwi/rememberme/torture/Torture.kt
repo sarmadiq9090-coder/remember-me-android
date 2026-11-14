@@ -63,6 +63,20 @@ object Torture {
         File(reports, "$name-${LocalDate.now()}.txt").appendText(line + "\n", Charsets.UTF_8)
     }
 
+    /** The Windows app's checkout (read only): REMEMBER_ME_DIR, else ../Remember-Me next to the worktree. */
+    fun windowsDir(): File = System.getenv("REMEMBER_ME_DIR")?.let(::File) ?: File(root.parentFile, "Remember-Me")
+
+    /** Runs torture/tools/<script> with Node and returns its output; fails the test when Node fails. */
+    fun node(script: String, vararg args: String): String {
+        val proc = ProcessBuilder(listOf(System.getenv("NODE_BIN") ?: "node", File(root, "torture/tools/$script").path) + args)
+            .redirectErrorStream(true).start()
+        val log = proc.inputStream.bufferedReader().readText()
+        check(proc.waitFor(5, java.util.concurrent.TimeUnit.MINUTES)) { "node $script did not finish" }
+        check(proc.exitValue() == 0) { "node $script failed: $log" }
+        println("[torture] $log")
+        return log
+    }
+
     /** Android's Instant.now() has millisecond precision; tests use the same. */
     fun now(): Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
 }

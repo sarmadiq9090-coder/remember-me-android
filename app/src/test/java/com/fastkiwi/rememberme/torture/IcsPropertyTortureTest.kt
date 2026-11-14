@@ -71,62 +71,73 @@ class IcsPropertyTortureTest {
             }
             val text = Ics.export(s, zone, now)
             val cal = try { CalendarBuilder().build(StringReader(text)) } catch (e: Exception) {
-                failures += "file $file (${zone.id}): ical4j cannot read the export: ${e.message}"; return@repeat
+                failures += "[unreadable] file $file (${zone.id}): ical4j cannot read the export: ${e.message}"; return@repeat
             }
             val vevents = cal.getComponents<VEvent>("VEVENT").associateBy { it.getProperty<net.fortuna.ical4j.model.property.Uid>("UID").get().value }
             val vtodos = cal.getComponents<VToDo>("VTODO").associateBy { it.getProperty<net.fortuna.ical4j.model.property.Uid>("UID").get().value }
             val active = s.tasks.filter { it.active }
-            if (vevents.size + vtodos.size != active.size) failures += "file $file: ${active.size} active reminders, ${vevents.size} events + ${vtodos.size} to-dos"
+            if (vevents.size + vtodos.size != active.size) failures += "[count] file $file: ${active.size} active reminders, ${vevents.size} events + ${vtodos.size} to-dos"
             for (t in active) {
                 checked++
                 val uid = "${t.id}@rememberme.fastkiwi.app"
                 if (t.dueAt == null) {
-                    val todo = vtodos[uid] ?: run { failures += "untimed ${t.id} missing"; null } ?: continue
-                    if (todo.summary.get().value != t.title) failures += "to-do title «${t.title}» read back as «${todo.summary.get().value}»"
+                    val todo = vtodos[uid] ?: run { failures += "[missing] untimed ${t.id}"; null } ?: continue
+                    if (todo.summary.get().value != t.title) failures += "[title] to-do title «${t.title}» read back as «${todo.summary.get().value}»"
                     continue
                 }
-                val ev = vevents[uid] ?: run { failures += "event ${t.id} missing"; null } ?: continue
+                val ev = vevents[uid] ?: run { failures += "[missing] event ${t.id}"; null } ?: continue
                 events++
-                if (ev.summary.get().value != t.title) failures += "title «${t.title}» read back as «${ev.summary.get().value}»"
+                if (ev.summary.get().value != t.title) failures += "[title] title «${t.title}» read back as «${ev.summary.get().value}»"
                 val n = when (t.repeat) { Repeat.HOURS -> 30; Repeat.YEARLY -> 6; Repeat.NONE -> 1; else -> 14 }
                 val want = appSeries(t, zone, n)
                 val end = ZonedDateTime.ofInstant(want.last().plusSeconds(1), zone)
                 val got = try {
                     ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(want.first().minusSeconds(1), zone), end))
                         .map { instant(it.start) }.sorted()
-                } catch (e: Exception) { failures += "ical4j cannot expand ${t.repeat} ${Ics.rrule(t, zone)}: ${e.message}"; continue }
+                } catch (e: Exception) { failures += "[expand] ical4j cannot expand ${t.repeat} ${Ics.rrule(t, zone)}: ${e.message}"; continue }
                 if (got != want) {
                     val i = want.indices.firstOrNull { it >= got.size || got[it] != want[it] } ?: want.size
-                    failures += "${zone.id} ${t.repeat} ${Ics.rrule(t, zone)} days=${t.rule.days} from=${t.rule.from?.atZone(zone)?.toLocalDateTime()} " +
+                    // DTSTART not on one of the rule's days (a DAYS reminder started on another weekday): RFC 5545 calls that
+                    // recurrence set undefined, and calendars disagree on whether the start is an occurrence.
+                    val offRule = t.repeat == Repeat.DAYS && com.fastkiwi.rememberme.core.jsDay(want.first().atZone(zone).toLocalDate()) !in t.rule.days
+                    failures += (if (offRule) "[dtstart-off-rule] " else "[occurrences] ") + "${zone.id} ${t.repeat} ${Ics.rrule(t, zone)} days=${t.rule.days} from=${t.rule.from?.atZone(zone)?.toLocalDateTime()} " +
                         "start=${want.first().atZone(zone).toLocalDateTime()}: occurrence $i app ${want.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} calendar ${got.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} (${got.size} vs ${want.size})"
                 }
                 val alarms = ev.alarms.size
-                if (alarms != 1 + (if (t.remindBefore > 0) 1 else 0)) failures += "alarms $alarms for remindBefore ${t.remindBefore}"
+                if (alarms != 1 + (if (t.remindBefore > 0) 1 else 0)) failures += "[alarms] alarms $alarms for remindBefore ${t.remindBefore}"
             }
             // Import back: the same reminders, at the same next times.
             val r = IcsImport.read(text, zone, now)
             if (r.inputs.size != active.count { it.dueAt == null || it.repeat != Repeat.NONE || it.dueAt!!.isAfter(now) } &&
-                r.inputs.size + r.skipped.size != active.size) failures += "file $file: ${active.size} exported, ${r.inputs.size} imported, ${r.skipped.size} skipped"
+                r.inputs.size + r.skipped.size != active.size) failures += "[import-count] file $file: ${active.size} exported, ${r.inputs.size} imported, ${r.skipped.size} skipped"
             val (_, added) = IcsImport.save(AppState(), r.inputs, now, zone)
-            val byTitle = added.groupBy { it.title }
+            val oneLine = { x: String -> x.replace("\r\n", " ").replace('\n', ' ').replace('\r', ' ').trim() }
+            val byTitle = added.groupBy { oneLine(it.title) }
             for (t in active) {
-                val back = byTitle[t.title]?.firstOrNull { it.repeat == t.repeat } ?: run {
-                    if (t.dueAt == null || t.repeat != Repeat.NONE || t.dueAt!!.isAfter(now)) failures += "«${t.title}» ${t.repeat} not imported back; warnings ${r.warnings.take(2)} skipped ${r.skipped.take(2)}"
+                val wantNextOf = { x: Task -> if (x.dueAt == null) null else if (x.repeat == Repeat.NONE) x.dueAt else {
+                    val start = x.scheduleAt ?: x.dueAt!!
+                    if (start.isAfter(now)) start else nextOccurrence(start, x.repeat, now, x.rule, zone)
+                } }
+                // Titles can repeat in random data: the candidate at the expected time, else the first.
+                val candidates = byTitle[oneLine(t.title)]?.filter { it.repeat == t.repeat }.orEmpty()
+                // A one-time reminder whose time has passed by "now" is skipped by the import, as on Windows.
+                if (t.repeat == Repeat.NONE && t.dueAt != null && !t.dueAt!!.isAfter(now)) continue
+                val back = (candidates.firstOrNull { it.dueAt == wantNextOf(t) && it.remindBefore == t.remindBefore }
+                    ?: candidates.firstOrNull { it.dueAt == wantNextOf(t) } ?: candidates.firstOrNull()) ?: run {
+                    if (t.dueAt == null || t.repeat != Repeat.NONE || t.dueAt!!.isAfter(now)) failures += "[not-imported] «${t.title}» ${t.repeat} not imported back; warnings ${r.warnings.take(2)} skipped ${r.skipped.take(2)}"
                     null
                 } ?: continue
                 if (t.dueAt == null) continue
-                val wantNext = if (t.repeat == Repeat.NONE) t.dueAt else {
-                    val start = t.scheduleAt ?: t.dueAt!!
-                    if (start.isAfter(now)) start else nextOccurrence(start, t.repeat, now, t.rule, zone)
-                }
-                if (back.dueAt != wantNext) failures += "${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}"
-                if (back.remindBefore != t.remindBefore) failures += "remindBefore ${t.remindBefore} imported as ${back.remindBefore}"
+                val wantNext = wantNextOf(t)
+                if (back.dueAt != wantNext) failures += "[import-next] ${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}"
+                if (back.remindBefore != t.remindBefore) failures += "[import-alarm] remindBefore ${t.remindBefore} imported as ${back.remindBefore}"
             }
         }
-        Torture.report("ics", "ICS property seed $seed: $checked reminders ($events timed) in ${total / perFile} files, ${failures.size} differences")
-        failures.take(15).forEach { Torture.report("ics", "  $it") }
+        val byCat = failures.groupBy { it.substringBefore(']').removePrefix("[") }
+        Torture.report("ics", "ICS property seed $seed: $checked reminders ($events timed) in ${total / perFile} files, ${failures.size} differences ${byCat.mapValues { it.value.size }}")
+        for ((_, list) in byCat) list.take(4).forEach { Torture.report("ics", "  $it") }
         assertTrue("$checked checked", checked >= 1_000)
-        assertEquals(failures.take(8).joinToString("\n"), 0, failures.size)
+        assertEquals(byCat.values.flatMap { it.take(2) }.joinToString("NL"), 0, failures.size)
     }
 
     /** A title with control characters (pasted text) must still give a file a calendar can read. */

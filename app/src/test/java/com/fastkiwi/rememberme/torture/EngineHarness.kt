@@ -90,5 +90,17 @@ class EngineHarness(val zone: ZoneId = ZoneId.of("Asia/Baghdad")) {
         (f.get(owner) as ExecutorService).submit {}.get()
     }
 
-    fun broadcastTo(receiver: Class<*>, intent: Intent): Intent = Intent(intent).setClassName(app, receiver.name)
+    /**
+     * Delivers [intent] to [receiver] as the system does: with a PendingResult, so goAsync() works (a bare
+     * onReceive call has none, and a receiver that finishes it from a worker thread would fail only in the test).
+     */
+    fun deliver(receiver: android.content.BroadcastReceiver, intent: Intent) {
+        val create = Class.forName("org.robolectric.shadows.ShadowBroadcastPendingResult")
+            .getDeclaredMethod("create", Int::class.javaPrimitiveType, String::class.java, android.os.Bundle::class.java, Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+        val pending = create.invoke(null, 0, null, null, false)
+        android.content.BroadcastReceiver::class.java.getDeclaredMethod("setPendingResult", android.content.BroadcastReceiver.PendingResult::class.java)
+            .apply { isAccessible = true }.invoke(receiver, pending)
+        receiver.onReceive(app, intent)
+    }
 }
