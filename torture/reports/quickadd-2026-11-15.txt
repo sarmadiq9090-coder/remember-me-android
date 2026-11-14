@@ -1,1 +1,0 @@
-decorated no-date corpus: 14 readings with a date {ALM after=2, double spaces=2, Arabic comma inside=6, Arabic question=2, no-break spaces=2}; Android only: 0 []; shared with Windows: 7 [«الخميس، الماضي», «السبت، اللي فات», «السبت اللي فات», «السبت  اللي  فات», «pay $12.50 for parking؜», «pay $12.50 for parking؟»]
