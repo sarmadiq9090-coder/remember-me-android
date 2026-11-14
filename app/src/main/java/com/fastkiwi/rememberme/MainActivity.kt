@@ -528,7 +528,7 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(ctx, getString(R.string.template_saved), Toast.LENGTH_SHORT).show()
                     },
                     onHistory = { t -> push(Screen.History(t.id)) },
-                    onDndHelp = { fix("dnd") },
+                    onDndHelp = { push(Screen.DndHelp) },
                     // [editor] end
                 )
                 // [editor] begin: the editor keeps the prefill in its saved state; the next new reminder starts empty.
@@ -547,7 +547,7 @@ class MainActivity : AppCompatActivity() {
             // [settings] begin
             Screen.Settings -> SettingsScreen(
                 m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state),
-                    essentialOff = (health ?: Health.check(this)).let { h -> listOf(h.notifications, h.channel, h.exact).count { !it } },
+                    essentialOff = com.fastkiwi.rememberme.ui.health.HealthModel.essentialMissing(health ?: Health.check(this), scheduleStatus(state, now)),
                     trashCount = state.tasks.count { it.deletedAt != null }, presets = Repo.presets(state),
                     prayerUsed = state.tasks.any { it.active && com.fastkiwi.rememberme.core.AlertExt.of(it).prayer != null }),
                 safety = safety, flows = flows, tick = tick,
@@ -572,8 +572,8 @@ class MainActivity : AppCompatActivity() {
                             withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
                         }
                     },
-                    onCompat = { reportText = report(state, now) },
-                    onAlertLog = { /* lead: open the alert log (F-024) */ },
+                    onCompat = { push(Screen.CompatReport) },
+                    onAlertLog = { push(Screen.AlertLog) },
                     onTrash = { push(Screen.Trash) },
                     onAbout = { push(Screen.About) },
                     onBack = { pop() },
