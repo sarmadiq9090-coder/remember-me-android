@@ -69,6 +69,9 @@ sealed class Screen {
     data object Trash : Screen()
     data object About : Screen()
     data object AlarmTest : Screen()
+    // [settings] begin
+    data object Lists : Screen()
+    // [settings] end
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -79,6 +82,9 @@ sealed class Screen {
         Trash -> "trash"
         About -> "about"
         AlarmTest -> "alarmtest"
+        // [settings] begin
+        Lists -> "lists"
+        // [settings] end
     }
 
     companion object {
@@ -90,6 +96,9 @@ sealed class Screen {
             code == "trash" -> Trash
             code == "about" -> About
             code == "alarmtest" -> AlarmTest
+            // [settings] begin
+            code == "lists" -> Lists
+            // [settings] end
             else -> null
         }
     }
@@ -102,50 +111,16 @@ class MainActivity : AppCompatActivity() {
     private var safety by mutableStateOf(listOf<File>())
     /** A snackbar for Home to show (the undo of a delete made in the editor). */
     private var homeSnack by mutableStateOf<SnackRequest?>(null)
-    /** Titles of every-N-hours reminders to warn about before a Windows-format export (D-011), or null. */
-    private var exportWarning by mutableStateOf<List<String>?>(null)
-    /** A checked backup waiting for the user's confirmation, or null. */
-    private var pendingImport by mutableStateOf<Backup.Imported?>(null)
     /** The compatibility report shown before sharing, or null. */
     private var reportText by mutableStateOf<String?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
 
-    private val icsExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
-        uri ?: return@registerForActivityResult
-        lifecycleScope.launch {
-            val ok = withContext(Dispatchers.IO) {
-                runCatching {
-                    contentResolver.openOutputStream(uri, "wt")!!.use {
-                        it.write(Ics.export(Repo.state(this@MainActivity), Repo.zone(), Instant.now()).toByteArray(Charsets.UTF_8))
-                    }
-                }.isSuccess
-            }
-            toast(if (ok) R.string.export_done else R.string.export_failed)
-        }
-    }
-
     private val notifPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { refreshHealth() }
-    private val exporter = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
-        uri ?: return@registerForActivityResult
-        lifecycleScope.launch {
-            val ok = withContext(Dispatchers.IO) {
-                runCatching {
-                    contentResolver.openOutputStream(uri, "wt")!!.use { Backup.export(Repo.state(this@MainActivity), it, Instant.now()) }
-                    Repo.prefs(this@MainActivity).lastExport = System.currentTimeMillis()
-                }.isSuccess
-            }
-            toast(if (ok) R.string.export_done else R.string.export_failed)
-        }
-    }
-    private val importer = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri ?: return@registerForActivityResult
-        lifecycleScope.launch {
-            // Read and check the whole file first; nothing is replaced until the user has seen the summary.
-            val result = withContext(Dispatchers.IO) { readImport { contentResolver.openInputStream(uri)!! } }
-            result.onSuccess { pendingImport = it }.onFailure { Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_LONG).show() }
-        }
-    }
+    // [settings] begin
+    /** Backup, restore, calendar files, weekly copy, encryption, delete all and «ما الجديد» (ui/settings/SettingsFlows.kt). */
+    val flows = com.fastkiwi.rememberme.ui.settings.SettingsFlows(this)
+    // [settings] end
 
     /** Reads and fully checks a backup without changing anything; the failure carries the message to show. */
     fun readImport(open: () -> java.io.InputStream): Result<Backup.Imported> = try {
@@ -180,6 +155,10 @@ class MainActivity : AppCompatActivity() {
         val saved = savedInstanceState?.getStringArrayList(KEY_STACK)?.mapNotNull(Screen::of)
         if (!saved.isNullOrEmpty() && saved.first() == Screen.Home) stack = saved else handle(intent)
         safety = Repo.store(this).safetyCopies()
+        // [settings] begin
+        flows.onRestored = { safety = Repo.store(this).safetyCopies() }
+        if (savedInstanceState == null) flows.checkWhatsNew()
+        // [settings] end
         val prefs = Repo.prefs(this)
         prefs.firstRun
         if (!prefs.onboarded) {
@@ -234,14 +213,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Saves the Windows-format backup. Reminders that repeat every few hours are Android-only and become
-     * one-time on Windows, so they are listed first and the user decides (D-011).
-     */
-    fun startExport() {
-        val hourly = Repo.state(this).tasks.filter { it.deletedAt == null && it.completedAt == null && it.repeat == Repeat.HOURS }
-        if (hourly.isEmpty()) exporter.launch(Backup.folderName(Instant.now()) + ".zip") else exportWarning = hourly.map { it.title }
-    }
+    // [settings] begin
+    /** Saves a backup; what Windows would change is listed first (F-092, D-011). */
+    fun startExport() = flows.export()
+    // [settings] end
 
     private fun scheduleStatus(state: AppState, now: Instant): ScheduleStatus {
         val log = ScheduleLog(this)
@@ -301,30 +276,9 @@ class MainActivity : AppCompatActivity() {
         val screen = stack.last()
         // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
         key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
-        pendingImport?.let { imp ->
-            val current = Repo.state(this).tasks.count { it.deletedAt == null }
-            val lines = buildList {
-                add(getString(R.string.restore_summary_counts, imp.active.toString(), imp.done.toString()))
-                if (imp.trashed > 0) add(getString(R.string.restore_summary_trash, imp.trashed.toString()))
-                if (imp.notes > 0) add(getString(R.string.restore_summary_notes, imp.notes.toString()))
-                if (imp.droppedAttachments > 0) add(getString(R.string.import_attachments, imp.droppedAttachments.toString()))
-                add(getString(if (imp.verified) R.string.restore_summary_verified else R.string.import_unverified))
-                imp.createdAt?.let { add(getString(R.string.restore_summary_date, L10n.dueText(this@MainActivity, it))) }
-                add(getString(R.string.restore_summary_safety, current.toString()))
-            }
-            ConfirmDialog(
-                title = stringResource(R.string.restore_summary_title), text = lines.joinToString("\n"),
-                confirm = stringResource(R.string.restore),
-                onConfirm = {
-                    lifecycleScope.launch {
-                        val message = withContext(Dispatchers.IO) { applyImport(imp) }
-                        safety = Repo.store(this@MainActivity).safetyCopies()
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
-                    }
-                },
-                onDismiss = { pendingImport = null },
-            )
-        }
+        // [settings] begin
+        flows.Dialogs()
+        // [settings] end
         reportText?.let { text ->
             // The report is shown in full before anything is shared; the user picks where it goes.
             ConfirmDialog(
@@ -335,15 +289,6 @@ class MainActivity : AppCompatActivity() {
                     runCatching { startActivity(Intent.createChooser(send, getString(R.string.compat_title))) }
                 },
                 onDismiss = { reportText = null },
-            )
-        }
-        exportWarning?.let { titles ->
-            ConfirmDialog(
-                title = stringResource(R.string.export_hours_title),
-                text = stringResource(R.string.export_hours_body) + "\n" + titles.joinToString("\n") { "• $it" },
-                confirm = stringResource(R.string.export_anyway),
-                onConfirm = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
-                onDismiss = { exportWarning = null },
             )
         }
     }
@@ -407,37 +352,56 @@ class MainActivity : AppCompatActivity() {
                     onBack = { pop() },
                 )
             }
+            // [settings] begin
             Screen.Settings -> SettingsScreen(
-                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state), prefs.lockPrivacy,
+                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state),
                     essentialOff = (health ?: Health.check(this)).let { h -> listOf(h.notifications, h.channel, h.exact).count { !it } },
-                    trashCount = state.tasks.count { it.deletedAt != null }),
-                safety = safety,
-                onLanguage = { prefs.language = it; L10n.apply(this); Notifier.channels(this); Engine.syncAsync(this) },
-                onTheme = { setSetting("theme", JsonPrimitive(it)) },
-                onSound = { setSetting("sound", JsonPrimitive(it)) },
-                onRemindAgain = { setSetting("remindAgain", JsonPrimitive(it)) },
-                onWeekStart = { setSetting("weekStart", JsonPrimitive(it)) },
-                onMonths = { v ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        Repo.change(ctx) { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive(v)))) }
-                        withContext(Dispatchers.Main) { L10n.apply(this@MainActivity) }
-                    }
-                },
-                onLockPrivacy = { prefs.lockPrivacy = it; tick = System.currentTimeMillis(); Engine.syncAsync(this) },
-                onBackground = { push(Screen.Background) },
-                onExport = { startExport() },
-                onExportIcs = { icsExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics") },
-                onImport = { importer.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*")) },
-                onRestoreSafety = { f ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
-                        withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
-                    }
-                },
-                onTrash = { push(Screen.Trash) },
-                onAbout = { push(Screen.About) },
-                onBack = { pop() },
+                    trashCount = state.tasks.count { it.deletedAt != null }, presets = Repo.presets(state),
+                    prayerUsed = state.tasks.any { it.active && com.fastkiwi.rememberme.core.AlertExt.of(it).prayer != null }),
+                safety = safety, flows = flows, tick = tick,
+                cb = com.fastkiwi.rememberme.ui.SettingsCallbacks(
+                    onSetting = { key, value -> act { s -> s.withSettings(JsonObject(s.settings + (key to value))) } },
+                    onLanguage = { prefs.language = it; L10n.apply(this); Notifier.channels(this); Engine.syncAsync(this) },
+                    onMonths = { v ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            Repo.change(ctx) { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive(v)))) }
+                            withContext(Dispatchers.Main) { L10n.apply(this@MainActivity) }
+                        }
+                    },
+                    onPhoneChanged = { tick = System.currentTimeMillis(); Engine.syncAsync(this) },
+                    onHealth = { push(Screen.Background) },
+                    onPickTone = { /* lead: open TonePickerSheet for "normal" / "alarm" defaults, then set tick */ },
+                    onLists = { push(Screen.Lists) },
+                    onTemplates = { /* lead: push the templates screen */ },
+                    onClearHistory = { /* lead: clear the change history (F-072) */ },
+                    onRestoreSafety = { f ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
+                            withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
+                        }
+                    },
+                    onCompat = { reportText = report(state, now) },
+                    onAlertLog = { /* lead: open the alert log (F-024) */ },
+                    onTrash = { push(Screen.Trash) },
+                    onAbout = { push(Screen.About) },
+                    onBack = { pop() },
+                ),
             )
+            Screen.Lists -> {
+                val filters = androidx.compose.runtime.remember { com.fastkiwi.rememberme.data.Filters(ctx) }
+                var lists by androidx.compose.runtime.remember { mutableStateOf(filters.all()) }
+                com.fastkiwi.rememberme.ui.settings.ListsScreen(
+                    state = state, lists = lists, now = now, zone = zone, weekStart = Repo.weekStart(state),
+                    onLists = { filters.save(it); lists = filters.all() },
+                    onChange = { block -> act(block) },
+                    onCategory = { /* lead: show Home filtered by this category */ pop() },
+                    onFilter = { /* lead: show Home with this saved filter */ pop() },
+                    onDone = { pop() },
+                    onTrash = { push(Screen.Trash) },
+                    onBack = { pop() },
+                )
+            }
+            // [settings] end
             Screen.Background -> HealthScreen(
                 health ?: Health.check(this), scheduleStatus(state, now), Makers.current(), firstRun = onboarding, now = now,
                 onCheck = {
