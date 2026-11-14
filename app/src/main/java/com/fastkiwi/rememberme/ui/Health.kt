@@ -13,8 +13,10 @@ import androidx.core.net.toUri
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.alarm.Engine
 import com.fastkiwi.rememberme.alarm.Notifier
+import com.fastkiwi.rememberme.core.AlertPolicy
+import com.fastkiwi.rememberme.data.AlertLog
 
-/** What the "allow background" screen checks (D-006). */
+/** What «صحة التذكيرات» checks (D-006, FEATURES.md F-008, F-023). */
 data class Health(
     val notifications: Boolean,
     val channel: Boolean,
@@ -28,22 +30,30 @@ data class Health(
     val backgroundRestricted: Boolean = false,
     /** Android's app standby bucket (Android 9+): 5 active … 45 restricted; 0 unknown. */
     val bucket: Int = 0,
-    /** The notification volume is at zero (the reminder sound cannot be heard). */
-    val volumeZero: Boolean = false,
     /** Which exact-alarm permission applies: USE_EXACT_ALARM (13+), SCHEDULE_EXACT_ALARM (12), none (older). */
     val exactPermission: String = "",
     /** When the phone last started (epoch ms). */
     val bootAt: Long = 0,
-    /** F-023: ringer mode, Do Not Disturb as the app can read it, and the alarm volume at zero. */
-    val ringer: com.fastkiwi.rememberme.core.AlertPolicy.Ringer = com.fastkiwi.rememberme.core.AlertPolicy.Ringer.NORMAL,
-    val dndState: com.fastkiwi.rememberme.core.AlertPolicy.Dnd = com.fastkiwi.rememberme.core.AlertPolicy.Dnd.OFF,
-    val alarmVolumeZero: Boolean = false,
+    /** F-023: ringer mode and Do Not Disturb as the app can read them; null = «غير معروف» (never green). */
+    val ringer: AlertPolicy.Ringer? = AlertPolicy.Ringer.NORMAL,
+    val dndState: AlertPolicy.Dnd? = AlertPolicy.Dnd.OFF,
+    /** Whether the phone's Do Not Disturb policy lets alarms through (also while DND is off); null = unknown. */
+    val dndAlarmsAllowed: Boolean? = null,
+    /** Stream volumes (current and maximum); null = could not be read. */
+    val alarmVolume: Int? = null,
+    val alarmVolumeMax: Int? = null,
+    val notifVolume: Int? = null,
+    val notifVolumeMax: Int? = null,
     /** The «منبّهات مهمة» channel is not muted. */
     val alarmChannelSound: Boolean = true,
-    /** Fallbacks or failed tones in the last 7 days (F-017). */
-    val toneProblems: Int = 0,
+    /** Fallbacks or failed tones in the last 7 days (F-017); null = the log could not be read. */
+    val toneProblems: Int? = 0,
+    /** The ringing service could not start in the last 7 days (the fallback channel was used). */
+    val fgsFailures: Int = 0,
     /** Android hides all notification content on the lock screen (null: cannot be read). */
     val lockScreenHidesAll: Boolean? = null,
+    /** When this check ran (epoch ms), for «آخر فحص». */
+    val checkedAt: Long = 0,
 ) {
     /** Without these, reminders are not shown at all or arrive late: the red banner. */
     val essentialOk get() = notifications && channel && exact && !backgroundRestricted
@@ -51,10 +61,19 @@ data class Health(
     /** In the "restricted" standby bucket alarms are cut to about one a day (alarm clocks excepted). */
     val bucketRestricted get() = bucket >= 45
 
+    /** The notification volume is at zero (the reminder sound cannot be heard). Unknown is not zero here; Health shows it as unknown. */
+    val volumeZero get() = notifVolume == 0
+    val alarmVolumeZero get() = alarmVolume == 0
+
     companion object {
         fun check(context: Context): Health {
             val pm = context.getSystemService(PowerManager::class.java)
             val nm = context.getSystemService(NotificationManager::class.java)
+            val audio = runCatching { context.getSystemService(android.media.AudioManager::class.java) }.getOrNull()
+            fun vol(stream: Int) = runCatching { audio!!.getStreamVolume(stream) }.getOrNull()
+            fun max(stream: Int) = runCatching { audio!!.getStreamMaxVolume(stream) }.getOrNull()
+            val week = System.currentTimeMillis() - 7 * 86_400_000L
+            val log = runCatching { com.fastkiwi.rememberme.data.AlertLog(context).entries() }.getOrNull()
             return Health(
                 notifications = Notifier.canPost(context),
                 channel = Notifier.alertChannelOk(context),
@@ -68,25 +87,35 @@ data class Health(
                     context.getSystemService(android.app.ActivityManager::class.java).isBackgroundRestricted,
                 bucket = if (Build.VERSION.SDK_INT >= 28)
                     runCatching { context.getSystemService(android.app.usage.UsageStatsManager::class.java).appStandbyBucket }.getOrDefault(0) else 0,
-                volumeZero = runCatching {
-                    context.getSystemService(android.media.AudioManager::class.java).getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION) == 0
-                }.getOrDefault(false),
                 exactPermission = when {
                     Build.VERSION.SDK_INT >= 33 -> "USE_EXACT_ALARM"
                     Build.VERSION.SDK_INT >= 31 -> "SCHEDULE_EXACT_ALARM"
                     else -> "none needed"
                 },
                 bootAt = System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime(),
-                ringer = Notifier.ringer(context),
-                dndState = Notifier.dnd(context),
-                alarmVolumeZero = runCatching {
-                    context.getSystemService(android.media.AudioManager::class.java).getStreamVolume(android.media.AudioManager.STREAM_ALARM) == 0
-                }.getOrDefault(false),
-                alarmChannelSound = Notifier.styleChannelAudible(context, com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM),
-                toneProblems = runCatching { com.fastkiwi.rememberme.data.AlertLog(context).recentProblems() }.getOrDefault(0),
+                ringer = runCatching { Notifier.ringer(context) }.getOrNull(),
+                // Android's "unknown" filter is not "off": shown as «غير معروف».
+                dndState = runCatching {
+                    if (nm.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_UNKNOWN) null else Notifier.dnd(context)
+                }.getOrNull(),
+                // Alarms became a DND category of their own in Android 9; before that the app cannot tell.
+                dndAlarmsAllowed = if (Build.VERSION.SDK_INT >= 28) runCatching {
+                    nm.notificationPolicy.priorityCategories and NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS != 0
+                }.getOrNull() else null,
+                alarmVolume = vol(android.media.AudioManager.STREAM_ALARM),
+                alarmVolumeMax = max(android.media.AudioManager.STREAM_ALARM),
+                notifVolume = vol(android.media.AudioManager.STREAM_NOTIFICATION),
+                notifVolumeMax = max(android.media.AudioManager.STREAM_NOTIFICATION),
+                alarmChannelSound = Notifier.styleChannelAudible(context, AlertPolicy.Style.ALARM),
+                toneProblems = log?.count { it.at > week && (it.event == AlertLog.Event.FALLBACK || it.event == AlertLog.Event.PLAY_FAILED) },
+                fgsFailures = log?.count { it.at > week && it.event == AlertLog.Event.FALLBACK && it.code in FGS_CODES } ?: 0,
                 lockScreenHidesAll = lockScreenHidesAll(context),
+                checkedAt = System.currentTimeMillis(),
             )
         }
+
+        /** Alert-log codes written when the ringing service could not start (RingService, Notifier). */
+        val FGS_CODES = setOf("foreground", "service")
     }
 }
 
