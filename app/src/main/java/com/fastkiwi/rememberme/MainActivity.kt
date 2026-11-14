@@ -415,6 +415,8 @@ class MainActivity : AppCompatActivity() {
                     },
                     onExportSelected = { ids -> exportSelected(ids) },
                     // [home] end
+                    // [lead] calendar views (F-064) and lists
+                    hijri = prefs.hijriDisplay, hijriAdjust = prefs.hijriAdjust,
                 )
             }
             is Screen.Edit -> {

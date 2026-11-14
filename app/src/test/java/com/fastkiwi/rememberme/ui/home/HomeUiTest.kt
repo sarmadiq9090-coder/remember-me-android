@@ -282,9 +282,11 @@ class HomeUiTest {
         rule.onNodeWithContentDescription("طريقة العرض").performClick()
         for (v in listOf("القائمة", "أجندة", "يوم", "أسبوع", "شهر")) rule.onNodeWithText(v).assertExists()
         rule.onNodeWithText("شهر").performClick()
-        rule.onNodeWithText("calendar-MONTH").assertExists()
+        // The calendar view has its own header (the period, «اليوم», the view menu) instead of Home's top bar.
+        rule.onNodeWithText("ذكرني").assertDoesNotExist()
+        rule.onAllNodesWithText("أجندة").assertCountEquals(1)
         rule.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
-        rule.onNodeWithText("calendar-MONTH").assertDoesNotExist()
+        rule.onNodeWithText("ذكرني").assertExists()
         rule.onAllNodesWithText("اليوم").assertCountEquals(1)
     }
 

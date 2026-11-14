@@ -177,6 +177,10 @@ fun HomeScreen(
     swipe: Boolean = true,
     change: (block: (AppState) -> AppState, then: () -> Unit) -> Unit = { _, _ -> },
     onExportSelected: (List<String>) -> Unit = {},
+    /** The FAB and an hour row in a calendar view: a new reminder on that day. */
+    onNewOnDay: (java.time.LocalDate) -> Unit = { onQuickAdd() },
+    hijri: Boolean = false,
+    hijriAdjust: Int = 0,
 ) {
     val context = LocalContext.current
     val res = LocalResources.current
@@ -186,6 +190,10 @@ fun HomeScreen(
     var showDone by rememberSaveable { mutableStateOf(false) }
     var viewName by rememberSaveable { mutableStateOf(HomeView.LIST.name) }
     val view = HomeView.valueOf(viewName)
+    /** The day the calendar views show (F-064); today when Home opens. */
+    var calDay by rememberSaveable { mutableStateOf(now.atZone(zone).toLocalDate().toEpochDay()) }
+    val calSelected = java.time.LocalDate.ofEpochDay(calDay)
+    val inCalendar = view != HomeView.LIST
     var quick by rememberSaveable { mutableStateOf(QuickFilters.ALL) }
     var selected by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<String>()) }
     /** Ids the Snooze sheet is open for (one row, or the selection), and whether the date-time picker is up. */
@@ -302,6 +310,8 @@ fun HomeScreen(
                         actions = { if (query.isNotEmpty()) TooltipIconButton(Ms.Close, stringResource(R.string.clear), { query = "" }) },
                     )
                 }
+                // The calendar views draw their own header (period, «اليوم», view menu, settings).
+                inCalendar -> {}
                 else -> TopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -331,7 +341,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             if (!searching && !selecting) ExtendedFloatingActionButton(
-                onClick = onQuickAdd, expanded = expanded,
+                onClick = { if (inCalendar) onNewOnDay(calSelected) else onQuickAdd() }, expanded = expanded,
                 // Collapsed to an icon while scrolling down: then the icon carries the label for TalkBack.
                 icon = { Icon(Ms.Add, if (expanded) null else stringResource(R.string.new_reminder)) },
                 text = { Text(stringResource(R.string.new_reminder)) },
@@ -348,10 +358,6 @@ fun HomeScreen(
                 else if (!health.essentialOk) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
                 else if (backupNudge) StatusBanner(null, stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
             }
-            if (!searching && !selecting && view != HomeView.LIST) {
-                Box(Modifier.weight(1f).fillMaxWidth()) { calendar(view) }
-                return@Column
-            }
             val rowActions = RowActions(
                 onClick = { t ->
                     if (selecting) selected = if (t.id in selected) selected - t.id else selected + t.id
@@ -363,6 +369,24 @@ fun HomeScreen(
                 onSnooze = { t -> snoozeIds = setOf(t.id) },
                 onSelect = { t -> selected = if (t.id in selected) selected - t.id else selected + t.id },
             )
+            if (!searching && !selecting && inCalendar) {
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    com.fastkiwi.rememberme.ui.calendar.CalendarScreen(
+                        view = com.fastkiwi.rememberme.ui.calendar.CalView.valueOf(view.name),
+                        state = state, now = now, zone = zone, selected = calSelected,
+                        onSelectDay = { calDay = it.toEpochDay() },
+                        onViewChange = { viewName = it.name },
+                        onToday = { calDay = now.atZone(zone).toLocalDate().toEpochDay() },
+                        onOpen = { t -> if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else onOpen(t) },
+                        onNewOnDay = onNewOnDay,
+                        row = { t -> ReminderRow(t, now, null, rowActions) },
+                        hijri = hijri, hijriAdjust = hijriAdjust,
+                        viewMenu = { ViewMenuButton(view) { viewName = it.name } },
+                        onSettings = onSettings,
+                    )
+                }
+                return@Column
+            }
             val look = RowLook(selected = if (selecting) selected else null, swipe = swipe && !selecting, reduced = reduced)
             if (searching) {
                 if (results.isEmpty()) Empty(stringResource(if (query.isBlank()) R.string.search_empty_hint else R.string.no_results))
