@@ -6,7 +6,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.edit
+import com.fastkiwi.rememberme.Repo
+import com.fastkiwi.rememberme.core.AlertPolicy
+import com.fastkiwi.rememberme.core.Priority
+import com.fastkiwi.rememberme.core.Task
+import com.fastkiwi.rememberme.data.AlertLog
 import java.time.Instant
+import java.time.ZoneId
 
 /**
  * «اختبر التنبيه الآن» (PRD P0.4): a real alarm fires a test reminder through the same path as a real
@@ -19,8 +25,20 @@ object TestAlarm {
     const val DELAY_SECONDS = 10L
     /** A test alarm counts as on time when it fires within this much of its planned moment. */
     const val ON_TIME_MS = 60_000L
+    /** The alert-log key of the test's ringing (Notifier.postTest), never a reminder's key. */
+    const val LOG_KEY = "test"
 
     private fun p(c: Context) = c.applicationContext.getSharedPreferences("alarm_test", Context.MODE_PRIVATE)
+
+    /** When the test alarm goes off (F-027: the night test). */
+    enum class Delay { SECONDS_10, HOUR_1, TOMORROW_7 }
+
+    /** The moment a test started at [now] with [delay] should arrive. */
+    fun plannedAt(now: Instant, delay: Delay, zone: ZoneId): Instant = when (delay) {
+        Delay.SECONDS_10 -> now.plusSeconds(DELAY_SECONDS)
+        Delay.HOUR_1 -> now.plusSeconds(3600)
+        Delay.TOMORROW_7 -> now.atZone(zone).toLocalDate().plusDays(1).atTime(7, 0).atZone(zone).toInstant()
+    }
 
     data class Record(
         val startedAt: Long = 0, val plannedAt: Long = 0, val api: String = "",
@@ -28,16 +46,41 @@ object TestAlarm {
         val screenAt: Long = 0, val actionAt: Long = 0,
         /** The user's answers: true heard / felt, false not, null not answered. */
         val sound: Boolean? = null, val vibration: Boolean? = null,
-    )
+        /** The chosen alert style (AlertPolicy.Style name) and delay (Delay name). */
+        val style: String = AlertPolicy.Style.NORMAL.name, val delay: String = Delay.SECONDS_10.name,
+        /** At the moment it fired: why no tone was played (AlertPolicy.Quiet name, "" unknown) and whether it vibrated. */
+        val quiet: String = "", val vibrate: Boolean? = null,
+        /** Objective sub-check of the sound: the player started (true), failed (false), not seen (null). */
+        val playback: Boolean? = null,
+    ) {
+        val alarm get() = style == AlertPolicy.Style.ALARM.name
+        /** Measured lateness of the test alarm in ms, or null before it arrived (F-027). */
+        val lateMs get() = if (firedAt > 0) (firedAt - plannedAt).coerceAtLeast(0) else null
+    }
 
     fun record(c: Context): Record {
         val p = p(c)
         fun ans(k: String) = if (p.contains(k)) p.getBoolean(k, false) else null
+        val firedAt = p.getLong("firedAt", 0)
         return Record(
             p.getLong("startedAt", 0), p.getLong("plannedAt", 0), p.getString("api", "") ?: "",
-            p.getLong("firedAt", 0), p.getBoolean("posted", false), p.getBoolean("fsAllowed", false),
+            firedAt, p.getBoolean("posted", false), p.getBoolean("fsAllowed", false),
             p.getLong("screenAt", 0), p.getLong("actionAt", 0), ans("sound"), ans("vibration"),
+            style = p.getString("style", null) ?: AlertPolicy.Style.NORMAL.name,
+            delay = p.getString("delay", null) ?: Delay.SECONDS_10.name,
+            quiet = p.getString("quiet", "") ?: "", vibrate = ans("vibrate"),
+            playback = if (firedAt > 0) playback(runCatching { AlertLog(c).entries() }.getOrDefault(emptyList()), firedAt) else null,
         )
+    }
+
+    /** Reads the ringing service's log lines for the test (key [LOG_KEY]) written after it fired. */
+    fun playback(entries: List<AlertLog.Entry>, firedAt: Long): Boolean? {
+        val mine = entries.filter { it.key == LOG_KEY && it.at >= firedAt - 1_000 }
+        return when {
+            mine.any { it.event == AlertLog.Event.PLAY_STARTED || (it.event == AlertLog.Event.FALLBACK && it.code.startsWith("source")) } -> true
+            mine.any { it.event == AlertLog.Event.FALLBACK } -> false
+            else -> null
+        }
     }
 
     private fun op(c: Context) = PendingIntent.getBroadcast(
@@ -45,13 +88,20 @@ object TestAlarm {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 
-    /** Starts a test: clears the last result and sets a real alarm [DELAY_SECONDS] from now. */
-    fun start(c: Context, now: Instant = Instant.now()) {
-        val at = now.plusSeconds(DELAY_SECONDS).toEpochMilli()
+    /**
+     * Starts a test: clears the last result and sets a real alarm for [delay] from now, as an alarm clock
+     * (the API of a due reminder) when exact alarms are allowed. [style] is the alert style to test.
+     */
+    fun start(
+        c: Context, now: Instant = Instant.now(), style: AlertPolicy.Style = AlertPolicy.Style.NORMAL,
+        delay: Delay = Delay.SECONDS_10, zone: ZoneId = ZoneId.systemDefault(),
+    ) {
+        val at = plannedAt(now, delay, zone).toEpochMilli()
         val am = c.getSystemService(AlarmManager::class.java)
         val exact = Engine.canExact(c)
         // The same API as a due reminder (slot A): an alarm clock when exact alarms are allowed.
         var api = if (exact) "CLOCK" else "INEXACT"
+        Notifier.cancelTest(c)
         try {
             if (exact) {
                 val show = PendingIntent.getActivity(c, 304, Intent(c, com.fastkiwi.rememberme.MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -64,13 +114,27 @@ object TestAlarm {
         p(c).edit {
             clear()
             putLong("startedAt", now.toEpochMilli()); putLong("plannedAt", at); putString("api", api)
+            putString("style", style.name); putString("delay", delay.name)
         }
     }
 
-    /** The test alarm arrived: post the test reminder and note whether it is showing. */
+    /** The test alarm arrived: post the test reminder of the chosen style and note what Android allowed. */
     fun onFire(c: Context, now: Instant = Instant.now()) {
-        p(c).edit { putLong("firedAt", now.toEpochMilli()); putBoolean("fsAllowed", Notifier.canFullScreen(c)) }
-        Notifier.postTest(c, now)
+        val style = runCatching { AlertPolicy.Style.valueOf(p(c).getString("style", null) ?: "") }.getOrDefault(AlertPolicy.Style.NORMAL)
+        // What a real reminder of this style would do now (the same decision Notifier.postTest makes).
+        val d = runCatching {
+            val prefs = Repo.prefs(c)
+            AlertPolicy.decide(
+                Task(id = "test", title = "", priority = if (style == AlertPolicy.Style.ALARM) Priority.HIGH else Priority.NORMAL, createdAt = now, updatedAt = now),
+                Notifier.ringer(c), Notifier.dnd(c), Repo.sound(Repo.state(c)), Notifier.styleChannelAudible(c, style),
+                prefs.vibrateDefault, AlertPolicy.FullScreenMode.ALWAYS, prefs.pinDefault,
+            )
+        }.getOrNull()
+        p(c).edit {
+            putLong("firedAt", now.toEpochMilli()); putBoolean("fsAllowed", Notifier.canFullScreen(c))
+            if (d != null) { putString("quiet", d.quiet.name); putBoolean("vibrate", d.vibrate) }
+        }
+        Notifier.postTest(c, now, style)
         val shown = runCatching {
             c.getSystemService(NotificationManager::class.java).activeNotifications.any { it.id == Notifier.TEST_ID && it.tag == null }
         }.getOrDefault(false)

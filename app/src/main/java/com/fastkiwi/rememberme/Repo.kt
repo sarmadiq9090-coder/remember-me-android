@@ -44,7 +44,12 @@ object Repo {
 
     /** Changes data, then re-arms the alarm and refreshes notifications and the widget. */
     fun change(context: Context, block: (AppState) -> AppState): AppState {
-        val next = store(context).change(block)
+        // [editor] begin: prayer/Hijri repeats use the phone's setup (F-050, F-051); history (F-072) sees each change.
+        com.fastkiwi.rememberme.data.EditorPrefs.install(context)
+        var before: AppState? = null
+        val next = store(context).change { s -> before = s; block(s) }
+        before?.let { b -> runCatching { com.fastkiwi.rememberme.data.History.observe(context, b, next) } }
+        // [editor] end
         Engine.sync(context.applicationContext)
         return next
     }

@@ -24,6 +24,7 @@ import com.fastkiwi.rememberme.Repo
 import com.fastkiwi.rememberme.core.AlertExt
 import com.fastkiwi.rememberme.core.AlertPolicy
 import com.fastkiwi.rememberme.core.Codec
+import com.fastkiwi.rememberme.core.hidesOnLockScreen
 import com.fastkiwi.rememberme.core.Task
 import com.fastkiwi.rememberme.core.snoozeTime
 import com.fastkiwi.rememberme.data.AlertLog
@@ -210,8 +211,10 @@ object Notifier {
             .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), snooze)
             .addAction(R.drawable.ic_snooze, c.getString(R.string.snooze_until), until)
             .addExtras(android.os.Bundle().apply { putString(EXTRA_TASK, t.id) })
-        // Lock screen (F-022): details by default; hidden = «لديك تذكير» with the same buttons.
-        if (Repo.prefs(context).lockPrivacy) {
+        // Lock screen (F-022): details by default; hidden = «لديك تذكير» with the same buttons. The reminder's
+        // own choice wins over the phone setting.
+        val hideDetails = ext.hidesOnLockScreen(Repo.prefs(context).lockPrivacy)
+        if (hideDetails) {
             b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             b.setPublicVersion(NotificationCompat.Builder(c, channel).setSmallIcon(R.drawable.ic_stat_bell)
                 .setContentTitle(c.getString(R.string.you_have_reminder)).setContentText(c.getString(R.string.open_to_see))
@@ -238,7 +241,7 @@ object Notifier {
         // F-031: read aloud only where a tone may play; locked with «أخفِ التفاصيل» it says «لديك تذكير» only.
         val locked = runCatching { context.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked }.getOrDefault(true)
         val speak = if (d.playTone && (ext.speak ?: prefs.speakDefault))
-            (if (locked && prefs.lockPrivacy) c.getString(R.string.you_have_reminder) else t.title) else null
+            (if (locked && hideDetails) c.getString(R.string.you_have_reminder) else t.title) else null
         if (RingService.start(context, id, n, chain.sources.map { it.uri }, alarm, seconds, d.playTone, d.vibrate, prefs.vibrationPattern, key,
                 speak, prefs.language)) {
             RingService.ringingId = id
@@ -353,7 +356,7 @@ object Notifier {
             .putExtra(ActionReceiver.EXTRA_ID, c.id).putExtra(ActionReceiver.EXTRA_COPY, c.copyId), flags())
         val b = NotificationCompat.Builder(l, CH_QUIET)
             .setSmallIcon(R.drawable.ic_check)
-            .setContentTitle(l.getString(R.string.done_undo_title, title))
+            .setContentTitle(l.getString(R.string.done_undo_title, L10n.isolate(l, title)))
             .setSilent(true).setAutoCancel(true).setTimeoutAfter(10_000)
             .addAction(R.drawable.ic_check, l.getString(R.string.undo), undo)
         if (Repo.prefs(context).lockPrivacy) {

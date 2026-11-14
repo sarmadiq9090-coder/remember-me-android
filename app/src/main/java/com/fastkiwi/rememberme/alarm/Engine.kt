@@ -26,6 +26,9 @@ object Engine {
     private val lock = Any()
     private val worker = Executors.newSingleThreadExecutor { r -> Thread(r, "rememberme-engine").apply { isDaemon = true } }
 
+    /** Run in the nightly housekeeping window, after the alarms are armed (registered at app start). */
+    val housekeeping = java.util.concurrent.CopyOnWriteArrayList<(Context, Instant) -> Unit>()
+
     /** Last time the engine ran (for tests and diagnostics). */
     @Volatile var lastRun: Instant? = null
         private set
@@ -115,6 +118,9 @@ object Engine {
         }
         lastRun = now
         runCatching { ReminderWidget.refresh(app) }
+        // Work that belongs to the nightly window (e.g. the weekly automatic backup, F-087). After the
+        // alarms are armed, so a slow or failing hook can never delay a reminder.
+        if (reason == "housekeeping") for (hook in housekeeping) runCatching { hook(app, now) }
         plan
     }
 

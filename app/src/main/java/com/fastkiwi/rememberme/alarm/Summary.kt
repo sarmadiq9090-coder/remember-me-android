@@ -62,12 +62,12 @@ object Summary {
                 .setContentText(L10n.plural(l, R.plurals.reminders_today, n.toLong()))
             // The first title only when details may show on the lock screen (F-030, F-022).
             if (first != null && !Repo.prefs(c).lockPrivacy) b.setStyle(NotificationCompat.BigTextStyle().bigText(
-                L10n.plural(l, R.plurals.reminders_today, n.toLong()) + "\n" + l.getString(R.string.summary_first, L10n.time(l, first.dueAt!!), first.title)))
+                L10n.plural(l, R.plurals.reminders_today, n.toLong()) + "\n" + l.getString(R.string.summary_first, L10n.time(l, first.dueAt!!), L10n.isolate(l, first.title))))
             val notification = b
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setAutoCancel(true).setContentIntent(open).build()
-            runCatching { NotificationManagerCompat.from(c).notify(Notifier.MORNING_ID, notification) }
+            try { NotificationManagerCompat.from(c).notify(Notifier.MORNING_ID, notification) } catch (_: SecurityException) { }
         }
         arm(c, now.plusSeconds(60))
     }

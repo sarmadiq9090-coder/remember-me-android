@@ -120,23 +120,57 @@ class AppUiTest {
             // One list with sections (DESIGN-SPEC V1): Overdue first, then Today, then Upcoming.
             rule.onNodeWithText("المتأخرة").assertExists()
             rule.onNodeWithText("دواء الضغط", useUnmergedTree = true).assertExists()
-            rule.onNodeWithText("اليوم").assertExists()
+            // DESIGN-SPEC §7.4: the section «اليوم» exactly once on Home in list view.
+            rule.onAllNodesWithText("اليوم").assertCountEquals(1)
             shot("01-home-ar")
             rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription("دفع الإيجار", substring = true))
             rule.onNodeWithText("القادمة").assertExists()
             shot("02-home-scrolled-ar")
             // Scrolled down, the button is an icon: it still has its name.
+            // The FAB opens Quick Add (DESIGN-SPEC W2): one line, the preview, then «حفظ».
             rule.onNode(hasContentDescription("تذكير جديد") or hasText("تذكير جديد"), useUnmergedTree = true).performClick()
-            rule.onNodeWithText("العنوان").performTextInput("موعد طبيب الأسنان")
+            rule.onNodeWithText("اكتب التذكير وموعده").performTextInput("موعد طبيب الأسنان بعد ساعة")
+            rule.mainClock.advanceTimeBy(500)
+            rule.onNodeWithText("العنوان: موعد طبيب الأسنان", substring = true).assertExists()
             shot("04-new-reminder-ar")
-            // One «حفظ» only, at the bottom.
             rule.onAllNodesWithText("حفظ").assertCountEquals(1)
             rule.onNodeWithText("حفظ").performClick()
             rule.waitUntil(10_000) { Repo.state(app).tasks.any { it.title == "موعد طبيب الأسنان" && it.dueAt != null } }
             rule.onNodeWithContentDescription("الإعدادات").performClick()
             shot("06-settings-ar")
             rule.onNodeWithText("صحة التذكيرات").performClick()
+            // DESIGN-SPEC §7.4: «صحة التذكيرات» replaces «السماح بالعمل في الخلفية».
+            rule.onNodeWithText("السماح بالعمل في الخلفية").assertDoesNotExist()
+            rule.onNodeWithText("افحص الآن").assertExists()
+            rule.onNodeWithText("اختبر التنبيه الآن").assertExists()
             shot("07-background-ar")
+        }
+    }
+
+    /** Health's ⋮ opens the compatibility report and the alert log; the alert test starts from its sheet and saves no reminder. */
+    @Test fun healthLeadsToTheReportTheLogAndTheTest() {
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithText("صحة التذكيرات").assertExists()
+            rule.onNodeWithContentDescription("خيارات أخرى").performClick()
+            rule.onNodeWithText("تقرير التوافق").performClick()
+            rule.onNodeWithText("ما لا يتضمنه التقرير:").assertExists()
+            rule.onNodeWithText("compat-report@1", substring = true).assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithContentDescription("خيارات أخرى").performClick()
+            rule.onNodeWithText("سجل التنبيهات").performClick()
+            rule.onNodeWithText("لا أحداث بعد.").assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.DndHelp) }
+            rule.onNodeWithText("افتح إعدادات عدم الإزعاج").assertExists()
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Background) }
+            rule.onNodeWithText("اختبر التنبيه الآن").performClick()
+            rule.onNodeWithText("نوع التنبيه").assertExists()
+            rule.onNode(androidx.compose.ui.test.hasTestTag(com.fastkiwi.rememberme.ui.health.START_TAG)).performClick()
+            rule.waitUntil(5_000) { com.fastkiwi.rememberme.alarm.TestAlarm.record(app).startedAt > 0 }
+            rule.onNodeWithText("سيصل تنبيه تجريبي", substring = true).assertExists()
+            assertTrue("No reminder was added", Repo.state(app).tasks.isEmpty())
+            // Every screen code survives a rotation.
+            for (s in listOf(Screen.DndHelp, Screen.CompatReport, Screen.AlertLog)) assertEquals(s, Screen.of(s.code()))
         }
     }
 
@@ -148,8 +182,10 @@ class AppUiTest {
         ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
             rule.onNodeWithText(first.title).assertExists()
             rule.onNodeWithText("1 من 2").assertExists()
-            rule.onNodeWithText("10 دقائق").assertExists()
+            rule.onNodeWithText("أجّل 10 دقائق").assertExists()
             shot("05-alert-ar")
+            // Taps in the first second are ignored (DESIGN-SPEC §5.8).
+            rule.mainClock.advanceTimeBy(1_100)
             rule.onNodeWithText("تم").performClick()
             // The change is saved off the main thread; the screen then moves to the next reminder.
             rule.waitUntil(10_000) { Tasks.due(Repo.state(app), Instant.now()).size == 1 }
@@ -157,7 +193,7 @@ class AppUiTest {
         }
     }
 
-    /** DESIGN-SPEC §3.3: on a repeating reminder «تم» (primary) is at the end: left of «تخطَّ هذه المرة» in Arabic. */
+    /** DESIGN-SPEC §5.8: «تم» (primary) is at the end: left of «أجّل 10 دقائق» in Arabic; «تخطَّ هذه المرة» for a repeat. */
     @Test fun theReminderScreenPutsDoneAtTheEnd() {
         val now = Instant.now()
         sample(now)
@@ -166,8 +202,9 @@ class AppUiTest {
         ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
             rule.onAllNodesWithText("تم").assertCountEquals(1)
             val done = rule.onNodeWithText("تم", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            val skip = rule.onNodeWithText("تخطَّ هذه المرة", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            assertTrue("Done $done should be left of Skip $skip in RTL", done.right <= skip.left + 1)
+            val snooze = rule.onNodeWithText("أجّل 10 دقائق", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue("Done $done should be left of Snooze $snooze in RTL", done.right <= snooze.left + 1)
+            rule.onNodeWithText("تخطَّ هذه المرة").assertExists()
             // Every clickable thing on the screen is at least 48 × 48 dp.
             assertTouchTargets()
         }

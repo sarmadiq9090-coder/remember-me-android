@@ -26,11 +26,14 @@ object AlertPolicy {
         val pinned: Boolean,
     )
 
-    /** The reminder's style: its own choice, or by priority (high → alarm). */
+    /** Settings «التذكيرات المهمة»: high priority is «منبّه مهم» by default (phone setting, F-015). */
+    @Volatile var highIsAlarm: Boolean = true
+
+    /** The reminder's style: its own choice, or by priority (high → alarm unless the setting says otherwise). */
     fun style(t: Task, ext: AlertExt = AlertExt.of(t)): Style = when (ext.style) {
         "alarm" -> Style.ALARM
         "normal" -> Style.NORMAL
-        else -> if (t.priority == Priority.HIGH) Style.ALARM else Style.NORMAL
+        else -> if (t.priority == Priority.HIGH && highIsAlarm) Style.ALARM else Style.NORMAL
     }
 
     fun decide(
