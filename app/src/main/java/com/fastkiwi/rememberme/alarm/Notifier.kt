@@ -1,7 +1,6 @@
 package com.fastkiwi.rememberme.alarm
 
 import android.Manifest
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -52,7 +51,6 @@ object Notifier {
             description = c.getString(R.string.channel_alert_desc)
             setSound(alarmSound, attrs)
             enableVibration(true)
-            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         })
         nm.createNotificationChannel(NotificationChannel(CH_QUIET, c.getString(R.string.channel_quiet), NotificationManager.IMPORTANCE_HIGH).apply {
             description = c.getString(R.string.channel_quiet_desc)

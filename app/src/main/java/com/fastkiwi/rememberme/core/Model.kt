@@ -125,7 +125,7 @@ object Codec {
         val rule = when (repeat) {
             Repeat.INTERVAL -> RepeatRule(everyDays = (int(obj, "repeatEvery") ?: 2).coerceIn(2, 365), from = from)
             Repeat.HOURS -> RepeatRule(everyHours = (int(obj, "repeatHours") ?: 1).coerceIn(1, 23), from = from)
-            Repeat.DAYS -> RepeatRule(days = days.ifEmpty { listOf(jsDay(dueAt!!.atZone(ZoneOffset.UTC).toLocalDate())) }, from = from)
+            Repeat.DAYS -> RepeatRule(days = days.ifEmpty { listOf(jsDay(dueAt!!.atZone(java.time.ZoneId.systemDefault()).toLocalDate())) }, from = from)
             Repeat.MONTHLY, Repeat.YEARLY -> RepeatRule(from = from ?: scheduleAt ?: dueAt)
             Repeat.DAILY, Repeat.WEEKLY -> RepeatRule(from = from)
             Repeat.NONE -> RepeatRule()

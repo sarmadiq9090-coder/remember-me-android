@@ -256,4 +256,19 @@ class EngineTest {
             ActionReceiver.handle(app, ActionReceiver.DONE, Repo.state(app).tasks.last().id, next, now)
         } finally { File(app.filesDir, "data/data.json.tmp").deleteRecursively() }
     }
+
+    @Test fun anEarlyNoticeIsWithdrawnWhenTheReminderMovesLater() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "meeting", dueAt = now.plusSeconds(10 * 60), remindBefore = 15), now.minusSeconds(3600))
+        Engine.sync(app, now)
+        assertTrue(nm.activeNotifications.any { it.tag == Notifier.TAG_NOTICE + t.id })
+        Repo.store(app).change { Tasks.save(it, TaskInput(id = t.id, title = "meeting", dueAt = now.plusSeconds(5 * 3600), remindBefore = 15), now, zone).first }
+        Engine.sync(app, now.plusSeconds(5))
+        assertTrue(nm.activeNotifications.none { it.tag == Notifier.TAG_NOTICE + t.id })
+    }
+
+    @Test fun theReminderChannelDoesNotOverrideLockScreenChoice() {
+        // -1000 is NotificationManager.VISIBILITY_NO_OVERRIDE (a hidden constant).
+        assertEquals(-1000, nm.getNotificationChannel(Notifier.CH_ALERT).lockscreenVisibility)
+    }
 }

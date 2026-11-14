@@ -60,7 +60,9 @@ object Engine {
         Notifier.postSummary(app, plan.due.size)
         for (t in plan.notices) Notifier.postNotice(app, t, now)
         // A notice whose task is done, deleted or due is no longer useful.
-        state.tasks.filter { !it.active || it.id in dueIds }.forEach { runCatching { Notifier.cancelNotice(app, it.id) } }
+        state.tasks.filter { t ->
+            !t.active || t.id in dueIds || Tasks.noticeAt(t)?.isAfter(now) != false
+        }.forEach { runCatching { Notifier.cancelNotice(app, it.id) } }
 
         prefs.alertLog = plan.alertLog
         prefs.noticeLog = plan.noticeLog
