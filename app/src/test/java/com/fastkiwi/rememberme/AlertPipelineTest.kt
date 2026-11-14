@@ -146,6 +146,11 @@ class AlertPipelineTest {
         ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusSeconds(2))
         val undo = nm.activeNotifications.single { it.id == Notifier.UNDO_ID }.notification
         assertEquals("أُنجز «يومي»", undo.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+        // F-102: a title in the other direction is wrapped in directional controls; the same direction is left alone.
+        val ar = com.fastkiwi.rememberme.ui.L10n.context(app)
+        assertEquals("يومي", com.fastkiwi.rememberme.ui.L10n.isolate(ar, "يومي"))
+        val wrapped = com.fastkiwi.rememberme.ui.L10n.isolate(ar, "Meeting 5")
+        assertTrue(wrapped.contains("Meeting 5") && wrapped != "Meeting 5" && wrapped.first().code in 0x200E..0x2069)
         assertEquals("تراجع", undo.actions[0].title.toString())
         assertTrue(Repo.state(app).task(t.id)!!.dueAt!!.isAfter(now))
         val copy = shadowOf(undo.actions[0].actionIntent).savedIntent.getStringExtra(ActionReceiver.EXTRA_COPY)
