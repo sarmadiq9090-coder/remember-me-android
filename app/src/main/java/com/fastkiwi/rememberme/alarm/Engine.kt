@@ -33,13 +33,16 @@ object Engine {
     fun canExact(context: Context): Boolean =
         Build.VERSION.SDK_INT < 31 || context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
 
-    fun sync(context: Context, now: Instant = Instant.now()) = synchronized(lock) {
+    /** [at]: the moment to plan for (tests); by default the time when the run gets the lock, not when it asked for it. */
+    fun sync(context: Context, at: Instant? = null) = synchronized(lock) {
+        val now = at ?: Instant.now()
         val app = context.applicationContext
         val prefs = Repo.prefs(app)
         // The 30-day trash purge, done quietly on the way.
         val store = Repo.store(app)
         if (store.state.value.tasks.any { it.deletedAt != null && it.deletedAt.isBefore(now.minusMillis(Tasks.TRASH_DAYS * 86_400_000L)) }) {
-            store.change { Tasks.purgeTrash(it, now) }
+            // A write that fails (disk full) must not stop the run before the alarm is set.
+            runCatching { store.change { Tasks.purgeTrash(it, now) } }
         }
         val state = store.state.value
         val plan = Planner.plan(state, now, Repo.remindAgain(state), prefs.alertLog, prefs.noticeLog)

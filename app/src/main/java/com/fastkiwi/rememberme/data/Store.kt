@@ -95,6 +95,8 @@ class Store(private val dir: File, private val clock: () -> Instant = Instant::n
 
     fun restoreSafety(f: File): Boolean {
         val state = read(f) ?: return false
+        // What is on the phone now becomes a safety copy too, so a mistaken tap can be undone.
+        safetyCopy()
         replace(state)
         return true
     }

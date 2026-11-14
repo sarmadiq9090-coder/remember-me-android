@@ -20,6 +20,10 @@ data class TaskInput(
     val everyDays: Int = 2,
     val everyHours: Int = 1,
     val remindBefore: Int = 0,
+    /** The task's updatedAt when the editor opened it (edits of an existing task). */
+    val updatedAt: Instant? = null,
+    /** Whether the editor's reminder fields (on/off, date, time, repeat) were changed; null from other callers. */
+    val timeEdited: Boolean? = null,
 )
 
 class TaskException(val reason: Reason) : Exception(reason.name) {
@@ -70,6 +74,13 @@ object Tasks {
             )
             return state.copy(tasks = state.tasks + task) to task
         }
+        // An editor opened before Done or a snooze (from the notification or the alert) applies only
+        // its text unless its reminder fields were edited, so its old time cannot undo that (Windows).
+        val outdated = input.timeEdited != null && input.updatedAt?.toEpochMilli() != old.updatedAt.toEpochMilli()
+        if (outdated && (input.timeEdited == false || old.completedAt != null)) {
+            val task = old.copy(title = input.title, body = input.body, priority = input.priority, category = input.category, updatedAt = now)
+            return replace(state, task) to task
+        }
         if (old.completedAt != null) throw TaskException(TaskException.Reason.COMPLETED)
         val changed = input.dueAt != old.dueAt
         val repeatChanged = input.repeat != Repeat.NONE && input.repeat != old.repeat
@@ -91,7 +102,8 @@ object Tasks {
 
     private fun replace(state: AppState, task: Task) = state.copy(tasks = state.tasks.map { if (it.id == task.id) task else it })
 
-    private fun stale(task: Task, expectedDueAt: Instant?, checked: Boolean) = checked && expectedDueAt != task.dueAt
+    /** Compared to the millisecond, as data.json and the notification's extras store it (Windows compares the ISO text). */
+    private fun stale(task: Task, expectedDueAt: Instant?, checked: Boolean) = checked && expectedDueAt?.toEpochMilli() != task.dueAt?.toEpochMilli()
 
     /** Steps of a checklist (kept from Windows in extra) all unticked, for the next occurrence. */
     private fun untick(extra: JsonObject): JsonObject {

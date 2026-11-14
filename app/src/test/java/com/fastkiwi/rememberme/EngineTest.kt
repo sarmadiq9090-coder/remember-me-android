@@ -218,4 +218,42 @@ class EngineTest {
         assertTrue(File(app.filesDir, "data/data.json").readText().contains("\"version\":1"))
         assertEquals(Codec.decode(File(app.filesDir, "data/data.json").readText()).tasks.single().title, "persist")
     }
+
+    @Test fun aRunThatWaitedForTheLockPlansForTheTimeItRuns() {
+        val due = Instant.now().plusMillis(700)
+        val t = save(TaskInput(title = "race", dueAt = due), Instant.now().minusSeconds(60))
+        val lock = Engine::class.java.getDeclaredField("lock").apply { isAccessible = true }.get(null)!!
+        lateinit var waiting: Thread
+        synchronized(lock) {
+            // A data change starts a run just before the reminder is due and has to wait for the lock...
+            waiting = Thread { Engine.sync(app) }.apply { start() }
+            while (waiting.state != Thread.State.BLOCKED) Thread.sleep(5)
+            Thread.sleep(1000)
+            // ...while the alarm's run, at the due time, announces it.
+            Engine.sync(app)
+            assertTrue(dueTags().contains(Notifier.TAG_DUE + t.id))
+        }
+        waiting.join(10_000)
+        // The waiting run must not take it back (and so sound it a second time on the next run).
+        assertTrue("still shown", dueTags().contains(Notifier.TAG_DUE + t.id))
+        assertEquals(Codec.iso(due), Repo.prefs(app).alertLog[t.id]?.substringBeforeLast('|'))
+    }
+
+    @Test fun aFailedWriteDuringTheTrashPurgeStillArmsTheAlarm() {
+        val now = Instant.now()
+        val next = now.plusSeconds(3600)
+        Repo.store(app).change { s0 ->
+            val s1 = Tasks.save(s0, TaskInput(title = "old trash"), now.minusSeconds(40 * 86_400L), zone).first
+            val s2 = Tasks.trash(s1, s1.tasks.last().id, now.minusSeconds(40 * 86_400L))
+            Tasks.save(s2, TaskInput(title = "next", dueAt = next), now, zone).first
+        }
+        // The disk refuses the write (full, or the file is in the way): the purge cannot be saved.
+        File(app.filesDir, "data/data.json.tmp").mkdirs()
+        try {
+            Engine.sync(app, now)
+            assertEquals(next.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+            // A notification button whose change cannot be saved does not crash the app either.
+            ActionReceiver.handle(app, ActionReceiver.DONE, Repo.state(app).tasks.last().id, next, now)
+        } finally { File(app.filesDir, "data/data.json.tmp").deleteRecursively() }
+    }
 }

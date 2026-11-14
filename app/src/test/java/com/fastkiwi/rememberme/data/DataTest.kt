@@ -199,4 +199,20 @@ class DataTest {
         assertEquals("before", store.state.value.tasks.single().title)
         assertNotNull(store.state.value)
     }
+
+    @Test fun restoringASafetyCopyKeepsTheCurrentDataAsAnother() {
+        val dir = tmp.newFolder("data3")
+        var t = now
+        val store = Store(dir) { t }
+        store.change { Tasks.save(it, TaskInput(title = "old"), now, zone).first }
+        val copy = store.safetyCopy()
+        store.replace(AppState())
+        store.change { Tasks.save(it, TaskInput(title = "current"), now, zone).first }
+        t = t.plusSeconds(5)
+        // One tap on a safety copy must not throw away what is on the phone now.
+        assertTrue(store.restoreSafety(copy))
+        assertEquals("old", store.state.value.tasks.single().title)
+        val kept = store.safetyCopies().map { Codec.decode(it.readText(), now).tasks.map { x -> x.title } }
+        assertTrue(kept.toString(), listOf("current") in kept)
+    }
 }

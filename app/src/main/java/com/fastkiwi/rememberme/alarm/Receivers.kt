@@ -60,6 +60,11 @@ class ActionReceiver : BroadcastReceiver() {
         /** The occurrence the user saw ([due]) must still be current, or the tap is ignored. */
         fun handle(context: Context, action: String, id: String, due: Instant?, now: Instant) {
             val zone = Repo.zone()
+            // A change that cannot be saved (disk full) changes nothing; it must not crash the app.
+            try { act(context, action, id, due, now, zone) } catch (_: java.io.IOException) { Engine.sync(context) }
+        }
+
+        private fun act(context: Context, action: String, id: String, due: Instant?, now: Instant, zone: java.time.ZoneId) {
             when (action) {
                 DONE -> Repo.change(context) { s -> Tasks.complete(s, id, now, zone, due, checked = true)?.first ?: s }
                 SNOOZE -> Repo.change(context) { s ->

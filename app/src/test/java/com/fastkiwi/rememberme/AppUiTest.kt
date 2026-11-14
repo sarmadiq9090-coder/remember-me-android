@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.fastkiwi.rememberme.alarm.Engine
@@ -171,6 +172,30 @@ class AppUiTest {
             rule.onNodeWithText("Today").performClick()
             rule.onNodeWithText("Team meeting").assertExists()
             shot("08-today-en")
+        }
+    }
+
+    @Test fun theEditorShowsTheReminderItIsOpenedForAndSurvivesRotation() {
+        val now = Instant.now()
+        var a = ""
+        var b = ""
+        Repo.store(app).change { s0 ->
+            val (s1, ta) = Tasks.save(s0, TaskInput(title = "first reminder", dueAt = now.plusSeconds(3600)), now, zone)
+            val (s2, tb) = Tasks.save(s1, TaskInput(title = "second reminder", dueAt = now.plusSeconds(7200)), now, zone)
+            a = ta.id; b = tb.id
+            s2
+        }
+        val open = Intent(app, MainActivity::class.java).putExtra(MainActivity.EXTRA_OPEN, a)
+        ActivityScenario.launch<MainActivity>(open).also { scenario = it }.use { sc ->
+            rule.onNodeWithText("first reminder").assertExists()
+            // Another reminder opened while the editor is showing (its early notice tapped: onNewIntent).
+            sc.onActivity { it.stack = listOf(Screen.Home, Screen.Edit(b)) }
+            rule.onNodeWithText("second reminder").assertExists()
+            rule.onNodeWithText("first reminder").assertDoesNotExist()
+            // Rotating the phone keeps the editor and what was typed.
+            rule.onNodeWithText("second reminder").performTextReplacement("second reminder, edited")
+            sc.recreate()
+            rule.onNodeWithText("second reminder, edited").assertExists()
         }
     }
 }

@@ -108,6 +108,10 @@ fun EditScreen(
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var pickDate by rememberSaveable { mutableStateOf(false) }
     var pickTime by rememberSaveable { mutableStateOf(false) }
+    // What the editor opened with: a Done or snooze made meanwhile must not be undone by its old time.
+    fun reminderKey() = listOf(timed, date, time, repeat, days, everyDays, everyHours).joinToString("|")
+    val openedKey = rememberSaveable { reminderKey() }
+    val openedAt = rememberSaveable { task?.updatedAt?.toEpochMilli() ?: 0L }
 
     val localDate = LocalDate.parse(date)
     val localTime = LocalTime.parse(time)
@@ -120,6 +124,7 @@ fun EditScreen(
             id = task?.id, title = title, body = body, priority = Priority.of(priority), category = Category.of(category),
             dueAt = dueAt, repeat = if (timed) rep else Repeat.NONE,
             days = dayList.ifEmpty { listOf(jsDay(localDate)) }, everyDays = everyDays, everyHours = everyHours, remindBefore = if (timed) early else 0,
+            updatedAt = task?.let { Instant.ofEpochMilli(openedAt) }, timeEdited = task?.let { reminderKey() != openedKey },
         )
         error = onSave(input)
     }

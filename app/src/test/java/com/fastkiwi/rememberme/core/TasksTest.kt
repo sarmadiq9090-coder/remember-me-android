@@ -15,6 +15,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -198,5 +199,45 @@ class TasksTest {
         assertEquals(SnoozePreset.Pick, p[5])
         assertEquals(SnoozePreset.DEFAULTS, SnoozePreset.normalize(JsonArray(listOf(obj("kind" to "week")))))
         for (preset in SnoozePreset.DEFAULTS) assertEquals(preset, SnoozePreset.parse(preset.toJson()))
+    }
+
+    @Test fun aSnoozeTimeFinerThanAMillisecondStillMatchesTheNotificationsButtons() {
+        val due = at(zone, 2026, 11, 14, 9)
+        val (s0, t) = new(input = TaskInput(title = "r", dueAt = due))
+        // Instant.now() can carry microseconds; data.json and the notification's extras keep milliseconds.
+        val until = now.plusSeconds(600).plusNanos(123_456)
+        val s1 = Tasks.snooze(s0, t.id, until, now, due, checked = true)!!
+        val seen = Instant.parse(Codec.iso(until))
+        val later = until.plusSeconds(5)
+        assertNotNull("Done from the notification", Tasks.complete(s1, t.id, later, zone, seen, checked = true))
+        assertNotNull("Snooze from the notification", Tasks.snooze(s1, t.id, later.plusSeconds(600), later, seen, checked = true))
+        assertNull("An older occurrence is still ignored", Tasks.complete(s1, t.id, later, zone, due, checked = true))
+    }
+
+    @Test fun anEditorOpenedBeforeDoneOrSnoozeDoesNotPutTheOldTimeBack() {
+        val due = at(zone, 2026, 11, 14, 9)
+        val (s0, t) = new(input = TaskInput(title = "r", dueAt = due, repeat = Repeat.DAILY))
+        val later = now.plusSeconds(60)
+        // The editor opened at t.updatedAt; meanwhile Done from the notification moved the series on.
+        val s1 = Tasks.complete(s0, t.id, later, zone, due, checked = true)!!.first
+        val moved = s1.task(t.id)!!
+        val edit = TaskInput(id = t.id, title = "r fixed", dueAt = due, repeat = Repeat.DAILY, updatedAt = t.updatedAt, timeEdited = false)
+        val saved = Tasks.save(s1, edit, later.plusSeconds(60), zone).second
+        assertEquals("r fixed", saved.title)
+        assertEquals(moved.dueAt, saved.dueAt)
+        assertEquals(moved.scheduleAt, saved.scheduleAt)
+        assertEquals(moved.rule, saved.rule)
+        // The user did change the time in that editor: their new time wins.
+        val retimed = Tasks.save(s1, edit.copy(dueAt = due.plusSeconds(7200), timeEdited = true), later.plusSeconds(60), zone).second
+        assertEquals(due.plusSeconds(7200), retimed.dueAt)
+        // Not outdated: the editor's fields apply as before.
+        val fresh = Tasks.save(s1, edit.copy(dueAt = moved.dueAt, updatedAt = moved.updatedAt), later.plusSeconds(60), zone).second
+        assertEquals("r fixed", fresh.title)
+        // A one-time reminder completed meanwhile keeps its completion; only the text is applied.
+        val (o0, once) = new(input = TaskInput(title = "once", dueAt = due))
+        val o1 = Tasks.complete(o0, once.id, later, zone, due, checked = true)!!.first
+        val text = Tasks.save(o1, TaskInput(id = once.id, title = "once fixed", dueAt = due, updatedAt = once.updatedAt, timeEdited = true), later.plusSeconds(60), zone).second
+        assertEquals("once fixed", text.title)
+        assertNotNull(text.completedAt)
     }
 }

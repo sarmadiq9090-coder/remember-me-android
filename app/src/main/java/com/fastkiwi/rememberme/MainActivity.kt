@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,6 +27,7 @@ import com.fastkiwi.rememberme.core.Completion
 import com.fastkiwi.rememberme.core.TaskException
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.data.Backup
+import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.ui.AboutScreen
 import com.fastkiwi.rememberme.ui.AppTheme
 import com.fastkiwi.rememberme.ui.BackgroundScreen
@@ -46,6 +48,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.io.File
 import java.time.Instant
+import java.time.ZoneId
 
 /** Screens of the main window; a small back stack instead of a navigation library. */
 sealed class Screen {
@@ -55,6 +58,28 @@ sealed class Screen {
     data object Background : Screen()
     data object Trash : Screen()
     data object About : Screen()
+
+    /** For the saved instance state, so a rotation or a language change keeps the open screen. */
+    fun code(): String = when (this) {
+        Home -> "home"
+        is Edit -> "edit:" + (id ?: "")
+        Settings -> "settings"
+        Background -> "background"
+        Trash -> "trash"
+        About -> "about"
+    }
+
+    companion object {
+        fun of(code: String): Screen? = when {
+            code == "home" -> Home
+            code.startsWith("edit:") -> Edit(code.removePrefix("edit:").ifEmpty { null })
+            code == "settings" -> Settings
+            code == "background" -> Background
+            code == "trash" -> Trash
+            code == "about" -> About
+            else -> null
+        }
+    }
 }
 
 class MainActivity : AppCompatActivity() {
@@ -112,7 +137,8 @@ class MainActivity : AppCompatActivity() {
         L10n.apply(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        handle(intent)
+        val saved = savedInstanceState?.getStringArrayList(KEY_STACK)?.mapNotNull(Screen::of)
+        if (!saved.isNullOrEmpty() && saved.first() == Screen.Home) stack = saved else handle(intent)
         safety = Repo.store(this).safetyCopies()
         val prefs = Repo.prefs(this)
         prefs.firstRun
@@ -129,6 +155,11 @@ class MainActivity : AppCompatActivity() {
                 while (true) { delay(30_000); tick = System.currentTimeMillis() }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putStringArrayList(KEY_STACK, ArrayList(stack.map { it.code() }))
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -166,7 +197,7 @@ class MainActivity : AppCompatActivity() {
 
     /** Data changes run off the main thread; the screen follows the store's state flow. */
     private fun act(block: (AppState) -> AppState) {
-        lifecycleScope.launch(Dispatchers.IO) { Repo.change(this@MainActivity, block) }
+        lifecycleScope.launch(Dispatchers.IO) { runCatching { Repo.change(this@MainActivity, block) } }
     }
 
     private fun setSetting(key: String, value: JsonPrimitive) = act { s -> s.withSettings(JsonObject(s.settings + (key to value))) }
@@ -193,7 +224,14 @@ class MainActivity : AppCompatActivity() {
         val ctx: Context = this
         val prefs = Repo.prefs(this)
         BackHandler(enabled = stack.size > 1) { pop() }
-        when (val screen = stack.last()) {
+        val screen = stack.last()
+        // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
+        key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
+    }
+
+    @Composable
+    private fun ScreenContent(screen: Screen, state: AppState, now: Instant, zone: ZoneId, ctx: Context, prefs: Prefs) {
+        when (screen) {
             Screen.Home -> {
                 val month = 30L * 86_400_000
                 val last = maxOf(prefs.lastExport, prefs.firstRun, prefs.backupNudgeDismissed)
@@ -206,7 +244,7 @@ class MainActivity : AppCompatActivity() {
                     onComplete = { t, showUndo ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             var done: Completion? = null
-                            Repo.change(ctx) { s -> Tasks.complete(s, t.id, Instant.now(), zone)?.also { done = it.second }?.first ?: s }
+                            runCatching { Repo.change(ctx) { s -> Tasks.complete(s, t.id, Instant.now(), zone)?.also { done = it.second }?.first ?: s } }
                             done?.let { c -> withContext(Dispatchers.Main) { showUndo { act { s -> Tasks.undoComplete(s, c, Instant.now()) } } } }
                         }
                     },
@@ -264,7 +302,7 @@ class MainActivity : AppCompatActivity() {
                 onImport = { importer.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*")) },
                 onRestoreSafety = { f ->
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val ok = Repo.store(ctx).restoreSafety(f).also { Engine.sync(ctx) }
+                        val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
                         withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
                     }
                 },
@@ -285,5 +323,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val ACTION_NEW = "com.fastkiwi.rememberme.NEW"
         const val EXTRA_OPEN = "open"
+        private const val KEY_STACK = "stack"
     }
 }
