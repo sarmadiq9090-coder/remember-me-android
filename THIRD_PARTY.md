@@ -29,9 +29,19 @@ font and the libraries.
 | Gradle 8.14.3, Android Gradle Plugin 8.13.2, Android SDK build tools 36 | Apache-2.0 (SDK under the Android SDK License) |
 | Eclipse Temurin JDK 21 | GPL-2.0 with Classpath Exception |
 | JUnit 4.13.2 | EPL-1.0 |
+| ical4j 4.0.8 (checks the `.ics` export against RFC 5545) | BSD-3-Clause |
+| CycloneDX Gradle plugin 3.6.1 (writes the SBOM) | Apache-2.0 |
 | Robolectric 4.16.1 | MIT |
 | AndroidX Test, Compose UI Test | Apache-2.0 |
 | Node.js (to run `tools/windows-golden.cjs` and `tools/windows-validate.cjs` against the Windows app's code) | MIT |
+
+## Design tools (not shipped; `design/`)
+
+| Component | Licence |
+|---|---|
+| Noto Sans Arabic and Noto Sans (mockup fonts, `design/mockups/fonts/`) | SIL OFL 1.1 |
+| Playwright (renders the mockups to PNG) | Apache-2.0 |
+| @material/material-color-utilities 0.3.0 (builds the colour scheme; not kept in the repo) | Apache-2.0 |
 
 ## Code from the Windows app
 

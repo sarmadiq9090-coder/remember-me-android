@@ -149,6 +149,38 @@ them: [RESEARCH.md](RESEARCH.md).
 - Not in v0.1.0: editing snooze presets on the phone (edit them on Windows; they travel in the file),
   natural-language quick add, CSV/iCalendar, Windows' "only this time" edit of a repeat.
 
+## D-015 Professional design through a design council
+- The owner asked that it follow international standards and look professional. A council of five (an
+  Android product designer, an Arabic RTL typography expert, an accessibility specialist, a one-handed
+  everyday user, a devil's advocate) wrote [DESIGN-SPEC.md](DESIGN-SPEC.md) with 33 mockups in
+  `design/shots/` and voted on 17 points (V1–V17, objections on record there). The house rules come from
+  Scan Kiwi's spec. The main points: one list with sections instead of tabs (4/5), the time as each row's
+  hero, one primary action at the bottom of each screen, a complete Material 3 scheme from the Windows
+  brand green with the lavender bell as tertiary, `Icons.Rounded` only, stable components only.
+- **Difference from Scan Kiwi:** digits stay Western in Arabic (owner rule D-071); the Arabic comma «، »
+  is still the separator.
+- QC against the spec: the screenshots in `screenshots/qc/` (Arabic and English, light and dark, 200 %
+  text) plus tests for the button order, a single «حفظ», 48 dp targets and the row semantics.
+
+## D-016 iCalendar export
+- The manager asked for repeats modelled on RFC 5545 and an `.ics` export. Every repeat already maps to
+  an RRULE, so the app exports `.ics` (VEVENT + VALARM, VTODO for untimed reminders, a VTIMEZONE with
+  yearly rules). An independent RFC 5545 library (ical4j, tests only) expands each exported rule to
+  the app's own occurrences across DST. Import of `.ics` is not in v0.1.0.
+
+## D-017 The independent bug hunt
+- A reviewer that did not write the code found seven S1/S2 defects. It wrote a failing test for each,
+  then fixed it: a stale editor undoing a Done or a snooze, an editor showing another reminder's fields,
+  the back stack lost on rotation, notification buttons ignored after a sub-millisecond snooze, an engine
+  race that could sound a reminder twice, a failed write crashing the app, and a safety-copy restore with
+  no way back. Three of its S3 findings were fixed afterwards: an early notice not withdrawn when the
+  reminder moves later, the channel's lock-screen override, and the weekday fallback in local time. The
+  rest are listed in the bug-hunt report (commit d880ed3) as known minor items.
+
+## D-018 Standards record
+- [STANDARDS.md](STANDARDS.md) lists each standard as met, partial or gap. It is honest about what
+  needs a real phone.
+
 ## D-014 Licence
 - Closed source under D-051: no open-source licence file. Third-party notices are kept in
   [THIRD_PARTY.md](THIRD_PARTY.md) and `LICENSES/`.
