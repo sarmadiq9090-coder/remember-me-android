@@ -121,6 +121,8 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
+    // An independent RFC 5545 implementation, used only to parse and expand the .ics export in tests.
+    testImplementation("org.mnode.ical4j:ical4j:4.0.8")
     testImplementation(composeBom)
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.test:core-ktx:1.7.0")
