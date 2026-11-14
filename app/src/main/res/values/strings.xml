@@ -428,7 +428,7 @@
     <string name="set_c_done">منجزة</string>
     <string name="set_c_trash">في السلة</string>
     <string name="set_notes_kept">الملاحظات: كلها محفوظة</string>
-    <string name="set_restore_replace">سيحل هذا محل تذكيراتك الحالية (%1$d). نحفظ نسخة أمان قبل الاستبدال.</string>
+    <string name="set_restore_replace">سيحل هذا محل تذكيراتك الحالية (%1$s). نحفظ نسخة أمان قبل الاستبدال.</string>
     <string name="set_refused_title">لا يمكن استعادة هذا الملف</string>
     <string name="set_refused_damaged">الملف تالف: لا يطابق رمز التحقق المحفوظ معه، أو تغيّر بعد تشفيره.</string>
     <string name="set_refused_newer">هذه النسخة من إصدار أحدث من ذكرني. حدّث التطبيق ثم أعد المحاولة.</string>
@@ -589,100 +589,100 @@
         <item quantity="other">%1$s تذكير ينتظر</item>
     </plurals>
     <plurals name="set_results_n">
-        <item quantity="zero">%1$d نتيجة</item>
+        <item quantity="zero">%1$s نتيجة</item>
         <item quantity="one">نتيجة واحدة</item>
         <item quantity="two">نتيجتان</item>
-        <item quantity="few">%1$d نتائج</item>
-        <item quantity="many">%1$d نتيجة</item>
-        <item quantity="other">%1$d نتيجة</item>
+        <item quantity="few">%1$s نتائج</item>
+        <item quantity="many">%1$s نتيجة</item>
+        <item quantity="other">%1$s نتيجة</item>
     </plurals>
     <plurals name="set_tag_cd">
-        <item quantity="zero">%1$s، %2$d تذكير</item>
+        <item quantity="zero">%1$s، %2$s تذكير</item>
         <item quantity="one">%1$s، تذكير واحد</item>
         <item quantity="two">%1$s، تذكيران</item>
-        <item quantity="few">%1$s، %2$d تذكيرات</item>
-        <item quantity="many">%1$s، %2$d تذكيرًا</item>
-        <item quantity="other">%1$s، %2$d تذكير</item>
+        <item quantity="few">%1$s، %2$s تذكيرات</item>
+        <item quantity="many">%1$s، %2$s تذكيرًا</item>
+        <item quantity="other">%1$s، %2$s تذكير</item>
     </plurals>
     <plurals name="set_delete_tag_q">
-        <item quantity="zero">حذف الوسم من %1$d تذكير؟</item>
+        <item quantity="zero">حذف الوسم من %1$s تذكير؟</item>
         <item quantity="one">حذف الوسم من تذكير واحد؟</item>
         <item quantity="two">حذف الوسم من تذكيرين؟</item>
-        <item quantity="few">حذف الوسم من %1$d تذكيرات؟</item>
-        <item quantity="many">حذف الوسم من %1$d تذكيرًا؟</item>
-        <item quantity="other">حذف الوسم من %1$d تذكير؟</item>
+        <item quantity="few">حذف الوسم من %1$s تذكيرات؟</item>
+        <item quantity="many">حذف الوسم من %1$s تذكيرًا؟</item>
+        <item quantity="other">حذف الوسم من %1$s تذكير؟</item>
     </plurals>
     <plurals name="set_fx_hourly">
-        <item quantity="zero">%1$d تذكير يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
+        <item quantity="zero">%1$s تذكير يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
         <item quantity="one">تذكير واحد يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
         <item quantity="two">تذكيران يتكرران كل بضع ساعات يصبحان لمرة واحدة</item>
-        <item quantity="few">%1$d تذكيرات تتكرر كل بضع ساعات تصبح لمرة واحدة</item>
-        <item quantity="many">%1$d تذكيرًا يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
-        <item quantity="other">%1$d تذكير يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
+        <item quantity="few">%1$s تذكيرات تتكرر كل بضع ساعات تصبح لمرة واحدة</item>
+        <item quantity="many">%1$s تذكيرًا يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
+        <item quantity="other">%1$s تذكير يتكرر كل بضع ساعات يصبح لمرة واحدة</item>
     </plurals>
     <plurals name="set_fx_prayer">
-        <item quantity="zero">%1$d تذكير حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
+        <item quantity="zero">%1$s تذكير حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
         <item quantity="one">تذكير واحد حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
         <item quantity="two">تذكيران حسب الصلاة يصبحان يوميين في ساعة ثابتة</item>
-        <item quantity="few">%1$d تذكيرات حسب الصلاة تصبح يومية في ساعة ثابتة</item>
-        <item quantity="many">%1$d تذكيرًا حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
-        <item quantity="other">%1$d تذكير حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
+        <item quantity="few">%1$s تذكيرات حسب الصلاة تصبح يومية في ساعة ثابتة</item>
+        <item quantity="many">%1$s تذكيرًا حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
+        <item quantity="other">%1$s تذكير حسب الصلاة يصبح يوميًا في ساعة ثابتة</item>
     </plurals>
     <plurals name="set_fx_hijri">
-        <item quantity="zero">%1$d تذكير هجري سنوي يتكرر بالتاريخ الميلادي</item>
+        <item quantity="zero">%1$s تذكير هجري سنوي يتكرر بالتاريخ الميلادي</item>
         <item quantity="one">تذكير هجري سنوي واحد يتكرر بالتاريخ الميلادي</item>
         <item quantity="two">تذكيران هجريان سنويان يتكرران بالتاريخ الميلادي</item>
-        <item quantity="few">%1$d تذكيرات هجرية سنوية تتكرر بالتاريخ الميلادي</item>
-        <item quantity="many">%1$d تذكيرًا هجريًا سنويًا يتكرر بالتاريخ الميلادي</item>
-        <item quantity="other">%1$d تذكير هجري سنوي يتكرر بالتاريخ الميلادي</item>
+        <item quantity="few">%1$s تذكيرات هجرية سنوية تتكرر بالتاريخ الميلادي</item>
+        <item quantity="many">%1$s تذكيرًا هجريًا سنويًا يتكرر بالتاريخ الميلادي</item>
+        <item quantity="other">%1$s تذكير هجري سنوي يتكرر بالتاريخ الميلادي</item>
     </plurals>
     <plurals name="set_fx_alerts">
-        <item quantity="zero">%1$d تذكير له عدة تنبيهات مبكرة يبقى له أقربها فقط</item>
+        <item quantity="zero">%1$s تذكير له عدة تنبيهات مبكرة يبقى له أقربها فقط</item>
         <item quantity="one">تذكير واحد له عدة تنبيهات مبكرة يبقى له أقربها فقط</item>
         <item quantity="two">تذكيران لهما عدة تنبيهات مبكرة يبقى لكل منهما أقربها فقط</item>
-        <item quantity="few">%1$d تذكيرات لها عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
-        <item quantity="many">%1$d تذكيرًا له عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
-        <item quantity="other">%1$d تذكير له عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
+        <item quantity="few">%1$s تذكيرات لها عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
+        <item quantity="many">%1$s تذكيرًا له عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
+        <item quantity="other">%1$s تذكير له عدة تنبيهات مبكرة يبقى لكل منها أقربها فقط</item>
     </plurals>
     <plurals name="set_fx_kept">
-        <item quantity="zero">%1$d تذكير له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
+        <item quantity="zero">%1$s تذكير له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
         <item quantity="one">تذكير واحد له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
         <item quantity="two">تذكيران لهما خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
-        <item quantity="few">%1$d تذكيرات لها خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
-        <item quantity="many">%1$d تذكيرًا له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
-        <item quantity="other">%1$d تذكير له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
+        <item quantity="few">%1$s تذكيرات لها خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
+        <item quantity="many">%1$s تذكيرًا له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
+        <item quantity="other">%1$s تذكير له خيارات أندرويد (النغمة، نوع التنبيه، الشاشة الكاملة، التثبيت، الاهتزاز، القراءة بصوت): تُحفظ ولا تُستعمل هناك</item>
     </plurals>
     <plurals name="set_attachments_dropped">
-        <item quantity="zero">%1$d مرفق لن يُستعاد</item>
+        <item quantity="zero">%1$s مرفق لن يُستعاد</item>
         <item quantity="one">مرفق واحد لن يُستعاد</item>
         <item quantity="two">مرفقان لن يُستعادا</item>
-        <item quantity="few">%1$d مرفقات لن تُستعاد</item>
-        <item quantity="many">%1$d مرفقًا لن يُستعاد</item>
-        <item quantity="other">%1$d مرفق لن يُستعاد</item>
+        <item quantity="few">%1$s مرفقات لن تُستعاد</item>
+        <item quantity="many">%1$s مرفقًا لن يُستعاد</item>
+        <item quantity="other">%1$s مرفق لن يُستعاد</item>
     </plurals>
     <plurals name="set_tones_missing">
-        <item quantity="zero">%1$d تذكير يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
+        <item quantity="zero">%1$s تذكير يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
         <item quantity="one">تذكير واحد يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
         <item quantity="two">تذكيران يستعملان نغمة غير موجودة على هذا الهاتف، وسيستعملان النغمة الافتراضية</item>
-        <item quantity="few">%1$d تذكيرات تستعمل نغمة غير موجودة على هذا الهاتف، وستستعمل النغمة الافتراضية</item>
-        <item quantity="many">%1$d تذكيرًا يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
-        <item quantity="other">%1$d تذكير يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
+        <item quantity="few">%1$s تذكيرات تستعمل نغمة غير موجودة على هذا الهاتف، وستستعمل النغمة الافتراضية</item>
+        <item quantity="many">%1$s تذكيرًا يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
+        <item quantity="other">%1$s تذكير يستعمل نغمة غير موجودة على هذا الهاتف، وسيستعمل النغمة الافتراضية</item>
     </plurals>
     <plurals name="set_prayer_unset">
-        <item quantity="zero">%1$d تذكير حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
+        <item quantity="zero">%1$s تذكير حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
         <item quantity="one">تذكير واحد حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
         <item quantity="two">تذكيران حسب الصلاة يحتاجان اختيار المدينة وطريقة الحساب في الإعدادات</item>
-        <item quantity="few">%1$d تذكيرات حسب الصلاة تحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
-        <item quantity="many">%1$d تذكيرًا حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
-        <item quantity="other">%1$d تذكير حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
+        <item quantity="few">%1$s تذكيرات حسب الصلاة تحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
+        <item quantity="many">%1$s تذكيرًا حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
+        <item quantity="other">%1$s تذكير حسب الصلاة يحتاج اختيار المدينة وطريقة الحساب في الإعدادات</item>
     </plurals>
     <plurals name="set_ics_will_add">
-        <item quantity="zero">سيُضاف %1$d تذكير</item>
+        <item quantity="zero">سيُضاف %1$s تذكير</item>
         <item quantity="one">سيُضاف تذكير واحد</item>
         <item quantity="two">سيُضاف تذكيران</item>
-        <item quantity="few">ستُضاف %1$d تذكيرات</item>
-        <item quantity="many">سيُضاف %1$d تذكيرًا</item>
-        <item quantity="other">سيُضاف %1$d تذكير</item>
+        <item quantity="few">ستُضاف %1$s تذكيرات</item>
+        <item quantity="many">سيُضاف %1$s تذكيرًا</item>
+        <item quantity="other">سيُضاف %1$s تذكير</item>
     </plurals>
     <plurals name="set_ics_added">
         <item quantity="zero">أُضيف %1$s تذكير.</item>
@@ -693,19 +693,19 @@
         <item quantity="other">أُضيف %1$s تذكير.</item>
     </plurals>
     <plurals name="set_ics_skipped">
-        <item quantity="zero">%1$d عنصر لم يُستورد:</item>
+        <item quantity="zero">%1$s عنصر لم يُستورد:</item>
         <item quantity="one">عنصر واحد لم يُستورد:</item>
         <item quantity="two">عنصران لم يُستوردا:</item>
-        <item quantity="few">%1$d عناصر لم تُستورد:</item>
-        <item quantity="many">%1$d عنصرًا لم يُستورد:</item>
-        <item quantity="other">%1$d عنصر لم يُستورد:</item>
+        <item quantity="few">%1$s عناصر لم تُستورد:</item>
+        <item quantity="many">%1$s عنصرًا لم يُستورد:</item>
+        <item quantity="other">%1$s عنصر لم يُستورد:</item>
     </plurals>
     <plurals name="set_ics_changed">
-        <item quantity="zero">%1$d تغيير عن الملف:</item>
+        <item quantity="zero">%1$s تغيير عن الملف:</item>
         <item quantity="one">تغيير واحد عن الملف:</item>
         <item quantity="two">تغييران عن الملف:</item>
-        <item quantity="few">%1$d تغييرات عن الملف:</item>
-        <item quantity="many">%1$d تغييرًا عن الملف:</item>
-        <item quantity="other">%1$d تغيير عن الملف:</item>
+        <item quantity="few">%1$s تغييرات عن الملف:</item>
+        <item quantity="many">%1$s تغييرًا عن الملف:</item>
+        <item quantity="other">%1$s تغيير عن الملف:</item>
     </plurals>
 </resources>

@@ -214,7 +214,7 @@ fun SettingsSearchResults(modifier: Modifier, query: String, hits: List<Settings
                 modifier = Modifier.fillMaxWidth().padding(Dimens.xl).semantics { liveRegion = LiveRegionMode.Polite })
             return@Column
         }
-        Text(pluralStringResource(R.plurals.set_results_n, hits.size, hits.size), style = MaterialTheme.typography.labelLarge,
+        Text(pluralStringResource(R.plurals.set_results_n, hits.size, hits.size.toString()), style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.s).semantics { liveRegion = LiveRegionMode.Polite })
         hits.forEachIndexed { i, h ->

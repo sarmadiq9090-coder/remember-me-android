@@ -359,13 +359,13 @@ private fun EffectsDialog(effects: ExportEffects, onSave: () -> Unit, onDismiss:
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
                 Text(stringResource(R.string.set_export_intro), style = MaterialTheme.typography.bodyMedium)
                 if (effects.hourly.isNotEmpty()) {
-                    Line(Ms.Repeat, pluralStringResource(R.plurals.set_fx_hourly, effects.hourly.size, effects.hourly.size))
+                    Line(Ms.Repeat, pluralStringResource(R.plurals.set_fx_hourly, effects.hourly.size, effects.hourly.size.toString()))
                     Text(effects.hourly.joinToString("\n") { "• $it" }, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = Dimens.xxl))
                 }
-                if (effects.prayer > 0) Line(Ms.Mosque, pluralStringResource(R.plurals.set_fx_prayer, effects.prayer, effects.prayer))
-                if (effects.hijri > 0) Line(Ms.CalendarMonth, pluralStringResource(R.plurals.set_fx_hijri, effects.hijri, effects.hijri))
-                if (effects.extraAlerts > 0) Line(Ms.Notifications, pluralStringResource(R.plurals.set_fx_alerts, effects.extraAlerts, effects.extraAlerts))
-                if (effects.keptUnused > 0) Line(Ms.Info, pluralStringResource(R.plurals.set_fx_kept, effects.keptUnused, effects.keptUnused))
+                if (effects.prayer > 0) Line(Ms.Mosque, pluralStringResource(R.plurals.set_fx_prayer, effects.prayer, effects.prayer.toString()))
+                if (effects.hijri > 0) Line(Ms.CalendarMonth, pluralStringResource(R.plurals.set_fx_hijri, effects.hijri, effects.hijri.toString()))
+                if (effects.extraAlerts > 0) Line(Ms.Notifications, pluralStringResource(R.plurals.set_fx_alerts, effects.extraAlerts, effects.extraAlerts.toString()))
+                if (effects.keptUnused > 0) Line(Ms.Info, pluralStringResource(R.plurals.set_fx_kept, effects.keptUnused, effects.keptUnused.toString()))
                 Text(stringResource(R.string.set_export_phone_same), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
@@ -444,10 +444,10 @@ private fun RestoreDialog(s: RestoreReader.Summary, current: Int, onRestore: () 
                 }
                 if (s.notes > 0) Line(Ms.Notes, stringResource(R.string.set_notes_kept))
                 val warn = MaterialTheme.colorScheme.error
-                if (s.droppedAttachments > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_attachments_dropped, s.droppedAttachments, s.droppedAttachments), warn)
-                if (s.missingTones > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_tones_missing, s.missingTones, s.missingTones), warn)
-                if (s.prayerWithoutSettings > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_prayer_unset, s.prayerWithoutSettings, s.prayerWithoutSettings), warn)
-                Line(Ms.Info, stringResource(R.string.set_restore_replace, current))
+                if (s.droppedAttachments > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_attachments_dropped, s.droppedAttachments, s.droppedAttachments.toString()), warn)
+                if (s.missingTones > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_tones_missing, s.missingTones, s.missingTones.toString()), warn)
+                if (s.prayerWithoutSettings > 0) Line(Ms.Warning, pluralStringResource(R.plurals.set_prayer_unset, s.prayerWithoutSettings, s.prayerWithoutSettings.toString()), warn)
+                Line(Ms.Info, stringResource(R.string.set_restore_replace, current.toString()))
             }
         },
         dismissButton = { TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.cancel)) } },
@@ -487,13 +487,13 @@ private fun IcsReportDialog(r: IcsImportResult, onImport: () -> Unit, onDismiss:
         title = { Text(stringResource(R.string.set_ics_import)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
-                Line(Ms.Event, if (r.inputs.isEmpty()) stringResource(R.string.set_ics_nothing) else pluralStringResource(R.plurals.set_ics_will_add, r.inputs.size, r.inputs.size))
+                Line(Ms.Event, if (r.inputs.isEmpty()) stringResource(R.string.set_ics_nothing) else pluralStringResource(R.plurals.set_ics_will_add, r.inputs.size, r.inputs.size.toString()))
                 if (r.skipped.isNotEmpty()) {
-                    Line(Ms.Warning, pluralStringResource(R.plurals.set_ics_skipped, r.skipped.size, r.skipped.size), MaterialTheme.colorScheme.error)
+                    Line(Ms.Warning, pluralStringResource(R.plurals.set_ics_skipped, r.skipped.size, r.skipped.size.toString()), MaterialTheme.colorScheme.error)
                     r.skipped.forEach { Text("• ⁨$it⁩", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
                 }
                 if (r.warnings.isNotEmpty()) {
-                    Line(Ms.Info, pluralStringResource(R.plurals.set_ics_changed, r.warnings.size, r.warnings.size))
+                    Line(Ms.Info, pluralStringResource(R.plurals.set_ics_changed, r.warnings.size, r.warnings.size.toString()))
                     r.warnings.forEach { Text("• ⁨$it⁩", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
                 }
             }

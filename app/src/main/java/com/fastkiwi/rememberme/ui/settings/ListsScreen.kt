@@ -208,7 +208,7 @@ fun ListsScreen(
                                 Modifier.heightIn(min = Dimens.touch)
                                     .combinedClickable(role = Role.Button, onLongClick = { tagMenu = tag }, onClick = open)
                                     .semantics(mergeDescendants = true) {
-                                        contentDescription = context.resources.getQuantityString(R.plurals.set_tag_cd, n, tag, n)
+                                        contentDescription = context.resources.getQuantityString(R.plurals.set_tag_cd, n, tag, n.toString())
                                         customActions = listOf(
                                             CustomAccessibilityAction(renameLabel) { renameTag = tag; true },
                                             CustomAccessibilityAction(deleteLabel) { deleteTag = tag; true },
@@ -269,7 +269,7 @@ fun ListsScreen(
     }
     deleteTag?.let { tag ->
         val n = ListsLogic.tagged(state, tag)
-        ConfirmDialog(pluralStringResource(R.plurals.set_delete_tag_q, n, n), stringResource(R.string.set_delete_tag_body), stringResource(R.string.set_delete_tag),
+        ConfirmDialog(pluralStringResource(R.plurals.set_delete_tag_q, n, n.toString()), stringResource(R.string.set_delete_tag_body), stringResource(R.string.set_delete_tag),
             { onChange { s -> ListsLogic.deleteTag(s, tag, Instant.now()) } }, { deleteTag = null }, destructive = true)
     }
     if (newList) NewListDialog(tags.map { it.first }, { name, tag ->

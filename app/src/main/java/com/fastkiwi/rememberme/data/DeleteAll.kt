@@ -37,8 +37,9 @@ object DeleteAll {
         runCatching { TestAlarm.cancel(app) }
         runCatching { NotificationManagerCompat.from(app).cancelAll() }
         for (dir in listOfNotNull(app.filesDir, app.cacheDir, app.noBackupFilesDir)) dir.listFiles()?.forEach { it.deleteRecursively() }
-        clearPrefs(app, OWN_PREFS)
+        // The Keystore key first: clearing it writes to "device", which is deleted next.
         runCatching { BackupPassword.clear(app) }
+        clearPrefs(app, OWN_PREFS)
         runCatching { clearPrefs(app.createDeviceProtectedStorageContext(), DEVICE_PROTECTED_PREFS) }
         // The open store and settings are forgotten: the next start reads an empty folder.
         Repo.resetForTests()
