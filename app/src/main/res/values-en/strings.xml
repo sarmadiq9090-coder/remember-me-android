@@ -293,6 +293,47 @@
     <string name="summary_first">First at %1$s: %2$s</string>
     <string name="done_undo_title">Done: “%1$s”</string>
     <string name="alarm_rings_until">%1$s, rings until you respond</string>
+    <string name="home_view_menu">View</string>
+    <string name="home_view_list">List</string>
+    <string name="home_view_agenda">Agenda</string>
+    <string name="home_view_day">Day</string>
+    <string name="home_view_week">Week</string>
+    <string name="home_view_month">Month</string>
+    <string name="chip_all">All</string>
+    <string name="chip_lists">Lists…</string>
+    <string name="select">Select</string>
+    <string name="home_select_named">Select: %1$s</string>
+    <string name="state_snoozed">Snoozed</string>
+    <string name="style_tag_short">Alarm</string>
+    <string name="home_style_alarm">Important alarm</string>
+    <string name="vibrate_only">Vibrate only</string>
+    <string name="home_state_upcoming">Upcoming</string>
+    <string name="home_state_due">Due now</string>
+    <string name="home_state_overdue">Overdue</string>
+    <string name="home_state_done">Done</string>
+    <string name="home_state_trash">In the trash</string>
+    <string name="done_undo_msg">Done: “%1$s”</string>
+    <string name="snoozed_until_msg">Snoozed until %1$s</string>
+    <string name="snooze_title">Snooze</string>
+    <string name="snooze_more">Snooze longer</string>
+    <string name="until_time">until %1$s</string>
+    <string name="home_tomorrow_same">Tomorrow, same time</string>
+    <string name="repeat_unchanged">The repeat does not change</string>
+    <string name="snooze_hint3">Snoozed 3 times. Pick a better time?</string>
+    <string name="late_reason_off">The phone was off</string>
+    <string name="volume_silence_hint">Press a volume key to silence</string>
+    <string name="home_steps">Steps</string>
+    <string name="select_all">Select all</string>
+    <string name="clear_selection">Clear selection</string>
+    <string name="export_selected">Export selected</string>
+    <string name="bulk_delete">Delete</string>
+    <string name="bulk_priority">Priority</string>
+    <string name="bulk_move">Move</string>
+    <string name="bulk_move_title">Move to</string>
+    <string name="home_move_category">Category: %1$s</string>
+    <string name="home_move_list">List: %1$s</string>
+    <string name="bulk_trash_body">They stay in the trash for 30 days and can be restored.</string>
+    <string name="move_to_trash">Move to trash</string>
     <plurals name="minutes">
         <item quantity="one">%1$s minute</item>
         <item quantity="other">%1$s minutes</item>
@@ -316,5 +357,37 @@
     <plurals name="reminders_waiting">
         <item quantity="one">%1$s reminder waiting</item>
         <item quantity="other">%1$s reminders waiting</item>
+    </plurals>
+    <plurals name="alerts_n">
+        <item quantity="one">%1$s alert</item>
+        <item quantity="other">%1$s alerts</item>
+    </plurals>
+    <plurals name="selected_n">
+        <item quantity="one">%1$s selected</item>
+        <item quantity="other">%1$s selected</item>
+    </plurals>
+    <plurals name="bulk_trash_q">
+        <item quantity="one">Move %1$s reminder to the trash?</item>
+        <item quantity="other">Move %1$s reminders to the trash?</item>
+    </plurals>
+    <plurals name="bulk_done_q">
+        <item quantity="one">Mark %1$s reminder done?</item>
+        <item quantity="other">Mark %1$s reminders done?</item>
+    </plurals>
+    <plurals name="bulk_repeating_note">
+        <item quantity="one">%1$s of them repeats: its series stops.</item>
+        <item quantity="other">%1$s of them repeat: their series stop.</item>
+    </plurals>
+    <plurals name="bulk_done_msg">
+        <item quantity="one">%1$s reminder done</item>
+        <item quantity="other">%1$s reminders done</item>
+    </plurals>
+    <plurals name="bulk_trash_msg">
+        <item quantity="one">%1$s reminder moved to the trash</item>
+        <item quantity="other">%1$s reminders moved to the trash</item>
+    </plurals>
+    <plurals name="bulk_changed_msg">
+        <item quantity="one">%1$s reminder changed</item>
+        <item quantity="other">%1$s reminders changed</item>
     </plurals>
 </resources>
