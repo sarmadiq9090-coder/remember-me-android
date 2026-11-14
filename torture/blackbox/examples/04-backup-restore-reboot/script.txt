@@ -1,8 +1,8 @@
 # Save a backup to a file, try to restore a file that is not a backup, then restart the phone.
 start onboarded
 tap "تذكير جديد"
-tap "العنوان"
-type "دفع الإيجار"
+tap "اكتب التذكير وموعده"
+type "دفع الإيجار غدا 9 الصبح"
 tap "حفظ"
 tap-desc "الإعدادات"
 scroll-to "حفظ نسخة"
@@ -11,6 +11,7 @@ save-file
 scroll-to "استعادة من ملف"
 tap "استعادة من ملف"
 pick-file not-a-backup.txt
+tap "حسنًا"
 tap "استعادة من ملف"
 pick-file backup-sample.zip
 tap "استعادة"

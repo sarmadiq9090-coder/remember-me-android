@@ -3,6 +3,7 @@ start onboarded
 tap-desc "الإعدادات"
 dark on
 font-scale 1.3
+scroll-to "اللغة"
 tap "اللغة"
 tap "English"
 screenshot

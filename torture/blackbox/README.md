@@ -210,7 +210,24 @@ TalkBack lines look like:
 
 ---
 
-## 5. Honest limits — حدود صريحة
+## 5. Examples — أمثلة
+
+Ready sessions in `torture/blackbox/examples/` (copy one and change it):
+
+| Folder | What it shows |
+|---|---|
+| `01-first-launch-test-alarm` | Real first launch, Android's notification question, the alarm test with the phone locked, the full-screen alert, «تم». |
+| `02-quick-add-one-minute` | A reminder written for one minute from now, the phone locked, `wait 65`, the alert, «تم». |
+| `03-persona-banner-notification` | Large text + dark mode; the alert arrives while the phone is in use (banner), answered from the notification shade. |
+| `04-backup-restore-reboot` | Saving a backup file, restoring a wrong file and a real one, restarting the phone. |
+| `05-settings-change-while-open` | Dark mode and text size changed while the app is open; the app's own language switch to English. |
+| `06-editor-sheets-menu` | The full editor, a choice sheet, the ⋮ menu, delete and undo. |
+
+> أمثلة جاهزة في `examples/`: انسخ واحدًا وعدّله.
+
+---
+
+## 6. Honest limits — حدود صريحة
 
 - **No real sound or vibration.** The driver reports what the app *asked* Android to do:
   «SOUND WOULD PLAY: yes — the phone's default alarm sound, repeating, stops by itself after at most 120 s
@@ -227,7 +244,12 @@ TalkBack lines look like:
 - Turning off notifications does not kill the app as Android sometimes does.
 - Widgets, other apps, real files on a phone, and the phone's own TalkBack voice are not available.
 - Screen positions are in dp (1 dp = 2 pixels in the pictures).
-- One run takes 1–2 minutes before the first line, plus your waits.
+- One run takes 1–2 minutes before the first line, plus your waits. If one line takes more than
+  4 minutes (plus its wait), the driver stops and `report.txt` says «THE DRIVER GOT STUCK»: that is a
+  problem of the driver, not a finding about the app. A whole run is stopped after 30 minutes
+  (`BB_TIMEOUT=<seconds>` changes this).
+- Android's per-app language and the first launch use the app's real code; what you see is what the app
+  does, also when it looks wrong.
 
 > - ساعة حقيقية فقط، دون قفز للغد، و120 ثانية كحد أقصى لكل سطر انتظار.
 > - شريط الحالة ولوحة المفاتيح لا يُرسمان (معلوماتهما في `screen.txt`).
