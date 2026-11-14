@@ -152,8 +152,6 @@ class MainActivity : AppCompatActivity() {
     private var safety by mutableStateOf(listOf<File>())
     /** A snackbar for Home to show (the undo of a delete made in the editor). */
     private var homeSnack by mutableStateOf<SnackRequest?>(null)
-    /** The compatibility report shown before sharing, or null. */
-    private var reportText by mutableStateOf<String?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
     // [quick] begin
@@ -424,18 +422,6 @@ class MainActivity : AppCompatActivity() {
                 subtitle = null,
                 defaultTone = null,
                 defaultLabel = stringResource(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification),
-            )
-        }
-        reportText?.let { text ->
-            // The report is shown in full before anything is shared; the user picks where it goes.
-            ConfirmDialog(
-                title = stringResource(R.string.compat_title), text = stringResource(R.string.compat_intro) + "\n\n" + text,
-                confirm = stringResource(R.string.compat_send),
-                onConfirm = {
-                    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-                    runCatching { startActivity(Intent.createChooser(send, getString(R.string.compat_title))) }
-                },
-                onDismiss = { reportText = null },
             )
         }
     }
