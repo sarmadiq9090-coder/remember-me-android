@@ -17,7 +17,8 @@ class AlarmReceiver : BroadcastReceiver() {
         // Direct-boot-aware only for the locked alarm (F-026); nothing else reads storage before the unlock.
         if (intent.action != DirectBoot.ACTION && !DirectBoot.unlocked(context)) return
         when (intent.action) {
-            FIRE -> Engine.syncAsync(context, goAsync(), "alarm")
+            // The midnight window (no wake-up) is housekeeping: trash purge, the widget's day, the weekly backup.
+            FIRE -> Engine.syncAsync(context, goAsync(), if (intent.data?.lastPathSegment == Engine.HOUSEKEEPING.toString()) "housekeeping" else "alarm")
             TestAlarm.ACTION -> TestAlarm.onFire(context)
             DirectBoot.ACTION -> DirectBoot.fire(context)
             Summary.ACTION -> { val pending = goAsync(); Thread { try { Summary.fire(context.applicationContext) } finally { pending.finish() } }.start() }
