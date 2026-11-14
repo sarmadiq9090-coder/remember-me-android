@@ -78,7 +78,15 @@ All classes are in `app/src/test/java/com/fastkiwi/rememberme/torture/` (the `to
   difference where Node's and Java's time-zone data disagree is listed apart as "tzdata".
 - `IcsPropertyTortureTest`: 1,200 (heavy 6,000) random reminders exported to .ics, parsed and expanded by ical4j:
   occurrences, titles, alarms; then imported back with `IcsImport` (F-085 round trip). Plus control characters
-  in a title.
+  in a title. Failures are grouped by kind (`[dtstart-off-rule]`, `[occurrences]`, `[import-next]`…).
+- `IcsTimezoneTortureTest`: the exported VTIMEZONE of every zone with DST (heavy: every zone), read by the letter
+  of RFC 5545 (onsets = DTSTART in TZOFFSETFROM + RRULE expanded by ical4j's `Recur`), against Java's offsets every
+  week and an hour either side of each transition for ten years; and `IcsImport` reading every exported zone back.
+  (ical4j's own `TimeZone`/`ZoneRulesBuilder` read an onset's local time as UTC, so they are not used as the oracle.)
+- `EnginePropertyTortureTest` (Robolectric, SDK 33 and 36): 60 (heavy 500) sequences per SDK, different on each, of
+  40 random engine runs (alarm, boot, time, zone, start), «تم», «أجّل», swipes and new reminders, with the clock
+  moving to the planned wake-up, late, or in jumps: no occurrence rings twice, the newest eight due are on screen
+  (minus swipes past the re-post limit), the alarm clock is the next due time.
 
 ### 4. Fuzz
 - `BackupFuzzTortureTest`: random, truncated, mutated and spliced backup zips and data.json; hostile shapes
@@ -88,7 +96,9 @@ All classes are in `app/src/test/java/com/fastkiwi/rememberme/torture/` (the `to
 - `IcsFuzzTortureTest`: 5,000 (heavy 40,000) mutations of Google, Outlook, Apple and this app's own files; hostile
   files (nesting 10,000 deep, 60,000 events, a 5 MB line, 100,000 folds, 300 time zones); nothing dropped silently.
 - `QuickAddFuzzTortureTest`: 20,000 (heavy 200,000) mixed Arabic / English / emoji / RTL-mark strings on the strict
-  parser: no crash, never a past time; the no-date corpus with everyday decorations still holds no date.
+  parser: no crash, never a past time; the no-date corpus with everyday decorations still holds no date. Every
+  decorated text that does read as a date is also read by the Windows app's own `parseWhen()`
+  (`torture/tools/quickadd-windows.cjs`), so the report says which are Android-only and which both apps share.
 - `ReceiverFuzzTortureTest` (Robolectric): notification actions and receiver intents with missing, garbage and
   wrong-typed extras, unknown actions and stale occurrences: no crash on any thread, no change to data.json.
 
