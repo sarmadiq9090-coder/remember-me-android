@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -178,6 +179,7 @@ fun HomeScreen(
     onExportSelected: (List<String>) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val res = LocalResources.current
     val zone = ZoneId.systemDefault()
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
@@ -230,7 +232,7 @@ fun HomeScreen(
         selected = emptySet()
         // «أُجّل حتى 4:30 م» later today; «أُجّل حتى الأحد، 2:00 م» on another day.
         val sameDay = at.atZone(zone).toLocalDate() == Instant.now().atZone(zone).toLocalDate()
-        val msg = context.getString(R.string.snoozed_until_msg, if (sameDay) L10n.time(context, at, zone) else snoozeResult(context, at, Instant.now(), zone))
+        val msg = res.getString(R.string.snoozed_until_msg, if (sameDay) L10n.time(context, at, zone) else snoozeResult(context, at, Instant.now(), zone))
         bulk(ids, { s, n -> Bulk.snooze(s, ids, at, n) }) { msg }
     }
 
@@ -247,13 +249,13 @@ fun HomeScreen(
     }
 
     val words = Search.Words(
-        categories = Category.entries.associateWith { context.getString(categoryRes(it)) },
+        categories = Category.entries.associateWith { res.getString(categoryRes(it)) },
         states = mapOf(
-            Search.State.UPCOMING to context.getString(R.string.home_state_upcoming),
-            Search.State.DUE to context.getString(R.string.home_state_due),
-            Search.State.OVERDUE to context.getString(R.string.home_state_overdue),
-            Search.State.SNOOZED to context.getString(R.string.state_snoozed),
-            Search.State.DONE to context.getString(R.string.home_state_done),
+            Search.State.UPCOMING to res.getString(R.string.home_state_upcoming),
+            Search.State.DUE to res.getString(R.string.home_state_due),
+            Search.State.OVERDUE to res.getString(R.string.home_state_overdue),
+            Search.State.SNOOZED to res.getString(R.string.state_snoozed),
+            Search.State.DONE to res.getString(R.string.home_state_done),
         ),
     )
     // Quick filters (F-063): a filter that no longer exists falls back to «الكل».
@@ -355,7 +357,7 @@ fun HomeScreen(
                     if (selecting) selected = if (t.id in selected) selected - t.id else selected + t.id
                     else if (t.completedAt == null && t.dueAt != null && !t.dueAt.isAfter(now)) onAlert(t) else if (t.completedAt == null) onOpen(t)
                 },
-                onComplete = { t -> onComplete(t) { undo -> showSnack(context.getString(R.string.done_undo_msg, t.title), undo) } },
+                onComplete = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, t.title), undo) } },
                 onReopen = onReopen,
                 onTrash = { t -> onTrash(t); showSnack(trashedText) { onUndoTrash(t) } },
                 onSnooze = { t -> snoozeIds = setOf(t.id) },
@@ -457,7 +459,7 @@ fun HomeScreen(
             val current = state.tasks.filter { it.id in ids }.map { it.priority }.distinct().singleOrNull()?.code ?: ""
             ChoiceDialog(
                 title = stringResource(R.string.bulk_priority),
-                options = Priority.entries.reversed().map { it.code to context.getString(priorityRes(it)) },
+                options = Priority.entries.reversed().map { it.code to res.getString(priorityRes(it)) },
                 selected = current,
                 onSelect = { code ->
                     val p = Priority.of(code)
@@ -470,8 +472,8 @@ fun HomeScreen(
         "move" -> {
             val ids = selected
             val lists = filters.filter { it.kind == "tag" && it.value.isNotBlank() }
-            val options = Category.entries.map { "cat:" + it.code to context.getString(R.string.home_move_category, context.getString(categoryRes(it))) } +
-                lists.map { "tag:" + it.value to context.getString(R.string.home_move_list, it.name.ifBlank { it.value }) }
+            val options = Category.entries.map { "cat:" + it.code to res.getString(R.string.home_move_category, res.getString(categoryRes(it))) } +
+                lists.map { "tag:" + it.value to res.getString(R.string.home_move_list, it.name.ifBlank { it.value }) }
             ChoiceDialog(
                 title = stringResource(R.string.bulk_move_title), options = options, selected = "",
                 onSelect = { code ->
@@ -556,6 +558,7 @@ private fun alertCount(t: Task) = if (t.dueAt == null) 0 else 1 + Tasks.noticeMi
 @Composable
 fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions, selected: Boolean? = null, showTags: Boolean = false) {
     val context = LocalContext.current
+    val res = LocalResources.current
     val haptics = LocalHapticFeedback.current
     val done = t.completedAt != null
     val overdue = !done && t.dueAt != null && !t.dueAt.isAfter(now)
@@ -576,10 +579,10 @@ fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions, selected: B
     val alarmWord = stringResource(R.string.home_style_alarm)
     val summary = L10n.join(context, listOf(
         t.title,
-        if (done) label else t.dueAt?.let { L10n.dueText(context, it, now) } ?: context.getString(R.string.no_time),
+        if (done) label else t.dueAt?.let { L10n.dueText(context, it, now) } ?: res.getString(R.string.no_time),
         if (overdue) label else if (isSnoozed) snoozedWord else null,
         L10n.repeatText(context, t),
-        if (t.priority != Priority.NORMAL) context.getString(priorityRes(t.priority)) else null,
+        if (t.priority != Priority.NORMAL) res.getString(priorityRes(t.priority)) else null,
         if (alarm) alarmWord else null,
         stepsText,
     ))

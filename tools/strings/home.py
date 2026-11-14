@@ -23,7 +23,6 @@ S = [
 ("home_state_due", "مستحق الآن", "Due now"),
 ("home_state_overdue", "متأخر", "Overdue"),
 ("home_state_done", "منجز", "Done"),
-("home_state_trash", "في السلة", "In the trash"),
 # Undo (F-052)
 ("done_undo_msg", "أُنجز «%1$s»", "Done: “%1$s”"),
 ("snoozed_until_msg", "أُجّل حتى %1$s", "Snoozed until %1$s"),

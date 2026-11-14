@@ -311,7 +311,6 @@
     <string name="home_state_due">مستحق الآن</string>
     <string name="home_state_overdue">متأخر</string>
     <string name="home_state_done">منجز</string>
-    <string name="home_state_trash">في السلة</string>
     <string name="done_undo_msg">أُنجز «%1$s»</string>
     <string name="snoozed_until_msg">أُجّل حتى %1$s</string>
     <string name="snooze_title">أجّل</string>

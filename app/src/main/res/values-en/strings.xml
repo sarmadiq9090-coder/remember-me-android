@@ -311,7 +311,6 @@
     <string name="home_state_due">Due now</string>
     <string name="home_state_overdue">Overdue</string>
     <string name="home_state_done">Done</string>
-    <string name="home_state_trash">In the trash</string>
     <string name="done_undo_msg">Done: “%1$s”</string>
     <string name="snoozed_until_msg">Snoozed until %1$s</string>
     <string name="snooze_title">Snooze</string>

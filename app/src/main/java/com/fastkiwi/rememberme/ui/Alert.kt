@@ -51,6 +51,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -223,6 +224,7 @@ fun AlertScreen(
     guardMs: Long = Behaviour.AlertTapGuardMs,
 ) {
     val context = LocalContext.current
+    val res = LocalResources.current
     val zone = ZoneId.systemDefault()
     var picking by rememberSaveable(task.id) { mutableStateOf(pickFirst) }
     val due = task.dueAt!!
@@ -278,8 +280,8 @@ fun AlertScreen(
                     // F-025: the alert itself arrived more than 5 minutes after its time.
                     if (arrivedLateMs != null && arrivedLateMs >= com.fastkiwi.rememberme.alarm.Notifier.LATE_NOTE_MS) {
                         val text = L10n.join(context, listOf(
-                            context.getString(R.string.arrived_late, L10n.duration(context, arrivedLateMs / 60_000)),
-                            if (lateReasonOff) context.getString(R.string.late_reason_off) else null,
+                            res.getString(R.string.arrived_late, L10n.duration(context, arrivedLateMs / 60_000)),
+                            if (lateReasonOff) res.getString(R.string.late_reason_off) else null,
                         ))
                         Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
