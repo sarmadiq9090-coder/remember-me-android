@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
+import androidx.core.net.toUri
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -83,7 +84,7 @@ class TonePreview(private val context: Context) {
             p.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(if (style == AlertPolicy.Style.ALARM) AudioAttributes.USAGE_ALARM else AudioAttributes.USAGE_NOTIFICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
-            if (source.uri.startsWith("/")) p.setDataSource(source.uri) else p.setDataSource(context, Uri.parse(source.uri))
+            if (source.uri.startsWith("/")) p.setDataSource(source.uri) else p.setDataSource(context, source.uri.toUri())
             p.setOnCompletionListener { stop(); onEnd() }
             p.prepare()
             p.start()
@@ -200,7 +201,7 @@ fun TonePickerSheet(
                             .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                             .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
                             .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, title)
-                        picked?.let { intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(it.ref)) }
+                        picked?.let { intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it.ref.toUri()) }
                         if (runCatching { phonePicker.launch(intent) }.isFailure) phoneError = errPlay
                     }, playing == "system", picked?.let { p -> { play("system", p) } }, error = phoneError)
                 ToneRow(Ms.Folder, stringResource(R.string.tone_files),
