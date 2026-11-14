@@ -24,6 +24,31 @@ data class TaskInput(
     val updatedAt: Instant? = null,
     /** Whether the editor's reminder fields (on/off, date, time, repeat) were changed; null from other callers. */
     val timeEdited: Boolean? = null,
+    /**
+     * All early alerts in minutes (EARLY_MINUTES, up to 3, F-046); null = only [remindBefore] (other callers).
+     * Stored as FEATURES.md "Data format": `remindBefore` = the one nearest to the due time, and with two or
+     * more, all of them in `android.alerts`.
+     */
+    val alerts: List<Int>? = null,
+    /** The Android-only choices (tone, style, prayer, Hijri…); null = keep the task's. Its `alerts` are ignored. */
+    val ext: AlertExt? = null,
+    /** Tags (Windows `tags`); null = keep the task's. */
+    val tags: List<String>? = null,
+    /** Steps (Windows `checklist`); null = keep the task's. */
+    val steps: List<Organize.Step>? = null,
+    /** The phone setting «أنجز التذكير عند إكمال كل الخطوات» (F-071): ticking the last step completes the task. */
+    val autoComplete: Boolean = false,
+)
+
+/**
+ * What the Android-only repeats need from the phone (F-050 prayer times, F-051 Hijri adjustment). Kept as
+ * a hook so the core stays pure; the app installs it (data/EditorPrefs.kt). Without it, a prayer task moves
+ * like a daily one (as on Windows).
+ */
+data class ExtRepeat(
+    val hijriAdjust: Int = 0,
+    /** The first time of prayer [name] + [offset] minutes strictly after [after], or null when not set up. */
+    val prayerNext: ((name: String, offset: Int, after: Instant) -> Instant?)? = null,
 )
 
 class TaskException(val reason: Reason) : Exception(reason.name) {
@@ -41,6 +66,31 @@ data class Completion(val id: String, val copyId: String)
 object Tasks {
     const val TRASH_DAYS = 30L
     var newId: () -> String = { UUID.randomUUID().toString() }
+
+    /** The phone's prayer and Hijri setup (installed by the app; see [ExtRepeat]). */
+    @Volatile var extRepeat: () -> ExtRepeat = { ExtRepeat() }
+
+    /**
+     * The next occurrence of a repeating task after [now] (and after its current one), with the rule to keep.
+     * A prayer-relative task (F-050) follows the prayer, a Hijri-yearly one (F-051) the Hijri date (day 30 →
+     * 29 in a short month); everything else the Windows rule. A prayer/Hijri task's anchor (`repeatFrom`)
+     * moves to the computed occurrence, so Windows, which sees a daily/yearly repeat, continues from there.
+     */
+    fun next(task: Task, now: Instant, zone: ZoneId): Pair<Instant, RepeatRule> {
+        val cur = task.scheduleAt ?: task.dueAt!!
+        val ext = AlertExt.of(task)
+        val after = if (now.isAfter(cur)) now else cur
+        if (task.repeat == Repeat.DAILY && ext.prayer != null) {
+            val (name, offset) = ext.prayer
+            extRepeat().prayerNext?.invoke(name, offset, after)?.let { return it to task.rule.copy(from = it) }
+        }
+        if (task.repeat == Repeat.YEARLY && ext.hijri != null) {
+            val (month, day) = ext.hijri
+            val at = Hijri.nextYearly(month, day, cur.atZone(zone).toLocalTime(), after, zone, extRepeat().hijriAdjust)
+            return at to task.rule.copy(from = at)
+        }
+        return nextOccurrence(cur, task.repeat, now, task.rule, zone) to task.rule
+    }
 
     private fun clean(input: TaskInput): TaskInput {
         val title = input.title.trim()
@@ -62,23 +112,85 @@ object Tasks {
 
     private fun early(minutes: Int, dueAt: Instant?) = if (dueAt != null && minutes in EARLY_MINUTES) minutes else 0
 
+    const val MAX_ALERTS = 3
+
+    /** The early alerts to store: valid, distinct, largest first, at most 3; none without a due time. */
+    fun cleanAlerts(minutes: List<Int>, dueAt: Instant?): List<Int> =
+        if (dueAt == null) emptyList() else minutes.filter { it in EARLY_MINUTES }.distinct().sortedDescending().take(MAX_ALERTS)
+
+    /**
+     * Puts the input's tags, steps, alerts and Android choices on [task]. A prayer time needs a daily repeat
+     * and a Hijri date a yearly one; otherwise they are dropped, so the task stays a valid Windows task.
+     */
+    private fun extras(task: Task, input: TaskInput, old: Task?): Task {
+        var t = task
+        input.tags?.let { t = t.withTags(it) }
+        input.steps?.let { t = t.withSteps(it) }
+        val oldExt = AlertExt.of(old ?: task)
+        var ext = (input.ext ?: oldExt).copy(alerts = oldExt.alerts)
+        if (input.alerts != null) {
+            val list = cleanAlerts(input.alerts, t.dueAt)
+            t = t.copy(remindBefore = list.minOrNull() ?: 0)
+            ext = ext.copy(alerts = if (list.size >= 2) list else emptyList())
+        } else if (ext.alerts.isNotEmpty() && t.remindBefore !in ext.alerts) {
+            ext = ext.copy(alerts = emptyList())
+        }
+        if (t.dueAt == null || t.repeat != Repeat.DAILY) ext = ext.copy(prayer = null)
+        if (t.dueAt == null || t.repeat != Repeat.YEARLY) ext = ext.copy(hijri = null)
+        return t.withExt(ext)
+    }
+
     fun save(state: AppState, raw: TaskInput, now: Instant, zone: ZoneId): Pair<AppState, Task> {
+        val (s, t) = saveOnly(state, raw, now, zone)
+        if (!raw.autoComplete || raw.id == null) return s to t
+        val before = state.task(raw.id) ?: return s to t
+        // F-071: this edit ticked the last open step.
+        if (!stepsJustDone(before, t)) return s to t
+        val done = complete(s, t.id, now, zone) ?: return s to t
+        return done.first to (done.first.task(t.id) ?: t)
+    }
+
+    /** True when [after] has steps, all ticked, and [before] still had an open one. */
+    fun stepsJustDone(before: Task, after: Task): Boolean {
+        val steps = after.steps
+        return steps.isNotEmpty() && steps.all { it.done } && before.steps.any { !it.done }
+    }
+
+    /**
+     * Ticks or unticks one step (reminder screen, tablet detail pane). With [autoComplete] (F-071) ticking
+     * the last open step completes the task too. Returns null when nothing changed.
+     */
+    fun toggleStep(state: AppState, id: String, stepId: String, done: Boolean, autoComplete: Boolean, now: Instant, zone: ZoneId): Pair<AppState, Completion?>? {
+        val task = state.tasks.firstOrNull { it.id == id && it.active } ?: return null
+        val steps = task.steps
+        if (steps.none { it.id == stepId && it.done != done }) return null
+        val next = task.withSteps(steps.map { if (it.id == stepId) it.copy(done = done) else it }).copy(updatedAt = now)
+        val s = replace(state, next)
+        if (autoComplete && stepsJustDone(task, next)) complete(s, id, now, zone)?.let { return it.first to it.second }
+        return s to null
+    }
+
+    private fun saveOnly(state: AppState, raw: TaskInput, now: Instant, zone: ZoneId): Pair<AppState, Task> {
         val input = clean(raw)
         val old = input.id?.let { id -> state.task(id) ?: throw TaskException(TaskException.Reason.GONE) }
         if (old == null) {
-            val task = Task(
+            val task = extras(Task(
                 id = newId(), title = input.title, body = input.body, priority = input.priority,
                 category = input.category, dueAt = input.dueAt, scheduleAt = input.dueAt, repeat = input.repeat,
                 rule = ruleFor(input, if (input.repeat != Repeat.NONE) input.dueAt else null, zone),
                 remindBefore = early(input.remindBefore, input.dueAt), createdAt = now, updatedAt = now,
-            )
+            ), input, null)
             return state.copy(tasks = state.tasks + task) to task
         }
         // An editor opened before Done or a snooze (from the notification or the alert) applies only
         // its text unless its reminder fields were edited, so its old time cannot undo that (Windows).
         val outdated = input.timeEdited != null && input.updatedAt?.toEpochMilli() != old.updatedAt.toEpochMilli()
         if (outdated && (input.timeEdited == false || old.completedAt != null)) {
-            val task = old.copy(title = input.title, body = input.body, priority = input.priority, category = input.category, updatedAt = now)
+            // Text, tags, steps and alert choices apply; the time, the alerts and the prayer/Hijri anchor stay.
+            val keep = AlertExt.of(old)
+            val ext = input.ext?.copy(alerts = keep.alerts, prayer = keep.prayer, hijri = keep.hijri)
+            val task = extras(old.copy(title = input.title, body = input.body, priority = input.priority, category = input.category, updatedAt = now),
+                input.copy(alerts = null, ext = ext), old)
             return replace(state, task) to task
         }
         if (old.completedAt != null) throw TaskException(TaskException.Reason.COMPLETED)
@@ -91,11 +203,11 @@ object Tasks {
             else -> old.rule.from ?: old.scheduleAt ?: input.dueAt
         }
         val anchor = changed || repeatChanged
-        var task = old.copy(
+        var task = extras(old.copy(
             title = input.title, body = input.body, priority = input.priority, category = input.category,
             dueAt = input.dueAt, repeat = input.repeat, rule = ruleFor(input, from, zone),
             remindBefore = early(input.remindBefore, input.dueAt), updatedAt = now,
-        )
+        ), input, old)
         if (anchor) task = task.copy(scheduleAt = input.dueAt, snoozedAt = null, snoozeCount = 0)
         return replace(state, task) to task
     }
@@ -124,8 +236,8 @@ object Tasks {
         if (task.completedAt != null || stale(task, expectedDueAt, checked)) return null
         if (task.repeat != Repeat.NONE && task.scheduleAt != null) {
             val copy = task.copy(id = newId(), repeat = Repeat.NONE, rule = RepeatRule(), sourceId = task.id, completedAt = now)
-            val next = nextOccurrence(task.scheduleAt, task.repeat, now, task.rule, zone)
-            val moved = task.copy(dueAt = next, scheduleAt = next, snoozedAt = null, snoozeCount = 0, updatedAt = now, extra = untick(task.extra))
+            val (next, rule) = next(task, now, zone)
+            val moved = task.copy(dueAt = next, scheduleAt = next, rule = rule, snoozedAt = null, snoozeCount = 0, updatedAt = now, extra = untick(task.extra))
             return replace(state, moved).let { it.copy(tasks = it.tasks + copy) } to Completion(id, copy.id)
         }
         return replace(state, task.copy(completedAt = now, updatedAt = now)) to Completion(id, id)
@@ -136,7 +248,9 @@ object Tasks {
         val task = state.task(c.id) ?: return state
         if (c.copyId == c.id) return if (task.completedAt != null) replace(state, task.copy(completedAt = null, updatedAt = now)) else state
         val copy = state.tasks.firstOrNull { it.id == c.copyId && it.sourceId == c.id && it.completedAt != null } ?: return state
-        val back = task.copy(dueAt = copy.dueAt, scheduleAt = copy.scheduleAt, snoozedAt = copy.snoozedAt, snoozeCount = copy.snoozeCount, updatedAt = now, extra = copy.extra)
+        val ext = AlertExt.of(task)
+        val rule = if (ext.prayer != null || ext.hijri != null) task.rule.copy(from = copy.scheduleAt) else task.rule
+        val back = task.copy(dueAt = copy.dueAt, scheduleAt = copy.scheduleAt, rule = rule, snoozedAt = copy.snoozedAt, snoozeCount = copy.snoozeCount, updatedAt = now, extra = copy.extra)
         return replace(state, back).let { s -> s.copy(tasks = s.tasks.filter { it.id != copy.id }) }
     }
 
@@ -144,8 +258,8 @@ object Tasks {
     fun skip(state: AppState, id: String, now: Instant, zone: ZoneId, expectedDueAt: Instant? = null, checked: Boolean = false): AppState? {
         val task = state.tasks.firstOrNull { it.id == id && it.active } ?: return null
         if (task.repeat == Repeat.NONE || task.scheduleAt == null || stale(task, expectedDueAt, checked)) return null
-        val next = nextOccurrence(task.scheduleAt, task.repeat, now, task.rule, zone)
-        return replace(state, task.copy(dueAt = next, scheduleAt = next, snoozedAt = null, snoozeCount = 0, updatedAt = now))
+        val (next, rule) = next(task, now, zone)
+        return replace(state, task.copy(dueAt = next, scheduleAt = next, rule = rule, snoozedAt = null, snoozeCount = 0, updatedAt = now))
     }
 
     fun snooze(state: AppState, id: String, until: Instant, now: Instant, expectedDueAt: Instant? = null, checked: Boolean = false): AppState? {
@@ -189,8 +303,12 @@ object Tasks {
      * All early-notice lead times of a task, largest first (FEATURES.md F-046): `remindBefore`, which
      * Windows knows, plus up to 3 more kept in the Android extension.
      */
-    fun noticeMinutes(t: Task): List<Int> =
-        (listOf(t.remindBefore) + AlertExt.of(t).alerts).filter { it > 0 }.distinct().sortedDescending()
+    fun noticeMinutes(t: Task): List<Int> {
+        val extra = AlertExt.of(t).alerts
+        // Reconciliation (FEATURES.md "Data format"): Windows changed remindBefore, so its value is used alone.
+        val kept = if (extra.isNotEmpty() && t.remindBefore !in extra) emptyList() else extra
+        return (listOf(t.remindBefore) + kept).filter { it > 0 }.distinct().sortedDescending()
+    }
 
     /** The notice moments of a task, earliest first. */
     fun noticeTimes(t: Task): List<Instant> = t.dueAt?.let { d -> noticeMinutes(t).map { d.minusSeconds(it * 60L) } }.orEmpty()
