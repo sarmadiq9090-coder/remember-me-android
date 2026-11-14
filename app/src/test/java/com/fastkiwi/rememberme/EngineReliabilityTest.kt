@@ -68,6 +68,8 @@ class EngineReliabilityTest {
 
     private val am get() = app.getSystemService(AlarmManager::class.java)
     private val nm get() = app.getSystemService(NotificationManager::class.java)
+    /** The next alarm that wakes the phone (the midnight housekeeping window does not, and is ignored). */
+    private fun nextWake() = shadowOf(am).scheduledAlarms.filter { it.type == AlarmManager.RTC_WAKEUP }.minByOrNull { it.triggerAtTime }
     private fun save(input: TaskInput, now: Instant = Instant.now()) = Repo.store(app).change { Tasks.save(it, input, now, zone).first }.tasks.last()
     private fun dueTags() = nm.activeNotifications.mapNotNull { Notifier.dueTask(it) }
     /** Alarms that wake the phone (the midnight housekeeping window does not). */
@@ -101,7 +103,7 @@ class EngineReliabilityTest {
         Engine.sync(app)
         assertEquals("INEXACT", ScheduleLog(app).last()!!.api)
         assertNull(am.nextAlarmClock)
-        assertNotNull(shadowOf(am).peekNextScheduledAlarm())
+        assertNotNull(nextWake())
     }
 
     @Test fun theScheduleLogHoldsNoReminderContent() {
@@ -160,13 +162,13 @@ class EngineReliabilityTest {
         val due = Instant.now().plusSeconds(7200)
         save(TaskInput(title = "x", dueAt = due))
         Engine.sync(app)
-        val before = shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime
+        val before = nextWake()!!.triggerAtTime
         // A reboot wipes every alarm.
         for (a in shadowOf(am).scheduledAlarms.toList()) a.operation?.let { am.cancel(it) }
-        assertNull(shadowOf(am).peekNextScheduledAlarm())
+        assertNull(nextWake())
         SystemReceiver().onReceive(app, Intent(Intent.ACTION_BOOT_COMPLETED))
         Engine.drain()
-        assertEquals(before, shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        assertEquals(before, nextWake()!!.triggerAtTime)
         assertEquals("boot", ScheduleLog(app).lastBoot()!!.reason)
         assertEquals(SystemReceiver.reasonOf(Intent.ACTION_TIMEZONE_CHANGED), "zone")
     }
@@ -185,7 +187,8 @@ class EngineReliabilityTest {
     @Test fun theAlarmTestGoesThroughTheRealPathAndAddsNoReminder() {
         val now = Instant.now()
         TestAlarm.start(app, now)
-        val alarm = wakeAlarms().single()
+        val alarm = wakeAlarms().filter { shadowOf(it.operation).savedIntent.action == TestAlarm.ACTION }.let {
+            assertEquals("one test alarm: ${wakeAlarms().map { a -> shadowOf(a.operation).savedIntent.action }}", 1, it.size); it.single() }
         assertEquals(now.plusSeconds(TestAlarm.DELAY_SECONDS).toEpochMilli(), alarm.triggerAtTime)
         // The alarm fires: the receiver posts the test reminder on the real reminder channel.
         AlarmReceiver().onReceive(app, Intent(TestAlarm.ACTION))

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 4×3 (DESIGN-SPEC §5.22): header with «ذكرني» and «+» (Quick Add), then the rows (widget_row*.xml). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/w_root"
     android:layout_width="match_parent"
@@ -41,24 +42,9 @@
         android:paddingTop="12dp"
         android:textColor="@color/widget_muted"
         android:textSize="14sp" />
-    <LinearLayout android:id="@+id/w_row1" style="@style/WidgetRow">
-        <TextView android:id="@+id/w_time1" style="@style/WidgetTime" />
-        <TextView android:id="@+id/w_title1" style="@style/WidgetTitle" />
-        <ImageView android:id="@+id/w_warn1" style="@style/WidgetWarn" android:contentDescription="@null" />
-    </LinearLayout>
-    <LinearLayout android:id="@+id/w_row2" style="@style/WidgetRow">
-        <TextView android:id="@+id/w_time2" style="@style/WidgetTime" />
-        <TextView android:id="@+id/w_title2" style="@style/WidgetTitle" />
-        <ImageView android:id="@+id/w_warn2" style="@style/WidgetWarn" android:contentDescription="@null" />
-    </LinearLayout>
-    <LinearLayout android:id="@+id/w_row3" style="@style/WidgetRow">
-        <TextView android:id="@+id/w_time3" style="@style/WidgetTime" />
-        <TextView android:id="@+id/w_title3" style="@style/WidgetTitle" />
-        <ImageView android:id="@+id/w_warn3" style="@style/WidgetWarn" android:contentDescription="@null" />
-    </LinearLayout>
-    <LinearLayout android:id="@+id/w_row4" style="@style/WidgetRow">
-        <TextView android:id="@+id/w_time4" style="@style/WidgetTime" />
-        <TextView android:id="@+id/w_title4" style="@style/WidgetTitle" />
-        <ImageView android:id="@+id/w_warn4" style="@style/WidgetWarn" android:contentDescription="@null" />
-    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/w_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
 </LinearLayout>

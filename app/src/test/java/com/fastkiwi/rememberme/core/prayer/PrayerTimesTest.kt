@@ -24,6 +24,9 @@ import kotlin.math.tan
  * Prayer times (F-050) against (1) an independent reference written here, (2) published timetable
  * entries, and (3) the edge cases: next() ordering, DST zones and a polar date.
  */
+// Robolectric: Umm al-Qura's Ramadan rule reads the Hijri month from Android's ICU calendar.
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [36])
 class PrayerTimesTest {
 
     private fun city(name: String): Place = Places.byEnglishName(name) ?: error("no city $name")

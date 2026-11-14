@@ -36,7 +36,14 @@ import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.ui.AboutScreen
 import com.fastkiwi.rememberme.ui.AppTheme
 import com.fastkiwi.rememberme.ui.HealthScreen
-import com.fastkiwi.rememberme.ui.AlarmTestScreen
+// [health] begin
+import com.fastkiwi.rememberme.ui.health.AlarmTestScreen
+import com.fastkiwi.rememberme.ui.health.AlertLogScreen
+import com.fastkiwi.rememberme.ui.health.CompatReportScreen
+import com.fastkiwi.rememberme.ui.health.DndHelpScreen
+import com.fastkiwi.rememberme.ui.health.HealthFix
+import com.fastkiwi.rememberme.ui.health.TestResults
+// [health] end
 import com.fastkiwi.rememberme.ui.ScheduleStatus
 import com.fastkiwi.rememberme.ui.CompatReport
 import com.fastkiwi.rememberme.alarm.TestAlarm
@@ -69,6 +76,21 @@ sealed class Screen {
     data object Trash : Screen()
     data object About : Screen()
     data object AlarmTest : Screen()
+    // [quick] begin
+    data object Templates : Screen()
+    // [quick] end
+    // [editor] begin
+    /** A reminder's change history (F-072). */
+    data class History(val id: String) : Screen()
+    // [editor] end
+    // [settings] begin
+    data object Lists : Screen()
+    // [settings] end
+    // [health] begin
+    data object DndHelp : Screen()
+    data object CompatReport : Screen()
+    data object AlertLog : Screen()
+    // [health] end
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -79,6 +101,20 @@ sealed class Screen {
         Trash -> "trash"
         About -> "about"
         AlarmTest -> "alarmtest"
+        // [quick] begin
+        Templates -> "templates"
+        // [quick] end
+        // [editor] begin
+        is History -> "history:$id"
+        // [editor] end
+        // [settings] begin
+        Lists -> "lists"
+        // [settings] end
+        // [health] begin
+        DndHelp -> "dndhelp"
+        CompatReport -> "compatreport"
+        AlertLog -> "alertlog"
+        // [health] end
     }
 
     companion object {
@@ -90,6 +126,20 @@ sealed class Screen {
             code == "trash" -> Trash
             code == "about" -> About
             code == "alarmtest" -> AlarmTest
+            // [quick] begin
+            code == "templates" -> Templates
+            // [quick] end
+            // [editor] begin
+            code.startsWith("history:") -> History(code.removePrefix("history:"))
+            // [editor] end
+            // [settings] begin
+            code == "lists" -> Lists
+            // [settings] end
+            // [health] begin
+            code == "dndhelp" -> DndHelp
+            code == "compatreport" -> CompatReport
+            code == "alertlog" -> AlertLog
+            // [health] end
             else -> null
         }
     }
@@ -102,14 +152,26 @@ class MainActivity : AppCompatActivity() {
     private var safety by mutableStateOf(listOf<File>())
     /** A snackbar for Home to show (the undo of a delete made in the editor). */
     private var homeSnack by mutableStateOf<SnackRequest?>(null)
-    /** Titles of every-N-hours reminders to warn about before a Windows-format export (D-011), or null. */
-    private var exportWarning by mutableStateOf<List<String>?>(null)
-    /** A checked backup waiting for the user's confirmation, or null. */
-    private var pendingImport by mutableStateOf<Backup.Imported?>(null)
-    /** The compatibility report shown before sharing, or null. */
-    private var reportText by mutableStateOf<String?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
+    // [quick] begin
+    /** The open Quick Add sheet (FAB, shortcut, widget «+», tile, share), or null. */
+    var quickAdd by mutableStateOf<com.fastkiwi.rememberme.ui.quick.QuickAddRequest?>(null)
+    /** Fields for the editor from a template or Quick Add's «خيارات أكثر»; the lead passes it to EditScreen. */
+    var editPrefill by mutableStateOf<com.fastkiwi.rememberme.core.TemplateFill?>(null)
+    // [lead] begin
+    /** The default tone being chosen from Settings: "normal", "alarm", or null. */
+    private var tonePickFor by mutableStateOf<String?>(null)
+    /** Lists and tags: Home filtered by a saved filter or searched for a category. */
+    private var homeRequest by mutableStateOf<com.fastkiwi.rememberme.ui.HomeRequest?>(null)
+    // [lead] end
+    /** Bumped by the launcher shortcut «اليوم»; the lead routes it to Home's day/agenda view. */
+    var todayRequest by mutableLongStateOf(0L)
+    /** The reminder Quick Add just saved, for Home to scroll into view. */
+    var lastAddedId by mutableStateOf<String?>(null)
+    /** Opens Quick Add (Home's FAB calls this). */
+    fun openQuickAdd(text: String = "") { quickAdd = com.fastkiwi.rememberme.ui.quick.QuickAddRequest(text) }
+    // [quick] end
 
     private val icsExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
         uri ?: return@registerForActivityResult
@@ -125,27 +187,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val notifPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { refreshHealth() }
-    private val exporter = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+    // [home] begin
+    /** Ids of the reminders «تصدير المحدد» saves, while the save dialog is open. */
+    private var exportIds: List<String> = emptyList()
+    private val selectedExporter = registerForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
+        val ids = exportIds.toHashSet()
+        exportIds = emptyList()
         uri ?: return@registerForActivityResult
         lifecycleScope.launch {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
-                    contentResolver.openOutputStream(uri, "wt")!!.use { Backup.export(Repo.state(this@MainActivity), it, Instant.now()) }
-                    Repo.prefs(this@MainActivity).lastExport = System.currentTimeMillis()
+                    val s = Repo.state(this@MainActivity)
+                    contentResolver.openOutputStream(uri, "wt")!!.use {
+                        it.write(Ics.export(s.copy(tasks = s.tasks.filter { t -> t.id in ids }), Repo.zone(), Instant.now()).toByteArray(Charsets.UTF_8))
+                    }
                 }.isSuccess
             }
             toast(if (ok) R.string.export_done else R.string.export_failed)
         }
     }
-    private val importer = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri ?: return@registerForActivityResult
-        lifecycleScope.launch {
-            // Read and check the whole file first; nothing is replaced until the user has seen the summary.
-            val result = withContext(Dispatchers.IO) { readImport { contentResolver.openInputStream(uri)!! } }
-            result.onSuccess { pendingImport = it }.onFailure { Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_LONG).show() }
-        }
+
+    /** «تصدير المحدد» (F-066): the selected reminders as a calendar file, through the system's save dialog. */
+    fun exportSelected(ids: List<String>) {
+        if (ids.isEmpty()) return
+        exportIds = ids
+        selectedExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics")
     }
+    // [home] end
+
+    private val notifPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { refreshHealth() }
+    // [settings] begin
+    /** Backup, restore, calendar files, weekly copy, encryption, delete all and «ما الجديد» (ui/settings/SettingsFlows.kt). */
+    val flows = com.fastkiwi.rememberme.ui.settings.SettingsFlows(this)
+    // [settings] end
 
     /** Reads and fully checks a backup without changing anything; the failure carries the message to show. */
     fun readImport(open: () -> java.io.InputStream): Result<Backup.Imported> = try {
@@ -176,10 +250,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         L10n.apply(this)
         super.onCreate(savedInstanceState)
+        // [editor] begin
+        com.fastkiwi.rememberme.data.EditorPrefs.install(this)
+        // [editor] end
         enableEdgeToEdge()
         val saved = savedInstanceState?.getStringArrayList(KEY_STACK)?.mapNotNull(Screen::of)
         if (!saved.isNullOrEmpty() && saved.first() == Screen.Home) stack = saved else handle(intent)
         safety = Repo.store(this).safetyCopies()
+        // [settings] begin
+        flows.onRestored = { safety = Repo.store(this).safetyCopies() }
+        if (savedInstanceState == null) flows.checkWhatsNew()
+        // [settings] end
         val prefs = Repo.prefs(this)
         prefs.firstRun
         if (!prefs.onboarded) {
@@ -220,6 +301,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handle(intent: Intent?) {
         when {
+            // [quick] begin
+            com.fastkiwi.rememberme.ui.quick.QuickEntry.request(intent) != null -> {
+                stack = listOf(Screen.Home)
+                quickAdd = com.fastkiwi.rememberme.ui.quick.QuickEntry.request(intent)
+            }
+            com.fastkiwi.rememberme.ui.quick.QuickEntry.isToday(intent) -> { stack = listOf(Screen.Home); todayRequest = System.currentTimeMillis() }
+            // [quick] end
             intent?.action == ACTION_NEW -> stack = listOf(Screen.Home, Screen.Edit(null))
             intent?.getStringExtra(EXTRA_OPEN) != null -> stack = listOf(Screen.Home, Screen.Edit(intent.getStringExtra(EXTRA_OPEN)))
         }
@@ -234,14 +322,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Saves the Windows-format backup. Reminders that repeat every few hours are Android-only and become
-     * one-time on Windows, so they are listed first and the user decides (D-011).
-     */
-    fun startExport() {
-        val hourly = Repo.state(this).tasks.filter { it.deletedAt == null && it.completedAt == null && it.repeat == Repeat.HOURS }
-        if (hourly.isEmpty()) exporter.launch(Backup.folderName(Instant.now()) + ".zip") else exportWarning = hourly.map { it.title }
-    }
+    // [settings] begin
+    /** Saves a backup; what Windows would change is listed first (F-092, D-011). */
+    fun startExport() = flows.export()
+    // [settings] end
 
     private fun scheduleStatus(state: AppState, now: Instant): ScheduleStatus {
         val log = ScheduleLog(this)
@@ -251,10 +335,16 @@ class MainActivity : AppCompatActivity() {
             log.lateness())
     }
 
-    private fun testResults(rec: TestAlarm.Record, now: Instant): Map<TestAlarm.Part, TestAlarm.Result> {
-        val h = health ?: Health.check(this)
-        return TestAlarm.evaluate(rec, now.toEpochMilli(), h.channel, h.channelSound, h.channelVibrates, h.dnd)
+    // [health] begin
+    private fun testResults(rec: TestAlarm.Record, now: Instant): Map<TestAlarm.Part, TestAlarm.Result> =
+        TestResults.of(rec, health ?: Health.check(this), now.toEpochMilli())
+
+    /** A Health or alert-test fix: Health's own system screens first, then the shared ones (and the permission request). */
+    private fun healthFix(what: String) {
+        if (what == "dnd_help") { push(Screen.DndHelp); return }
+        if (!HealthFix.open(this, what)) fix(what)
     }
+    // [health] end
 
     private fun report(state: AppState, now: Instant): String {
         val h = Health.check(this)
@@ -301,49 +391,37 @@ class MainActivity : AppCompatActivity() {
         val screen = stack.last()
         // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
         key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
-        pendingImport?.let { imp ->
-            val current = Repo.state(this).tasks.count { it.deletedAt == null }
-            val lines = buildList {
-                add(getString(R.string.restore_summary_counts, imp.active.toString(), imp.done.toString()))
-                if (imp.trashed > 0) add(getString(R.string.restore_summary_trash, imp.trashed.toString()))
-                if (imp.notes > 0) add(getString(R.string.restore_summary_notes, imp.notes.toString()))
-                if (imp.droppedAttachments > 0) add(getString(R.string.import_attachments, imp.droppedAttachments.toString()))
-                add(getString(if (imp.verified) R.string.restore_summary_verified else R.string.import_unverified))
-                imp.createdAt?.let { add(getString(R.string.restore_summary_date, L10n.dueText(this@MainActivity, it))) }
-                add(getString(R.string.restore_summary_safety, current.toString()))
-            }
-            ConfirmDialog(
-                title = stringResource(R.string.restore_summary_title), text = lines.joinToString("\n"),
-                confirm = stringResource(R.string.restore),
-                onConfirm = {
-                    lifecycleScope.launch {
-                        val message = withContext(Dispatchers.IO) { applyImport(imp) }
-                        safety = Repo.store(this@MainActivity).safetyCopies()
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+        // [quick] begin
+        quickAdd?.let { req ->
+            com.fastkiwi.rememberme.ui.quick.QuickAddHost(
+                request = req, weekStart = Repo.weekStart(state),
+                onDismiss = { if (quickAdd == req) quickAdd = null },
+                onSaved = { id ->
+                    lastAddedId = id
+                    homeSnack = SnackRequest(getString(R.string.added_msg)) {
+                        lifecycleScope.launch(Dispatchers.IO) { runCatching { com.fastkiwi.rememberme.ui.quick.QuickAddSave.undo(ctx, id) } }
                     }
                 },
-                onDismiss = { pendingImport = null },
+                onMore = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input); push(Screen.Edit(null)) },
+                onTemplate = { push(Screen.Templates) },
             )
         }
-        reportText?.let { text ->
-            // The report is shown in full before anything is shared; the user picks where it goes.
-            ConfirmDialog(
-                title = stringResource(R.string.compat_title), text = stringResource(R.string.compat_intro) + "\n\n" + text,
-                confirm = stringResource(R.string.compat_send),
-                onConfirm = {
-                    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-                    runCatching { startActivity(Intent.createChooser(send, getString(R.string.compat_title))) }
-                },
-                onDismiss = { reportText = null },
-            )
-        }
-        exportWarning?.let { titles ->
-            ConfirmDialog(
-                title = stringResource(R.string.export_hours_title),
-                text = stringResource(R.string.export_hours_body) + "\n" + titles.joinToString("\n") { "• $it" },
-                confirm = stringResource(R.string.export_anyway),
-                onConfirm = { exporter.launch(Backup.folderName(Instant.now()) + ".zip") },
-                onDismiss = { exportWarning = null },
+        // [quick] end
+        // [settings] begin
+        flows.Dialogs()
+        // [settings] end
+        // [lead] the default tones from Settings (F-014): the editor's tone sheet, for a style.
+        tonePickFor?.let { which ->
+            val alarm = which == "alarm"
+            com.fastkiwi.rememberme.ui.editor.TonePickerSheet(
+                current = if (alarm) prefs.importantTone else prefs.normalTone,
+                style = if (alarm) com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM else com.fastkiwi.rememberme.core.AlertPolicy.Style.NORMAL,
+                onPick = { t -> if (alarm) prefs.importantTone = t else prefs.normalTone = t; tonePickFor = null; tick = System.currentTimeMillis() },
+                onDismiss = { tonePickFor = null },
+                title = stringResource(if (alarm) R.string.set_default_tone_alarm else R.string.set_default_tone_normal),
+                subtitle = null,
+                defaultTone = null,
+                defaultLabel = stringResource(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification),
             )
         }
     }
@@ -376,6 +454,28 @@ class MainActivity : AppCompatActivity() {
                     onDismissBackup = { prefs.backupNudgeDismissed = System.currentTimeMillis(); tick = System.currentTimeMillis() },
                     snack = homeSnack, newerData = Repo.store(this).newer,
                     onSnackShown = { homeSnack = null },
+                    // [home] begin
+                    swipe = com.fastkiwi.rememberme.data.HomePrefs(this).swipe,
+                    filters = com.fastkiwi.rememberme.data.Filters(this).all(),
+                    change = { block, then ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            runCatching { Repo.change(ctx, block) }
+                            withContext(Dispatchers.Main) { then() }
+                        }
+                    },
+                    onExportSelected = { ids -> exportSelected(ids) },
+                    // [home] end
+                    // [lead] calendar views (F-064), Quick Add (F-042), shortcuts (F-122)
+                    hijri = prefs.hijriDisplay, hijriAdjust = prefs.hijriAdjust,
+                    onQuickAdd = { openQuickAdd() },
+                    onNewOnDay = { day ->
+                        val at = day.atTime(9, 0).atZone(zone).toInstant()
+                        editPrefill = com.fastkiwi.rememberme.core.TemplateFill(com.fastkiwi.rememberme.core.TaskInput(title = "", dueAt = if (at.isAfter(Instant.now())) at else null))
+                        push(Screen.Edit(null))
+                    },
+                    todayRequest = todayRequest,
+                    scrollToId = lastAddedId, onScrolled = { lastAddedId = null },
+                    request = homeRequest, onRequestShown = { homeRequest = null },
                 )
             }
             is Screen.Edit -> {
@@ -405,41 +505,87 @@ class MainActivity : AppCompatActivity() {
                         pop()
                     },
                     onBack = { pop() },
+                    // [editor] begin
+                    initial = if (screen.id == null) editPrefill?.let { f -> f.input.copy(ext = if (f.ext.isEmpty) f.input.ext else f.ext) } else null,
+                    onDuplicate = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input); push(Screen.Edit(null)) },
+                    // [lead] «حفظ كقالب» (F-047): named after the title; renamed from «قوالبي» by a long press.
+                    onSaveAsTemplate = { input ->
+                        com.fastkiwi.rememberme.data.saveUserTemplate(ctx, input, input.title.ifBlank { getString(R.string.app_name) }, input.ext)
+                        Toast.makeText(ctx, getString(R.string.template_saved), Toast.LENGTH_SHORT).show()
+                    },
+                    onHistory = { t -> push(Screen.History(t.id)) },
+                    onDndHelp = { push(Screen.DndHelp) },
+                    // [editor] end
+                )
+                // [editor] begin: the editor keeps the prefill in its saved state; the next new reminder starts empty.
+                if (screen.id == null && editPrefill != null) LaunchedEffect(screen) { editPrefill = null }
+                // [editor] end
+            }
+            // [editor] begin
+            is Screen.History -> {
+                val task = state.task(screen.id)
+                com.fastkiwi.rememberme.ui.editor.HistoryScreen(
+                    title = task?.title.orEmpty(), events = com.fastkiwi.rememberme.data.History.of(this).events(screen.id),
+                    now = now, zone = zone, onBack = { pop() },
                 )
             }
+            // [editor] end
+            // [settings] begin
             Screen.Settings -> SettingsScreen(
-                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state), prefs.lockPrivacy,
-                    essentialOff = (health ?: Health.check(this)).let { h -> listOf(h.notifications, h.channel, h.exact).count { !it } },
-                    trashCount = state.tasks.count { it.deletedAt != null }),
-                safety = safety,
-                onLanguage = { prefs.language = it; L10n.apply(this); Notifier.channels(this); Engine.syncAsync(this) },
-                onTheme = { setSetting("theme", JsonPrimitive(it)) },
-                onSound = { setSetting("sound", JsonPrimitive(it)) },
-                onRemindAgain = { setSetting("remindAgain", JsonPrimitive(it)) },
-                onWeekStart = { setSetting("weekStart", JsonPrimitive(it)) },
-                onMonths = { v ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        Repo.change(ctx) { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive(v)))) }
-                        withContext(Dispatchers.Main) { L10n.apply(this@MainActivity) }
-                    }
-                },
-                onLockPrivacy = { prefs.lockPrivacy = it; tick = System.currentTimeMillis(); Engine.syncAsync(this) },
-                onBackground = { push(Screen.Background) },
-                onExport = { startExport() },
-                onExportIcs = { icsExporter.launch(Backup.folderName(Instant.now()).replace("backup", "calendar") + ".ics") },
-                onImport = { importer.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*")) },
-                onRestoreSafety = { f ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
-                        withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
-                    }
-                },
-                onTrash = { push(Screen.Trash) },
-                onAbout = { push(Screen.About) },
-                onBack = { pop() },
+                m = SettingsModel(prefs.language, Repo.theme(state), Repo.sound(state), Repo.remindAgain(state), Repo.weekStart(state), Repo.arabicMonths(state),
+                    essentialOff = com.fastkiwi.rememberme.ui.health.HealthModel.essentialMissing(health ?: Health.check(this), scheduleStatus(state, now)),
+                    trashCount = state.tasks.count { it.deletedAt != null }, presets = Repo.presets(state),
+                    prayerUsed = state.tasks.any { it.active && com.fastkiwi.rememberme.core.AlertExt.of(it).prayer != null }),
+                safety = safety, flows = flows, tick = tick,
+                cb = com.fastkiwi.rememberme.ui.SettingsCallbacks(
+                    onSetting = { key, value -> act { s -> s.withSettings(JsonObject(s.settings + (key to value))) } },
+                    onLanguage = { prefs.language = it; L10n.apply(this); Notifier.channels(this); Engine.syncAsync(this) },
+                    onMonths = { v ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            Repo.change(ctx) { s -> s.withSettings(JsonObject(s.settings + ("arabicMonths" to JsonPrimitive(v)))) }
+                            withContext(Dispatchers.Main) { L10n.apply(this@MainActivity) }
+                        }
+                    },
+                    onPhoneChanged = { tick = System.currentTimeMillis(); Engine.syncAsync(this) },
+                    onHealth = { push(Screen.Background) },
+                    onPickTone = { style -> tonePickFor = style },
+                    onLists = { push(Screen.Lists) },
+                    onTemplates = { push(Screen.Templates) },
+                    onClearHistory = { com.fastkiwi.rememberme.data.History.of(ctx).clear(); toast(R.string.history_cleared) },
+                    onRestoreSafety = { f ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val ok = runCatching { Repo.store(ctx).restoreSafety(f) }.getOrDefault(false).also { Engine.sync(ctx) }
+                            withContext(Dispatchers.Main) { toast(if (ok) R.string.restore_done else R.string.import_failed) }
+                        }
+                    },
+                    onCompat = { push(Screen.CompatReport) },
+                    onAlertLog = { push(Screen.AlertLog) },
+                    onTrash = { push(Screen.Trash) },
+                    onAbout = { push(Screen.About) },
+                    onBack = { pop() },
+                ),
             )
+            Screen.Lists -> {
+                val filters = androidx.compose.runtime.remember { com.fastkiwi.rememberme.data.Filters(ctx) }
+                var lists by androidx.compose.runtime.remember { mutableStateOf(filters.all()) }
+                com.fastkiwi.rememberme.ui.settings.ListsScreen(
+                    state = state, lists = lists, now = now, zone = zone, weekStart = Repo.weekStart(state),
+                    onLists = { filters.save(it); lists = filters.all() },
+                    onChange = { block -> act(block) },
+                    onCategory = { c -> homeRequest = com.fastkiwi.rememberme.ui.HomeRequest(search = getString(when (c) {
+                        com.fastkiwi.rememberme.core.Category.PERSONAL -> R.string.cat_personal
+                        com.fastkiwi.rememberme.core.Category.WORK -> R.string.cat_work
+                        com.fastkiwi.rememberme.core.Category.STUDY -> R.string.cat_study })); stack = listOf(Screen.Home) },
+                    onFilter = { f -> homeRequest = com.fastkiwi.rememberme.ui.HomeRequest(filter = f.id); stack = listOf(Screen.Home) },
+                    onDone = { pop() },
+                    onTrash = { push(Screen.Trash) },
+                    onBack = { pop() },
+                )
+            }
+            // [settings] end
+            // [health] begin
             Screen.Background -> HealthScreen(
-                health ?: Health.check(this), scheduleStatus(state, now), Makers.current(), firstRun = onboarding, now = now,
+                health ?: Health.check(this), scheduleStatus(state, now), firstRun = onboarding, now = now,
                 onCheck = {
                     lifecycleScope.launch(Dispatchers.IO) {
                         runCatching { Engine.sync(ctx, reason = "check") }
@@ -447,27 +593,45 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 onTest = { push(Screen.AlarmTest) },
-                onReport = { reportText = report(state, now) },
-                onFix = ::fix, onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() },
+                onReport = { push(Screen.CompatReport) },
+                onAlertLog = { push(Screen.AlertLog) },
+                onDndHelp = { push(Screen.DndHelp) },
+                onFix = ::healthFix, onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() },
+                onResumeCheck = { refreshHealth() },
             )
             Screen.AlarmTest -> {
-                // While a test runs, refresh every second so each part's result appears as it happens.
+                // While a test runs, refresh every second so the countdown and each part's result appear as they happen.
                 LaunchedEffect(Unit) { while (true) { delay(1000); tick = System.currentTimeMillis() } }
                 val rec = TestAlarm.record(this)
-                AlarmTestScreen(rec, testResults(rec, now),
-                    onStart = { TestAlarm.start(ctx); tick = System.currentTimeMillis() },
+                AlarmTestScreen(rec, testResults(rec, now), now.toEpochMilli(),
+                    onStart = { style, wait -> TestAlarm.start(ctx, Instant.now(), style, wait, zone); refreshHealth(); tick = System.currentTimeMillis() },
                     onAnswer = { part, yes ->
                         if (part == TestAlarm.Part.SOUND) TestAlarm.answer(ctx, sound = yes) else TestAlarm.answer(ctx, vibration = yes)
                         tick = System.currentTimeMillis()
                     },
-                    onFix = ::fix, onReport = { reportText = report(state, now) }, onBack = { pop() })
+                    onFix = ::healthFix,
+                    onCancel = { TestAlarm.cancel(ctx); tick = System.currentTimeMillis() },
+                    onDone = { pop() }, onBack = { pop() })
             }
+            Screen.DndHelp -> (health ?: Health.check(this)).let { h -> DndHelpScreen(h.dndState, h.dndAlarmsAllowed, onBack = { pop() }) }
+            Screen.CompatReport -> CompatReportScreen(report(state, now), onBack = { pop() })
+            Screen.AlertLog -> {
+                var entries by androidx.compose.runtime.remember { mutableStateOf(com.fastkiwi.rememberme.data.AlertLog(ctx).entries()) }
+                AlertLogScreen(entries, onClear = { com.fastkiwi.rememberme.data.AlertLog(ctx).clear(); entries = emptyList() }, onBack = { pop() }, now = now)
+            }
+            // [health] end
             Screen.Trash -> TrashScreen(state, now,
                 onRestore = { t -> act { s -> Tasks.restore(s, t.id) } },
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },
                 onEmpty = { act { s -> Tasks.purgeTrash(s, Instant.now(), all = true) } },
                 onBack = { pop() })
             Screen.About -> AboutScreen { pop() }
+            // [quick] begin
+            Screen.Templates -> com.fastkiwi.rememberme.ui.quick.TemplatesRoute(
+                onPick = { fill -> editPrefill = fill; stack = stack.dropLast(1) + Screen.Edit(null) },
+                onBack = { pop() },
+            )
+            // [quick] end
         }
     }
 

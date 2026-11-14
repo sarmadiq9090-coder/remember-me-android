@@ -81,6 +81,14 @@ object L10n {
         }
     }
 
+    /**
+     * F-102: user text (a title, a tag) placed inside a sentence of the interface language is isolated
+     * (Unicode FSI…PDI), so a Latin title in an Arabic sentence, or an Arabic one in English, keeps its
+     * own direction and never reorders the words or the punctuation around it (UAX #9).
+     */
+    fun isolate(context: Context, text: String): String =
+        androidx.core.text.BidiFormatter.getInstance(current(context)).unicodeWrap(text)
+
     /** Joins metadata with the interface's separator: «، » in Arabic, ", " in English (never «·»). */
     fun join(context: Context, parts: List<String?>): String = parts.filterNotNull().filter { it.isNotBlank() }
         .joinToString(context.getString(R.string.list_separator))

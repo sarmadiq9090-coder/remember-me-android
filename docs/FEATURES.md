@@ -357,7 +357,8 @@ not different in intent.
   "alerts":     [1440, 60],
   "speak":      true,
   "prayer":     {"name": "fajr|dhuhr|asr|maghrib|isha", "offset": 10},
-  "hijri":      {"month": 9, "day": 1}
+  "hijri":      {"month": 9, "day": 1},
+  "lock":       "show|hide"
 }
 ```
 
@@ -365,6 +366,7 @@ not different in intent.
   checked at play time; a different title for the same URI on another phone counts as missing.
   `bundled` = `chime-1|chime-2|chime-3`. `file` = the SHA-256 (hex) of the copy in
   `files/tones/<sha256>.<ext>`; `title` = the original display name (shown, never used to open).
+- `lock` (added while building 1.0.0): the reminder's own «على شاشة القفل» choice; absent = the phone setting.
 - `alerts`: extra early-alert minutes from `EARLY_MINUTES` (5, 10, 15, 30, 60, 1440), at most 3 in all.
   `remindBefore` (Windows) holds the one **nearest to the due time**. Reconciliation: if `alerts` does
   not contain the current `remindBefore` (Windows changed it), Android drops `alerts` and uses
@@ -621,10 +623,12 @@ on; locked + hidden details → «لديك تذكير». No permission.
   app's repeats, one VALARM → `remindBefore`); everything else listed in a report, never dropped
   silently; caps 5 MB and 5,000 components; fuzzed. Round-trip: every exported `.ics` re-imports to the
   same occurrences (ical4j check in tests).
-- **F-086 encryption:** container `rm-enc@1`: JSON header (`kdf: "PBKDF2-HMAC-SHA256"`, `iter: 600000`,
-  16-byte salt, 12-byte IV) + AES-256-GCM over the plain backup zip bytes; wrong password = GCM tag
-  failure = refused with its own message; platform crypto only (no library). Windows cannot read it; the
-  export says so.
+- **F-086 encryption:** container `RMBK1` (as built, 2026-11-15): a 62-byte binary header (magic, format
+  version, PBKDF2-HMAC-SHA256 iteration count — 600,000, stored, at most 10,000,000 —, 16-byte salt, 12-byte
+  IV, payload length, key check) authenticated as GCM associated data, then AES-256-GCM over the plain backup
+  zip bytes; file cap 20 MB. A wrong password (key check) and a damaged file (tag or length) give different
+  messages; platform crypto only (no library). Windows cannot read it; the export says so. (The council's
+  draft said a JSON header `rm-enc@1`; the binary header is the same scheme with the header authenticated.)
 - **F-087 auto-backup:** folder from `ACTION_OPEN_DOCUMENT_TREE` with a persistable read/write grant (no
   storage permission); written from the housekeeping window when ≥ 7 days have passed; newest 5 kept in
   that folder; failure → a banner and a Health line. Unencrypted unless the user enables encryption, in

@@ -63,6 +63,8 @@ class EngineTest {
 
     private val am get() = app.getSystemService(AlarmManager::class.java)
     private val nm get() = app.getSystemService(NotificationManager::class.java)
+    /** The next alarm that wakes the phone (the midnight housekeeping window does not, and is ignored). */
+    private fun nextWake() = shadowOf(am).scheduledAlarms.filter { it.type == AlarmManager.RTC_WAKEUP }.minByOrNull { it.triggerAtTime }
     private fun save(input: TaskInput, now: Instant = Instant.now()) =
         Repo.store(app).change { Tasks.save(it, input, now, zone).first }.tasks.last()
     private fun shown() = shadowOf(nm).allNotifications.size
@@ -72,7 +74,7 @@ class EngineTest {
         val due = Instant.now().plusSeconds(3600)
         save(TaskInput(title = "later", dueAt = due))
         Engine.sync(app)
-        val next = shadowOf(am).peekNextScheduledAlarm()
+        val next = nextWake()
         assertNotNull(next)
         assertEquals(due.toEpochMilli(), next!!.triggerAtTime)
         assertNotNull("Uses setAlarmClock (Doze-exempt)", am.nextAlarmClock)
@@ -84,7 +86,7 @@ class EngineTest {
         ShadowAlarmManager.setCanScheduleExactAlarms(false)
         save(TaskInput(title = "later", dueAt = Instant.now().plusSeconds(3600)))
         Engine.sync(app)
-        assertNotNull(shadowOf(am).peekNextScheduledAlarm())
+        assertNotNull(nextWake())
         assertNull(am.nextAlarmClock)
         assertFalse(Engine.exact)
     }
@@ -120,7 +122,7 @@ class EngineTest {
         val snoozed = Repo.state(app).task(t.id)!!
         assertEquals(now.plusSeconds(600), snoozed.dueAt)
         assertTrue(dueTags().isEmpty())
-        assertEquals(now.plusSeconds(600).toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        assertEquals(now.plusSeconds(600).toEpochMilli(), nextWake()!!.triggerAtTime)
         // An old notification's Done (for the occurrence before the snooze) changes nothing.
         ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusSeconds(1))
         assertEquals(snoozed, Repo.state(app).task(t.id))
@@ -148,11 +150,11 @@ class EngineTest {
             assertTrue(action, receivers.any { it.activityInfo.name == SystemReceiver::class.java.name })
         }
         // A reboot clears every alarm; BOOT_COMPLETED sets it again.
-        assertNull(shadowOf(am).peekNextScheduledAlarm())
+        assertNull(nextWake())
         // Delivered as the system does after a reboot (Robolectric does not route protected broadcasts sent by the app).
         SystemReceiver().onReceive(app, Intent(Intent.ACTION_BOOT_COMPLETED))
         Engine.drain()
-        assertEquals(due.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        assertEquals(due.toEpochMilli(), nextWake()!!.triggerAtTime)
     }
 
     @Test fun aTimeZoneChangeKeepsOneTimeInstantsAndRebuildsRepeats() {
@@ -160,7 +162,7 @@ class EngineTest {
         val once = save(TaskInput(title = "once", dueAt = now.plusSeconds(3600)), now)
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Dubai"))
         Engine.sync(app, now)
-        assertEquals(once.dueAt!!.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        assertEquals(once.dueAt!!.toEpochMilli(), nextWake()!!.triggerAtTime)
     }
 
     @Test fun earlyNoticeIsShownOnceOnItsOwnChannel() {
@@ -172,7 +174,7 @@ class EngineTest {
         nm.cancelAll()
         Engine.sync(app, now.plusSeconds(30))
         assertTrue(nm.activeNotifications.none { it.tag == Notifier.TAG_NOTICE + t.id })
-        assertEquals(t.dueAt!!.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+        assertEquals(t.dueAt!!.toEpochMilli(), nextWake()!!.triggerAtTime)
     }
 
     @Test fun lockScreenPrivacyHidesTheTitle() {
@@ -212,7 +214,8 @@ class EngineTest {
         assertFalse((info.requestedPermissions ?: emptyArray()).contains(Manifest.permission.INTERNET))
         // Exported: only the system-broadcast receiver, and AndroidX's profile installer, which needs the DUMP permission.
         val exported = info.receivers!!.filter { it.exported && it.permission != "android.permission.DUMP" }.map { it.name }
-        assertEquals(listOf(SystemReceiver::class.java.name), exported)
+        // Plus the direct-boot receiver (F-026), which handles LOCKED_BOOT_COMPLETED only.
+        assertEquals(setOf(SystemReceiver::class.java.name, com.fastkiwi.rememberme.alarm.LockedReceiver::class.java.name), exported.toSet())
     }
 
     @Test fun dataSurvivesAProcessRestart() {
@@ -255,7 +258,7 @@ class EngineTest {
         File(app.filesDir, "data/data.json.tmp").mkdirs()
         try {
             Engine.sync(app, now)
-            assertEquals(next.toEpochMilli(), shadowOf(am).peekNextScheduledAlarm()!!.triggerAtTime)
+            assertEquals(next.toEpochMilli(), nextWake()!!.triggerAtTime)
             // A notification button whose change cannot be saved does not crash the app either.
             ActionReceiver.handle(app, ActionReceiver.DONE, Repo.state(app).tasks.last().id, next, now)
         } finally { File(app.filesDir, "data/data.json.tmp").deleteRecursively() }
