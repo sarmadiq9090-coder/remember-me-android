@@ -75,7 +75,7 @@ participation**: export and delete at any time. **Security**: private storage an
 | ISO 8601 / RFC 3339 in storage | **Met** | UTC with milliseconds, as JavaScript writes it (`Codec.iso`) |
 | IANA time zones | **Met** | `ZoneId.systemDefault()`; re-planned on `TIMEZONE_CHANGED`; the `.ics` carries the TZID with a matching VTIMEZONE |
 | Unicode CLDR formats | **Met** | Month and weekday names, Arabic plurals (zero/one/two/few/many/other), regional month names (Iraq/Levant vs others) |
-| Digits | **Met** | Western 0-9 everywhere (owner rule D-071), `-u-nu-latn`; a test fails on any Arabic-Indic digit |
+| Digits | **Met** | Western 0-9 everywhere (brain D-012), `-u-nu-latn`; a test fails on any Arabic-Indic digit |
 | BCP 47 language tags | **Met** | `ar-IQ-u-nu-latn`, `en-US` |
 | UAX #9 bidirectional text | **Partial** | Compose's default bidi handling and the Arabic separator «، »; Latin runs inside Arabic sentences are not yet wrapped with `BidiFormatter` |
 | Hijri calendar through ICU | **Not offered** | The Windows app removed its Hijri option (D-009); `android.icu` IslamicCalendar is the path if it comes back |

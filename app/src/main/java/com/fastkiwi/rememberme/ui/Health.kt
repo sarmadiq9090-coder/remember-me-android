@@ -22,9 +22,34 @@ data class Health(
     val fullScreen: Boolean,
     val battery: Boolean,
     val dnd: Boolean,
+    val channelSound: Boolean = true,
+    val channelVibrates: Boolean = true,
+    /** The user restricted the app's background activity (Android 9+): alarms may not run. */
+    val backgroundRestricted: Boolean = false,
+    /** Android's app standby bucket (Android 9+): 5 active … 45 restricted; 0 unknown. */
+    val bucket: Int = 0,
+    /** The notification volume is at zero (the reminder sound cannot be heard). */
+    val volumeZero: Boolean = false,
+    /** Which exact-alarm permission applies: USE_EXACT_ALARM (13+), SCHEDULE_EXACT_ALARM (12), none (older). */
+    val exactPermission: String = "",
+    /** When the phone last started (epoch ms). */
+    val bootAt: Long = 0,
+    /** F-023: ringer mode, Do Not Disturb as the app can read it, and the alarm volume at zero. */
+    val ringer: com.fastkiwi.rememberme.core.AlertPolicy.Ringer = com.fastkiwi.rememberme.core.AlertPolicy.Ringer.NORMAL,
+    val dndState: com.fastkiwi.rememberme.core.AlertPolicy.Dnd = com.fastkiwi.rememberme.core.AlertPolicy.Dnd.OFF,
+    val alarmVolumeZero: Boolean = false,
+    /** The «منبّهات مهمة» channel is not muted. */
+    val alarmChannelSound: Boolean = true,
+    /** Fallbacks or failed tones in the last 7 days (F-017). */
+    val toneProblems: Int = 0,
+    /** Android hides all notification content on the lock screen (null: cannot be read). */
+    val lockScreenHidesAll: Boolean? = null,
 ) {
     /** Without these, reminders are not shown at all or arrive late: the red banner. */
-    val essentialOk get() = notifications && channel && exact
+    val essentialOk get() = notifications && channel && exact && !backgroundRestricted
+
+    /** In the "restricted" standby bucket alarms are cut to about one a day (alarm clocks excepted). */
+    val bucketRestricted get() = bucket >= 45
 
     companion object {
         fun check(context: Context): Health {
@@ -37,10 +62,43 @@ data class Health(
                 fullScreen = Notifier.canFullScreen(context),
                 battery = pm.isIgnoringBatteryOptimizations(context.packageName),
                 dnd = nm.currentInterruptionFilter > NotificationManager.INTERRUPTION_FILTER_ALL,
+                channelSound = Notifier.alertChannelSound(context),
+                channelVibrates = Notifier.alertChannelVibrates(context),
+                backgroundRestricted = Build.VERSION.SDK_INT >= 28 &&
+                    context.getSystemService(android.app.ActivityManager::class.java).isBackgroundRestricted,
+                bucket = if (Build.VERSION.SDK_INT >= 28)
+                    runCatching { context.getSystemService(android.app.usage.UsageStatsManager::class.java).appStandbyBucket }.getOrDefault(0) else 0,
+                volumeZero = runCatching {
+                    context.getSystemService(android.media.AudioManager::class.java).getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION) == 0
+                }.getOrDefault(false),
+                exactPermission = when {
+                    Build.VERSION.SDK_INT >= 33 -> "USE_EXACT_ALARM"
+                    Build.VERSION.SDK_INT >= 31 -> "SCHEDULE_EXACT_ALARM"
+                    else -> "none needed"
+                },
+                bootAt = System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime(),
+                ringer = Notifier.ringer(context),
+                dndState = Notifier.dnd(context),
+                alarmVolumeZero = runCatching {
+                    context.getSystemService(android.media.AudioManager::class.java).getStreamVolume(android.media.AudioManager.STREAM_ALARM) == 0
+                }.getOrDefault(false),
+                alarmChannelSound = Notifier.styleChannelAudible(context, com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM),
+                toneProblems = runCatching { com.fastkiwi.rememberme.data.AlertLog(context).recentProblems() }.getOrDefault(0),
+                lockScreenHidesAll = lockScreenHidesAll(context),
             )
         }
     }
 }
+
+/**
+ * Whether the phone shows no notification content on the lock screen (F-022). The secure setting is
+ * readable by apps on most versions; anything else is «غير معروف».
+ */
+fun lockScreenHidesAll(context: Context): Boolean? = runCatching {
+    val r = context.contentResolver
+    // "Hide sensitive content" does not hide ours when «أظهر التفاصيل» is chosen (they are public).
+    when (Settings.Secure.getInt(r, "lock_screen_show_notifications", -1)) { 0 -> true; 1 -> false; else -> null }
+}.getOrNull()
 
 object SystemScreens {
     private fun pkg(context: Context): Uri = ("package:" + context.packageName).toUri()
@@ -52,7 +110,13 @@ object SystemScreens {
 
     fun channel(context: Context): Intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
         .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-        .putExtra(Settings.EXTRA_CHANNEL_ID, Notifier.CH_ALERT)
+        .putExtra(Settings.EXTRA_CHANNEL_ID, Notifier.CH_NORMAL)
+
+    fun alarmChannel(context: Context): Intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        .putExtra(Settings.EXTRA_CHANNEL_ID, Notifier.CH_ALARM)
+
+    fun sound(): Intent = Intent(Settings.ACTION_SOUND_SETTINGS)
 
     fun exact(context: Context): Intent =
         if (Build.VERSION.SDK_INT >= 31) Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, pkg(context)) else appDetails(context)
@@ -66,6 +130,9 @@ object SystemScreens {
     fun hibernation(context: Context): Intent = IntentCompat.createManageUnusedAppRestrictionsIntent(context, context.packageName)
 
     fun dnd(): Intent = Intent(Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS)
+
+    /** The list of apps and their battery optimisation (no special permission needed). */
+    fun batteryList(): Intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
 
     /** Opens [intent], or the app's details page when this phone has no such screen. */
     fun open(context: Context, intent: Intent) {

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Lists, tags and saved filters</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .gh { display: flex; align-items: center; gap: 8px; padding: 12px 32px 8px; min-height: 48px; }
+  .gh .t { flex: 1; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--primary); }
+  .gh .btn.text { padding: 0 8px; }
+  .row { min-height: 56px; padding: 8px 16px; }
+  .row .cnt { font-size: 14px; line-height: 20px; color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
+  .row .h.pri { color: var(--primary); }
+  .chips.wrap { padding: 0 16px 4px; }
+  .chip .n { color: var(--on-surface-variant); font-variant-numeric: tabular-nums; font-weight: 400; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Pushed screen, opened from the «القوائم…» chip on Home and from Settings › التنظيم. No NavigationBar. -->
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">القوائم والوسوم</div>
+    <span class="iconbtn"><i data-i="more"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <!-- Categories = the shared Windows category field: exactly three, fixed (F-202). -->
+    <div class="gh" style="padding-top:4px;padding-bottom:0"><span class="t">التصنيفات</span></div>
+    <div class="cap2" style="padding-top:0;padding-bottom:8px">مشتركة مع ذكرني لويندوز</div>
+    <div class="group">
+      <div class="row"><i data-i="label"></i><div class="txt"><div class="h reg">شخصي</div></div><span class="cnt">12</span></div>
+      <div class="row"><i data-i="label"></i><div class="txt"><div class="h reg">عمل</div></div><span class="cnt">5</span></div>
+      <div class="row"><i data-i="label"></i><div class="txt"><div class="h reg">دراسة</div></div><span class="cnt">2</span></div>
+    </div>
+    <!-- My lists = saved filters on a tag (F-063); each is a chip on Home. «ترتيب» = reorder mode with drag handles. -->
+    <div class="gh"><span class="t">قوائمي</span><span class="btn text"><i data-i="sort"></i>ترتيب</span></div>
+    <div class="group">
+      <div class="row"><i data-i="lists"></i><div class="txt"><div class="h reg">المنزل</div><div class="s">الوسم: منزل</div></div><span class="cnt">3</span></div>
+      <div class="row"><i data-i="lists"></i><div class="txt"><div class="h reg">السفر</div><div class="s">الوسم: سفر</div></div><span class="cnt">1</span></div>
+    </div>
+    <!-- Tags = the Windows tags field; up to 10 per reminder. -->
+    <div class="gh"><span class="t">الوسوم</span></div>
+    <div class="chips wrap">
+      <span class="chip"><i data-i="tag"></i>عائلة <span class="n">4</span></span>
+      <span class="chip"><i data-i="tag"></i>فواتير <span class="n">3</span></span>
+      <span class="chip"><i data-i="tag"></i>صحة <span class="n">2</span></span>
+      <span class="chip"><i data-i="tag"></i>منزل <span class="n">3</span></span>
+      <span class="chip"><i data-i="tag"></i>سفر <span class="n">1</span></span>
+    </div>
+    <!-- Saved filters are phone settings; each opens the Home list filtered. -->
+    <div class="gh"><span class="t">الفلاتر المحفوظة</span></div>
+    <div class="group">
+      <div class="row"><i data-i="filter"></i><div class="txt"><div class="h reg">أولوية عالية</div></div><span class="cnt">3</span></div>
+      <div class="row"><i data-i="filter"></i><div class="txt"><div class="h reg">المتأخرة</div></div><span class="cnt">1</span></div>
+      <div class="row"><i data-i="filter"></i><div class="txt"><div class="h reg">هذا الأسبوع</div></div><span class="cnt">7</span></div>
+      <div class="row"><i data-i="filter"></i><div class="txt"><div class="h reg">بلا وسم</div></div><span class="cnt">2</span></div>
+      <div class="row"><i data-i="add" style="color:var(--primary)"></i><div class="txt"><div class="h pri">فلتر جديد…</div></div></div>
+    </div>
+    <div class="gh"><span class="t">المنجزة والسلة</span></div>
+    <div class="group">
+      <div class="row"><i data-i="done"></i><div class="txt"><div class="h reg">المنجزة</div></div><span class="cnt">130</span></div>
+      <div class="row"><i data-i="trash"></i><div class="txt"><div class="h reg">سلة المحذوفات</div></div><span class="cnt">3</span></div>
+    </div>
+  </div>
+  <div class="fab center"><i data-i="add"></i>قائمة جديدة</div>
+  <div class="gesturebar"></div>
+</div></body></html>

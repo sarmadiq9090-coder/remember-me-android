@@ -22,19 +22,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.ExpandLess
-import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -152,6 +139,7 @@ fun HomeScreen(
     onDismissBackup: () -> Unit,
     snack: SnackRequest? = null,
     onSnackShown: () -> Unit = {},
+    newerData: Boolean = false,
 ) {
     val zone = ZoneId.systemDefault()
     var searching by rememberSaveable { mutableStateOf(false) }
@@ -191,7 +179,7 @@ fun HomeScreen(
                 val focus = remember { FocusRequester() }
                 LaunchedEffect(Unit) { focus.requestFocus() }
                 TopAppBar(
-                    navigationIcon = { TooltipIconButton(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.close_search), { searching = false; query = "" }) },
+                    navigationIcon = { TooltipIconButton(Ms.ArrowBack, stringResource(R.string.close_search), { searching = false; query = "" }) },
                     title = {
                         TextField(
                             value = query, onValueChange = { query = it.take(200) }, singleLine = true,
@@ -205,7 +193,7 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth().padding(end = Dimens.s).focusRequester(focus),
                         )
                     },
-                    actions = { if (query.isNotEmpty()) TooltipIconButton(Icons.Rounded.Close, stringResource(R.string.clear), { query = "" }) },
+                    actions = { if (query.isNotEmpty()) TooltipIconButton(Ms.Close, stringResource(R.string.clear), { query = "" }) },
                 )
             } else {
                 TopAppBar(
@@ -217,8 +205,8 @@ fun HomeScreen(
                         }
                     },
                     actions = {
-                        TooltipIconButton(Icons.Rounded.Search, stringResource(R.string.search), { searching = true })
-                        TooltipIconButton(Icons.Rounded.Settings, stringResource(R.string.settings), onSettings)
+                        TooltipIconButton(Ms.Search, stringResource(R.string.search), { searching = true })
+                        TooltipIconButton(Ms.Settings, stringResource(R.string.settings), onSettings)
                     },
                 )
             }
@@ -227,7 +215,7 @@ fun HomeScreen(
             if (!searching) ExtendedFloatingActionButton(
                 onClick = onNew, expanded = expanded,
                 // Collapsed to an icon while scrolling down: then the icon carries the label for TalkBack.
-                icon = { Icon(Icons.Rounded.Add, if (expanded) null else stringResource(R.string.new_reminder)) },
+                icon = { Icon(Ms.Add, if (expanded) null else stringResource(R.string.new_reminder)) },
                 text = { Text(stringResource(R.string.new_reminder)) },
                 containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary,
             )
@@ -237,7 +225,9 @@ fun HomeScreen(
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             if (!searching) {
-                if (!health.essentialOk) StatusBanner(Icons.Rounded.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
+                // Data from a newer version is kept untouched; say so before anything else (D-079 A18).
+                if (newerData) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_newer), stringResource(R.string.fix), true, onHealth)
+                else if (!health.essentialOk) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
                 else if (backupNudge) StatusBanner(null, stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
             }
             val rowActions = RowActions(
@@ -281,7 +271,7 @@ fun HomeScreen(
                         val state = stringResource(if (showDone) R.string.section_done_hide else R.string.section_done_show)
                         Box(Modifier.semantics { stateDescription = state }) {
                             SectionHeader(stringResource(R.string.tab_done), done.size, onClick = { showDone = !showDone }) {
-                                Icon(if (showDone) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(if (showDone) Ms.ExpandLess else Ms.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -312,7 +302,7 @@ private fun EmptyAll() {
     Column(Modifier.fillMaxSize().padding(horizontal = Dimens.xxl).padding(bottom = Dimens.fabClearance),
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.size(120.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(Icons.Rounded.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(56.dp))
+            Icon(Ms.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(56.dp))
         }
         Spacer(Modifier.height(Dimens.xl))
         Text(stringResource(R.string.empty_all_title), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
@@ -360,7 +350,7 @@ fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                if (done) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, null,
+                if (done) Ms.CheckCircle else Ms.RadioButtonUnchecked, null,
                 tint = if (done) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, modifier = Modifier.size(26.dp),
             )
         }
@@ -381,7 +371,7 @@ fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions) {
             if (!done) Box(Modifier.padding(top = 2.dp)) { TaskMeta(t) }
         }
         if (done) Box {
-            TooltipIconButton(Icons.Rounded.MoreVert, stringResource(R.string.more_options), { menu = true })
+            TooltipIconButton(Ms.MoreVert, stringResource(R.string.more_options), { menu = true })
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 if (t.sourceId == null) DropdownMenuItem(text = { Text(stringResource(R.string.reopen)) }, onClick = { menu = false; a.onReopen(t) })
                 DropdownMenuItem(text = { Text(stringResource(R.string.delete)) }, onClick = { menu = false; a.onTrash(t) })

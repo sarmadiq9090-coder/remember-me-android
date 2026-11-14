@@ -10,6 +10,8 @@ import com.fastkiwi.rememberme.MainActivity
 import com.fastkiwi.rememberme.Repo
 import com.fastkiwi.rememberme.core.Planner
 import com.fastkiwi.rememberme.core.Tasks
+import com.fastkiwi.rememberme.core.WakeKind
+import com.fastkiwi.rememberme.data.ScheduleLog
 import com.fastkiwi.rememberme.widget.ReminderWidget
 import java.time.Instant
 import java.util.concurrent.Executors
@@ -33,11 +35,27 @@ object Engine {
     fun canExact(context: Context): Boolean =
         Build.VERSION.SDK_INT < 31 || context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
 
-    /** [at]: the moment to plan for (tests); by default the time when the run gets the lock, not when it asked for it. */
-    fun sync(context: Context, at: Instant? = null) = synchronized(lock) {
+    /** The alarm API chosen for a kind of wake-up (D-020): the strongest one only where a reminder is due. */
+    enum class Api { CLOCK, EXACT, INEXACT, NONE }
+
+    fun apiFor(kind: WakeKind?, exactAllowed: Boolean): Api = when {
+        kind == null -> Api.NONE
+        !exactAllowed -> Api.INEXACT
+        kind == WakeKind.DUE -> Api.CLOCK
+        else -> Api.EXACT
+    }
+
+    /**
+     * [at]: the moment to plan for (tests); by default the time when the run gets the lock, not when it
+     * asked for it. [reason] goes to the local schedule log (no reminder content).
+     */
+    fun sync(context: Context, at: Instant? = null, reason: String = "change") = synchronized(lock) {
         val now = at ?: Instant.now()
         val app = context.applicationContext
         val prefs = Repo.prefs(app)
+        // Woken by our own alarm: how late after the armed moment (measured, for Health and the report).
+        val armed = prefs.armedAt
+        val lateMs = if (reason == "alarm" && armed > 0 && now.toEpochMilli() >= armed) now.toEpochMilli() - armed else -1L
         // The 30-day trash purge, done quietly on the way.
         val store = Repo.store(app)
         if (store.state.value.tasks.any { it.deletedAt != null && it.deletedAt.isBefore(now.minusMillis(Tasks.TRASH_DAYS * 86_400_000L)) }) {
@@ -51,63 +69,131 @@ object Engine {
         val dueIds = plan.due.map { it.id }.toSet()
         // Newest first among the shown ones, the rest are counted in the summary and listed in the app.
         val visible = plan.due.takeLast(Notifier.MAX_SHOWN)
-        val sound = Repo.sound(state)
+        // Rung already before the unlock (F-026): shown now, quietly; the locked placeholder goes.
+        val rungLocked = runCatching { DirectBoot.rungWhileLocked(app) }.getOrDefault(emptySet())
+        if (rungLocked.isNotEmpty()) { DirectBoot.clearRung(app); DirectBoot.cancelLocked(app) }
+        // A swiped reminder comes back quietly only while pinned, at most 5 times per occurrence (F-021).
+        val reposts = prefs.repostLog
         for (t in visible) {
-            val loud = t.id in plan.loud
-            if (loud || t.id !in shown) Notifier.postDue(app, t, loud, sound, now)
+            val loud = t.id in plan.loud && (t.dueAt?.toEpochMilli() ?: 0) !in rungLocked
+            val key = repostKey(t)
+            val swiped = reposts[key]?.toIntOrNull()
+            val back = swiped == null || (Notifier.decide(app, t).pinned && swiped <= com.fastkiwi.rememberme.core.AlertPolicy.MAX_REPOSTS)
+            if (loud || (t.id !in shown && back)) {
+                Notifier.postDue(app, t, loud, now)
+                if (!loud && swiped != null) runCatching { com.fastkiwi.rememberme.data.AlertLog(app).add(com.fastkiwi.rememberme.data.AlertLog.Event.REPOSTED, "", code = "$swiped") }
+            }
         }
+        val dueKeys = plan.due.map(::repostKey).toSet()
+        if (reposts.keys.any { it !in dueKeys }) prefs.repostLog = reposts.filterKeys { it in dueKeys }
         for (id in shown) if (id !in dueIds || visible.none { it.id == id }) Notifier.cancelDue(app, id)
         Notifier.postSummary(app, plan.due.size)
         for (t in plan.notices) Notifier.postNotice(app, t, now)
         // A notice whose task is done, deleted or due is no longer useful.
         state.tasks.filter { t ->
-            !t.active || t.id in dueIds || Tasks.noticeAt(t)?.isAfter(now) != false
+            !t.active || t.id in dueIds || Tasks.noticeKey(t, now) == null
         }.forEach { runCatching { Notifier.cancelNotice(app, it.id) } }
 
         prefs.alertLog = plan.alertLog
         prefs.noticeLog = plan.noticeLog
-        arm(app, plan.wakeAt)
+        // Two slots (D-079): A for due times, B for early notices and "sound again"; B never delays A.
+        val apiA = arm(app, SLOT_A, plan.dueAt, if (plan.dueAt != null) WakeKind.DUE else null)
+        val apiB = arm(app, SLOT_B, plan.otherAt, plan.otherKind)
+        armHousekeeping(app, now)
+        runCatching { Summary.arm(app, now) }
+        val verified = isArmed(app, SLOT_A, plan.dueAt, apiA) && isArmed(app, SLOT_B, plan.otherAt, apiB)
+        runCatching {
+            ScheduleLog(app).add(ScheduleLog.Entry(now.toEpochMilli(), reason, plan.dueAt?.toEpochMilli() ?: 0,
+                if (plan.dueAt != null) WakeKind.DUE.name else "", apiA.name, plan.due.size, plan.scheduled, verified,
+                plan.otherAt?.toEpochMilli() ?: 0, apiB.name, lateMs))
+        }
+        // Only times and the style, for a restart before the unlock (F-026).
+        runCatching {
+            DirectBoot.remember(app, state.tasks.filter { it.active && it.dueAt != null && it.dueAt.isAfter(now) }
+                .map { it.dueAt!!.toEpochMilli() to (com.fastkiwi.rememberme.core.AlertPolicy.style(it) == com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM) },
+                prefs.language)
+        }
         lastRun = now
         runCatching { ReminderWidget.refresh(app) }
+        plan
     }
 
     /** Runs [sync] off the main thread; for receivers it keeps the broadcast alive until done. */
-    fun syncAsync(context: Context, pending: BroadcastReceiver.PendingResult? = null) {
+    fun syncAsync(context: Context, pending: BroadcastReceiver.PendingResult? = null, reason: String = "change") {
         val app = context.applicationContext
         worker.execute {
-            try { sync(app) } finally { pending?.finish() }
+            try { sync(app, reason = reason) } finally { pending?.finish() }
         }
     }
+
+    /**
+     * Whether the system holds a slot's alarm: its PendingIntent exists, and for an alarm clock the
+     * system's next alarm clock is at or before ours.
+     */
+    fun isArmed(context: Context, slot: Int, at: Instant?, api: Api): Boolean {
+        if (at == null || api == Api.NONE) return true
+        PendingIntent.getBroadcast(context, slot, intent(context, slot), PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE) ?: return false
+        if (api != Api.CLOCK) return true
+        val next = context.getSystemService(AlarmManager::class.java).nextAlarmClock ?: return false
+        return next.triggerTime <= at.toEpochMilli()
+    }
+
+    /** The occurrence a swipe count belongs to. */
+    fun repostKey(t: com.fastkiwi.rememberme.core.Task) = t.id + "|" + (t.dueAt?.toEpochMilli() ?: 0)
 
     /** Waits until queued background runs have finished (tests). */
     fun drain() { worker.submit {}.get() }
 
-    private fun operation(context: Context): PendingIntent = PendingIntent.getBroadcast(
-        context, 100, Intent(context, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE),
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
+    /** Slot A (due times), slot B (notices, "sound again"), and the midnight housekeeping window. */
+    const val SLOT_A = 100
+    const val SLOT_B = 103
+    const val HOUSEKEEPING = 102
 
-    private fun arm(context: Context, at: Instant?) {
+    private fun intent(context: Context, slot: Int) = Intent(context, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE)
+        .setData(android.net.Uri.parse("rememberme://slot/$slot"))
+
+    private fun operation(context: Context, slot: Int): PendingIntent =
+        PendingIntent.getBroadcast(context, slot, intent(context, slot), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    /** Sets (or clears) one slot's alarm with the API for its kind of moment. Re-arming replaces it, never adds. */
+    private fun arm(context: Context, slot: Int, at: Instant?, kind: WakeKind?): Api {
         val am = context.getSystemService(AlarmManager::class.java)
-        val op = operation(context)
+        val op = operation(context, slot)
         if (at == null) {
             am.cancel(op)
-            Repo.prefs(context).armedAt = 0
-            return
+            op.cancel()
+            if (slot == SLOT_A) Repo.prefs(context).armedAt = 0
+            return Api.NONE
         }
         exact = canExact(context)
+        var api = apiFor(kind, exact)
+        val t = at.toEpochMilli()
         try {
-            if (exact) {
-                // An alarm clock is exempt from Doze and app standby; the user sees it as the next alarm.
-                val show = PendingIntent.getActivity(context, 101, Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-                am.setAlarmClock(AlarmManager.AlarmClockInfo(at.toEpochMilli(), show), op)
-            } else {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
+            when (api) {
+                // An alarm clock is exempt from Doze and app standby; Android shows it as the next alarm.
+                Api.CLOCK -> {
+                    val show = PendingIntent.getActivity(context, 101, Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                    am.setAlarmClock(AlarmManager.AlarmClockInfo(t, show), op)
+                }
+                // Exact and allowed in Doze, without the alarm icon: early notices and "sound again".
+                Api.EXACT -> am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, op)
+                else -> am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, op)
             }
         } catch (_: SecurityException) {
             exact = false
-            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
+            api = Api.INEXACT
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, op)
         }
-        Repo.prefs(context).armedAt = at.toEpochMilli()
+        if (slot == SLOT_A) Repo.prefs(context).armedAt = t
+        return api
+    }
+
+    /** The trash purge and the widget's day change run near local midnight, without waking the phone. */
+    private fun armHousekeeping(context: Context, now: Instant) {
+        val zone = Repo.zone()
+        val midnight = now.atZone(zone).toLocalDate().plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        runCatching {
+            context.getSystemService(AlarmManager::class.java).setWindow(AlarmManager.RTC, midnight, 3_600_000L, operation(context, HOUSEKEEPING))
+        }
     }
 }

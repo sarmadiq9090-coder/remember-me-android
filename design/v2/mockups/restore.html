@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Restore summary</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .dialog { top: 200px; padding: 24px 0 12px; }
+  .dialog .dt { padding: 0 24px 12px; }
+  .dbody { padding: 0 24px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 22px; }
+  .ln { display: flex; gap: 10px; align-items: flex-start; }
+  .ln i { width: 20px; height: 20px; margin-top: 1px; flex: none; }
+  .ln .m { color: var(--on-surface-variant); font-size: 13px; line-height: 20px; }
+  .cnts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cnts > div { background: var(--sc-highest); border-radius: 12px; padding: 8px 12px; }
+  .cnts b { display: block; font-size: 22px; line-height: 30px; font-weight: 500; }
+  .cnts span { font-size: 13px; line-height: 18px; color: var(--on-surface-variant); }
+  .dialog { --icon-cut: var(--sc-high); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar"><span class="iconbtn on-surface"><i data-i="back"></i></span><div class="title t-title-l">الإعدادات</div><span class="iconbtn"><i data-i="search"></i></span></div>
+  <div class="group-h">بياناتك</div>
+  <div class="group">
+    <div class="row"><i data-i="save"></i><div class="txt"><div class="h">حفظ نسخة</div><div class="s">ملف zip تختار مكانه. الملف غير مشفّر.</div></div></div>
+    <div class="row"><i data-i="restore"></i><div class="txt"><div class="h">استعادة من ملف</div></div></div>
+    <div class="row"><i data-i="history"></i><div class="txt"><div class="h">نسخ الأمان</div></div></div>
+    <div class="row"><i data-i="doc"></i><div class="txt"><div class="h">تقرير التوافق</div></div></div>
+    <div class="row"><i data-i="trash"></i><div class="txt"><div class="h">سلة المحذوفات</div></div><span class="val num">3</span></div>
+  </div>
+  <div class="grow"></div>
+  <div class="gesturebar"></div>
+  <div class="scrim"></div>
+  <!-- Nothing is replaced before this dialog: the file is fully decoded and checked first. -->
+  <div class="dialog">
+    <div class="dt">استعادة هذه النسخة؟</div>
+    <div class="dbody">
+      <div class="ln"><i data-i="doc"></i><div><div>من ذكرني لويندوز</div><div class="m num">10 نوفمبر 2026، 8:30 م</div></div></div>
+      <div class="ln"><i data-i="okfill" style="color:var(--primary)"></i><div>تم التحقق من سلامة الملف</div></div>
+      <div class="cnts num">
+        <div><b>24</b><span>نشطة</span></div><div><b>9</b><span>متكررة</span></div>
+        <div><b>130</b><span>منجزة</span></div><div><b>3</b><span>في السلة</span></div>
+      </div>
+      <div class="ln"><i data-i="notes"></i><div>الملاحظات: كلها محفوظة</div></div>
+      <div class="ln"><i data-i="warning" style="color:var(--error)"></i><div>مرفقان لن يُستعادا</div></div>
+      <div class="ln"><i data-i="info" style="color:var(--on-surface-variant)"></i><div class="num">سيحل هذا محل تذكيراتك الحالية (31). نحفظ نسخة أمان قبل الاستبدال.</div></div>
+    </div>
+    <div class="acts"><span class="btn text">إلغاء</span><span class="btn filled">استعادة</span></div>
+  </div>
+</div></body></html>

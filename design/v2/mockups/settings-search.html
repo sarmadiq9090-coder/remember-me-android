@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Settings search</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .search { color: var(--on-surface); }
+  .search .tx { flex: 1; font-size: 16px; line-height: 24px; }
+  .search i { color: var(--on-surface-variant); }
+  .cnt { font-size: 13px; line-height: 20px; font-weight: 500; color: var(--on-surface-variant); padding: 8px 32px 8px; }
+  .row .h b { font-weight: 700; color: var(--primary); }
+  .row .s b { font-weight: 700; color: var(--on-surface); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Search mode: the top bar becomes a search field. Results match titles, supporting text and synonyms. -->
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="search"><span class="tx">صوت<span class="caret"></span></span><span class="iconbtn" style="margin-inline-end:-12px"><i data-i="close"></i></span></div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="cnt num">6 نتائج</div>
+    <div class="group">
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="h">نغمة التذكير الافتراضية</div><div class="s">في: التنبيه</div></div></div>
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="h">نغمة التذكيرات المهمة</div><div class="s">في: التنبيه</div></div></div>
+      <div class="row"><i data-i="again"></i><div class="txt"><div class="h">إعادة التنبيه بال<b>صوت</b></div><div class="s">في: التنبيه</div></div></div>
+      <div class="row"><i data-i="volume"></i><div class="txt"><div class="h"><b>صوت</b> قناة التذكيرات</div><div class="s">في: صحة التذكيرات</div></div></div>
+      <div class="row"><i data-i="vibrate"></i><div class="txt"><div class="h">الهاتف صامت</div><div class="s">في: صحة التذكيرات</div></div></div>
+      <div class="row"><i data-i="test"></i><div class="txt"><div class="h">اختبار التنبيه: ال<b>صوت</b></div><div class="s">في: صحة التذكيرات</div></div></div>
+    </div>
+  </div>
+  <div class="ime">
+    <div class="kr"><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span></div>
+    <div class="kr"><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span></div>
+    <div class="kr"><span class="k m"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k m"></span></div>
+    <div class="kr"><span class="k m"></span><span class="k"></span><span class="k w"></span><span class="k"></span><span class="k m"></span></div>
+  </div>
+  <div class="gesturebar" style="background:var(--sc-highest)"></div>
+</div></body></html>

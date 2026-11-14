@@ -66,7 +66,7 @@ class EngineTest {
     private fun save(input: TaskInput, now: Instant = Instant.now()) =
         Repo.store(app).change { Tasks.save(it, input, now, zone).first }.tasks.last()
     private fun shown() = shadowOf(nm).allNotifications.size
-    private fun dueTags() = nm.activeNotifications.mapNotNull { it.tag }.filter { it.startsWith(Notifier.TAG_DUE) }
+    private fun dueTags() = nm.activeNotifications.mapNotNull { Notifier.dueTask(it) }
 
     @Test fun armsAnAlarmClockForTheNextReminder() {
         val due = Instant.now().plusSeconds(3600)
@@ -93,17 +93,18 @@ class EngineTest {
         val now = Instant.now()
         val t = save(TaskInput(title = "دواء الضغط", dueAt = now.minusSeconds(30)), now.minusSeconds(60))
         Engine.sync(app, now)
-        val n = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
-        assertEquals(Notifier.CH_ALERT, n.channelId)
+        val n = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
+        assertEquals(Notifier.CH_NORMAL, n.channelId)
         assertTrue("Ongoing", n.flags and android.app.Notification.FLAG_ONGOING_EVENT != 0)
-        assertEquals(2, n.actions.size)
+        assertEquals(3, n.actions.size)
+        assertEquals("أجّل حتى…", n.actions[2].title.toString())
         assertEquals("تم", n.actions[0].title.toString())
         assertEquals("أجّل 10 دقائق", n.actions[1].title.toString())
         assertNotNull(n.deleteIntent)
         // Swiped away: it comes back on the next run, quietly.
-        nm.cancel(Notifier.TAG_DUE + t.id, 0)
+        nm.cancel(Notifier.dueId(t.id))
         ActionReceiver.handle(app, ActionReceiver.DISMISSED, t.id, t.dueAt, now.plusSeconds(5))
-        val again = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
+        val again = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
         assertEquals(Notifier.CH_QUIET, again.channelId)
         // Done from the notification: gone, and the task is completed.
         ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusSeconds(10))
@@ -179,9 +180,12 @@ class EngineTest {
         val now = Instant.now()
         val t = save(TaskInput(title = "secret", dueAt = now.minusSeconds(5)), now.minusSeconds(60))
         Engine.sync(app, now)
-        val n = nm.activeNotifications.single { it.tag == Notifier.TAG_DUE + t.id }.notification
+        val n = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
         assertEquals(android.app.Notification.VISIBILITY_PRIVATE, n.visibility)
-        assertEquals("تذكير", n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+        assertEquals("لديك تذكير", n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+        // F-022: the hidden version keeps «تم» and «أجّل», and shows no title.
+        assertEquals("تم", n.publicVersion.actions[0].title.toString())
+        assertTrue(listOf(android.app.Notification.EXTRA_TITLE, android.app.Notification.EXTRA_TEXT).none { n.publicVersion.extras.getCharSequence(it)?.contains("secret") == true })
     }
 
     @Test fun arabicTextUsesWesternDigits() {
@@ -231,11 +235,11 @@ class EngineTest {
             Thread.sleep(1000)
             // ...while the alarm's run, at the due time, announces it.
             Engine.sync(app)
-            assertTrue(dueTags().contains(Notifier.TAG_DUE + t.id))
+            assertTrue(dueTags().contains(t.id))
         }
         waiting.join(10_000)
         // The waiting run must not take it back (and so sound it a second time on the next run).
-        assertTrue("still shown", dueTags().contains(Notifier.TAG_DUE + t.id))
+        assertTrue("still shown", dueTags().contains(t.id))
         assertEquals(Codec.iso(due), Repo.prefs(app).alertLog[t.id]?.substringBeforeLast('|'))
     }
 
@@ -269,6 +273,6 @@ class EngineTest {
 
     @Test fun theReminderChannelDoesNotOverrideLockScreenChoice() {
         // -1000 is NotificationManager.VISIBILITY_NO_OVERRIDE (a hidden constant).
-        assertEquals(-1000, nm.getNotificationChannel(Notifier.CH_ALERT).lockscreenVisibility)
+        assertEquals(-1000, nm.getNotificationChannel(Notifier.CH_NORMAL).lockscreenVisibility)
     }
 }

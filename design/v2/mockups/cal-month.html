@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Calendar: month</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .viewseg { margin: 0 16px 4px; flex: none; }
+  .viewseg > div { font-size: 14px; padding: 4px 2px; gap: 4px; }
+  .mg { display: grid; grid-template-columns: repeat(7, 1fr); margin: 0 8px; flex: none; }
+  .wk { text-align: center; font-size: 13px; line-height: 28px; font-weight: 500; color: var(--on-surface-variant); }
+  .c { min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; position: relative; }
+  .c .g { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .c .h { font-size: 11px; line-height: 13px; color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
+  .c .n { position: absolute; top: 0; inset-inline-end: 2px; min-width: 18px; height: 18px; border-radius: 9px; padding: 0 4px; background: var(--secondary-container); color: var(--on-secondary-container);
+    font-size: 11px; line-height: 18px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
+  .c.out .g, .c.out .h { color: var(--on-surface-variant); opacity: .6; }
+  .c.today .g { background: var(--primary); color: var(--on-primary); font-weight: 700; }
+  .c.sel { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 12px; }
+  .dh { font-size: 15px; line-height: 22px; font-weight: 700; padding: 12px 32px 8px; }
+  .rem { min-height: 64px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <div class="title t-title-l" style="padding-inline-start:16px">نوفمبر 2026</div>
+    <span class="btn text">اليوم</span>
+    <!-- «طريقة العرض» (active: a calendar view is on). Menu: القائمة، الأجندة، اليوم، الأسبوع، الشهر -->
+    <span class="iconbtn" style="background:var(--secondary-container);color:var(--on-secondary-container)"><i data-i="calendar"></i></span>
+    <span class="iconbtn"><i data-i="settings"></i></span>
+  </div>
+  <!-- A view of Home, not a destination. System Back from a calendar view returns to the list view; the view menu lists القائمة، الأجندة، اليوم، الأسبوع، الشهر. -->
+  <div class="seg viewseg"><div>أجندة</div><div>يوم</div><div>أسبوع</div><div class="sel"><i data-i="check"></i>شهر</div></div>
+  <!-- Narrow weekday letters; Saturday first (week-start setting), at the right in RTL. Each cell: Gregorian day,
+       Hijri day under it (optional setting), a numeric count pill when the day has reminders (never a dot). -->
+  <div class="mg" id="mg">
+    <div class="wk">س</div><div class="wk">ح</div><div class="wk">ن</div><div class="wk">ث</div><div class="wk">ر</div><div class="wk">خ</div><div class="wk">ج</div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="dh">السبت 14 نوفمبر، 5 تذكيرات</div>
+    <div class="group">
+      <div class="rem late"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div>
+          <div class="ttl">دواء الضغط</div></div></div>
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div>
+          <div class="ttl">اجتماع الفريق</div></div></div>
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">7:00 <span class="ap">م</span></span><span class="tag snz"><i data-i="snooze"></i>مؤجّل</span></div>
+          <div class="ttl">شراء الخبز والحليب</div></div></div>
+    </div>
+  </div>
+  <div class="fab center"><i data-i="add"></i>تذكير جديد</div>
+  <div class="gesturebar"></div>
+</div>
+<script>
+  // Nov 2026: 1 Nov is a Sunday; week starts Saturday -> first cell is Sat 31 Oct. 11 Nov = 1 Jumada al-Akhirah 1448.
+  const counts = { 14: 5, 15: 2, 16: 2, 17: 1, 18: 1, 19: 2, 20: 1, 21: 2, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1 };
+  const cells = [];
+  cells.push({ g: 31, h: 20, out: true });
+  for (let d = 1; d <= 30; d++) cells.push({ g: d, h: d < 11 ? 20 + d : d - 10, n: counts[d] });
+  for (let d = 1; cells.length < 42; d++) { let h = 20 + d; if (h > 30) h -= 30; cells.push({ g: d, h, out: true, n: 1 }); }
+  const mg = document.getElementById('mg');
+  cells.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'c' + (c.out ? ' out' : '') + (!c.out && c.g === 14 ? ' today sel' : '');
+    el.innerHTML = `<span class="g">${c.g}</span><span class="h">${c.h}</span>` + (c.n ? `<span class="n">${c.n}</span>` : '');
+    mg.appendChild(el);
+  });
+</script></body></html>

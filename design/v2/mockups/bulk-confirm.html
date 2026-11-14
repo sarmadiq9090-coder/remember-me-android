@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Bulk confirm</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .ctx { background: var(--sc-high); }
+  .statusbar.ctx2 { background: var(--sc-high); }
+  .dialog .body { padding: 0 24px; font-size: 14px; line-height: 24px; color: var(--on-surface-variant); }
+  .dialog .btn.text.danger { color: var(--error); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar ctx2"></div>
+  <div class="topbar ctx">
+    <span class="iconbtn on-surface"><i data-i="close"></i></span>
+    <div class="title t-title-l num">12 محددة</div>
+    <span class="iconbtn"><i data-i="selectall"></i></span>
+    <span class="iconbtn"><i data-i="more"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="sec" style="padding-top:12px"><i data-i="warning" class="s20 err"></i><span class="t err">المتأخرة</span><span class="n num">1</span></div>
+    <div class="group">
+      <div class="rem late selected"><span class="selmark on"><span><i data-i="check"></i></span></span>
+        <div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div>
+          <div class="ttl">دواء الضغط</div></div></div>
+    </div>
+    <div class="sec"><span class="t">اليوم</span><span class="n num">3</span></div>
+    <div class="group">
+      <div class="rem selected"><span class="selmark on"><span><i data-i="check"></i></span></span>
+        <div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div><div class="ttl">اجتماع الفريق</div></div></div>
+      <div class="rem selected"><span class="selmark on"><span><i data-i="check"></i></span></span>
+        <div class="body"><div class="tl"><span class="time">7:00 <span class="ap">م</span></span></div><div class="ttl">شراء الخبز والحليب</div></div></div>
+      <div class="rem selected"><span class="selmark on"><span><i data-i="check"></i></span></span>
+        <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">م</span></span></div><div class="ttl">مراجعة درس الرياضيات</div></div></div>
+    </div>
+    <div class="sec"><span class="t">القادمة</span><span class="n num">8</span></div>
+    <div class="group">
+      <div class="rem selected"><span class="selmark on"><span><i data-i="check"></i></span></span>
+        <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">ص</span></span><span class="when">غدًا</span></div><div class="ttl">دفع الإيجار</div></div></div>
+    </div>
+  </div>
+  <div class="actbar">
+    <div class="a"><span class="ic"><i data-i="trash"></i></span>حذف</div>
+    <div class="a"><span class="ic"><i data-i="flag"></i></span>الأهمية</div>
+    <div class="a"><span class="ic"><i data-i="move"></i></span>نقل</div>
+    <div class="a"><span class="ic"><i data-i="snooze"></i></span>أجّل</div>
+    <div class="a p"><span class="ic"><i data-i="check"></i></span>تم</div>
+  </div>
+  <div class="gesturebar nav"></div>
+  <!-- 10 or more selected: AlertDialog before a bulk trash. Dismiss first, confirm last (error text). -->
+  <div class="scrim"></div>
+  <div class="dialog" style="top:300px">
+    <div class="dt num">نقل 12 تذكيرًا إلى السلة؟</div>
+    <div class="body num">تبقى في السلة 30 يومًا ويمكنك استعادتها. 4 منها متكررة: تتوقف سلاسلها.</div>
+    <div class="acts"><span class="btn text">إلغاء</span><span class="btn text danger">نقل إلى السلة</span></div>
+  </div>
+</div></body></html>

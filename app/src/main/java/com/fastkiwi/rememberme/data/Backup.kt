@@ -34,7 +34,13 @@ object Backup {
         enum class Reason { NOT_A_BACKUP, DAMAGED, TOO_LARGE, INVALID }
     }
 
-    data class Imported(val state: AppState, val verified: Boolean, val droppedAttachments: Int)
+    data class Imported(val state: AppState, val verified: Boolean, val droppedAttachments: Int, val createdAt: java.time.Instant? = null) {
+        /** What a restore would bring, shown to the user before anything is replaced (PRD P0.5). */
+        val active get() = state.tasks.count { it.active }
+        val done get() = state.tasks.count { it.completedAt != null && it.deletedAt == null }
+        val trashed get() = state.tasks.count { it.deletedAt != null }
+        val notes get() = (state.rest["notes"] as? JsonArray)?.size ?: 0
+    }
 
     fun folderName(at: Instant) = "RememberMe-backup-" + Codec.iso(at).replace(Regex("[:.]"), "-")
 
@@ -110,6 +116,7 @@ object Backup {
             data = bytes
         }
         var verified = false
+        var createdAt: Instant? = null
         if (info != null) {
             val obj = runCatching { Codec.json.parseToJsonElement(info.toString(Charsets.UTF_8)) as JsonObject }.getOrNull()
                 ?: throw ImportException(ImportException.Reason.DAMAGED)
@@ -118,12 +125,13 @@ object Backup {
             if (algo != "sha256" || hash == null) throw ImportException(ImportException.Reason.DAMAGED)
             if (!hash.equals(sha256(data!!), ignoreCase = true)) throw ImportException(ImportException.Reason.DAMAGED)
             verified = true
+            createdAt = (obj["createdAt"] as? JsonPrimitive)?.content?.let { runCatching { Instant.parse(it) }.getOrNull() }
         }
         var text = data!!.toString(Charsets.UTF_8)
         if (text.isNotEmpty() && text[0] == 0xFEFF.toChar()) text = text.substring(1)
         val state = try { Codec.decode(text, now) } catch (_: DataFormatException) { throw ImportException(ImportException.Reason.INVALID) }
         val (clean, dropped) = stripAttachments(state)
-        return Imported(clean, verified, dropped)
+        return Imported(clean, verified, dropped, createdAt)
     }
 
     /** Removes the attachment list and every reference to it (tasks and notes). Returns how many were listed. */

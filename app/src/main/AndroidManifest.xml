@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Plays the reminder's tone for at most 2 minutes, then stops by itself (FEATURES.md F-016).
+         A short service needs no type-specific permission. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".RememberMeApp"
@@ -52,8 +55,17 @@
             android:theme="@style/Theme.RememberMe.Alert"
             android:turnScreenOn="true" />
 
-        <receiver android:name=".alarm.AlarmReceiver" android:exported="false" />
+        <receiver android:name=".alarm.AlarmReceiver" android:directBootAware="true" android:exported="false" />
         <receiver android:name=".alarm.ActionReceiver" android:exported="false" />
+        <!-- Before the first unlock after a restart (F-026): reads only due times, never content. -->
+        <receiver
+            android:name=".alarm.LockedReceiver"
+            android:directBootAware="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".alarm.SystemReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -73,6 +85,11 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
         </receiver>
+
+        <service
+            android:name=".alarm.RingService"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
 
         <!-- Keeps the per-app language on Android 12 and older (AppCompat). -->
         <service

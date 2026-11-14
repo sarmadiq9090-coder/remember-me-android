@@ -35,7 +35,12 @@ import com.fastkiwi.rememberme.ui.SnackRequest
 import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.ui.AboutScreen
 import com.fastkiwi.rememberme.ui.AppTheme
-import com.fastkiwi.rememberme.ui.BackgroundScreen
+import com.fastkiwi.rememberme.ui.HealthScreen
+import com.fastkiwi.rememberme.ui.AlarmTestScreen
+import com.fastkiwi.rememberme.ui.ScheduleStatus
+import com.fastkiwi.rememberme.ui.CompatReport
+import com.fastkiwi.rememberme.alarm.TestAlarm
+import com.fastkiwi.rememberme.data.ScheduleLog
 import com.fastkiwi.rememberme.ui.EditScreen
 import com.fastkiwi.rememberme.ui.Health
 import com.fastkiwi.rememberme.ui.HomeScreen
@@ -63,6 +68,7 @@ sealed class Screen {
     data object Background : Screen()
     data object Trash : Screen()
     data object About : Screen()
+    data object AlarmTest : Screen()
 
     /** For the saved instance state, so a rotation or a language change keeps the open screen. */
     fun code(): String = when (this) {
@@ -72,6 +78,7 @@ sealed class Screen {
         Background -> "background"
         Trash -> "trash"
         About -> "about"
+        AlarmTest -> "alarmtest"
     }
 
     companion object {
@@ -82,6 +89,7 @@ sealed class Screen {
             code == "background" -> Background
             code == "trash" -> Trash
             code == "about" -> About
+            code == "alarmtest" -> AlarmTest
             else -> null
         }
     }
@@ -96,6 +104,10 @@ class MainActivity : AppCompatActivity() {
     private var homeSnack by mutableStateOf<SnackRequest?>(null)
     /** Titles of every-N-hours reminders to warn about before a Windows-format export (D-011), or null. */
     private var exportWarning by mutableStateOf<List<String>?>(null)
+    /** A checked backup waiting for the user's confirmation, or null. */
+    private var pendingImport by mutableStateOf<Backup.Imported?>(null)
+    /** The compatibility report shown before sharing, or null. */
+    private var reportText by mutableStateOf<String?>(null)
     /** The permissions screen was opened by the first start (it then has «متابعة»). */
     private var onboarding by mutableStateOf(false)
 
@@ -129,34 +141,37 @@ class MainActivity : AppCompatActivity() {
     private val importer = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri ?: return@registerForActivityResult
         lifecycleScope.launch {
-            val message = withContext(Dispatchers.IO) { importFrom { contentResolver.openInputStream(uri)!! } }
-            safety = Repo.store(this@MainActivity).safetyCopies()
-            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+            // Read and check the whole file first; nothing is replaced until the user has seen the summary.
+            val result = withContext(Dispatchers.IO) { readImport { contentResolver.openInputStream(uri)!! } }
+            result.onSuccess { pendingImport = it }.onFailure { Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_LONG).show() }
         }
     }
 
-    /** Reads, checks and applies a backup; the current data is kept as a safety copy first. Returns the message. */
-    fun importFrom(open: () -> java.io.InputStream): String {
-        return try {
-            val imported = open().use { Backup.read(it, Instant.now()) }
-            Repo.store(this).safetyCopy()
-            Repo.change(this) { imported.state }
-            buildString {
-                append(getString(R.string.import_done, imported.state.tasks.count { it.deletedAt == null }.toString()))
-                if (!imported.verified) append("\n").append(getString(R.string.import_unverified))
-                if (imported.droppedAttachments > 0) append("\n").append(getString(R.string.import_attachments, imported.droppedAttachments.toString()))
-            }
-        } catch (e: Backup.ImportException) {
-            getString(when (e.reason) {
-                Backup.ImportException.Reason.NOT_A_BACKUP -> R.string.import_not_backup
-                Backup.ImportException.Reason.DAMAGED -> R.string.import_damaged
-                Backup.ImportException.Reason.TOO_LARGE -> R.string.import_too_large
-                Backup.ImportException.Reason.INVALID -> R.string.import_invalid
-            })
-        } catch (_: Exception) {
-            getString(R.string.import_failed)
-        }
+    /** Reads and fully checks a backup without changing anything; the failure carries the message to show. */
+    fun readImport(open: () -> java.io.InputStream): Result<Backup.Imported> = try {
+        Result.success(open().use { Backup.read(it, Instant.now()) })
+    } catch (e: Backup.ImportException) {
+        Result.failure(Exception(getString(when (e.reason) {
+            Backup.ImportException.Reason.NOT_A_BACKUP -> R.string.import_not_backup
+            Backup.ImportException.Reason.DAMAGED -> R.string.import_damaged
+            Backup.ImportException.Reason.TOO_LARGE -> R.string.import_too_large
+            Backup.ImportException.Reason.INVALID -> R.string.import_invalid
+        })))
+    } catch (_: Exception) {
+        Result.failure(Exception(getString(R.string.import_failed)))
     }
+
+    /** Applies a checked backup: the current data is kept as a safety copy first. Returns the message. */
+    fun applyImport(imported: Backup.Imported): String = try {
+        Repo.store(this).safetyCopy()
+        Repo.change(this) { imported.state }
+        getString(R.string.import_done, imported.state.tasks.count { it.deletedAt == null }.toString())
+    } catch (_: Exception) {
+        getString(R.string.import_failed)
+    }
+
+    /** Both steps at once (tests, and older callers). */
+    fun importFrom(open: () -> java.io.InputStream): String = readImport(open).fold({ applyImport(it) }, { it.message ?: getString(R.string.import_failed) })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         L10n.apply(this)
@@ -200,7 +215,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         refreshHealth()
         tick = System.currentTimeMillis()
-        Engine.syncAsync(this)
+        Engine.syncAsync(this, reason = "open")
     }
 
     private fun handle(intent: Intent?) {
@@ -228,6 +243,25 @@ class MainActivity : AppCompatActivity() {
         if (hourly.isEmpty()) exporter.launch(Backup.folderName(Instant.now()) + ".zip") else exportWarning = hourly.map { it.title }
     }
 
+    private fun scheduleStatus(state: AppState, now: Instant): ScheduleStatus {
+        val log = ScheduleLog(this)
+        return ScheduleStatus(log.last(), log.lastBoot(),
+            state.tasks.count { it.active && it.dueAt != null && it.dueAt.isAfter(now) },
+            state.tasks.count { it.active && it.dueAt != null && !it.dueAt.isAfter(now) },
+            log.lateness())
+    }
+
+    private fun testResults(rec: TestAlarm.Record, now: Instant): Map<TestAlarm.Part, TestAlarm.Result> {
+        val h = health ?: Health.check(this)
+        return TestAlarm.evaluate(rec, now.toEpochMilli(), h.channel, h.channelSound, h.channelVibrates, h.dnd)
+    }
+
+    private fun report(state: AppState, now: Instant): String {
+        val h = Health.check(this)
+        val rec = TestAlarm.record(this)
+        return CompatReport.build(this, h, scheduleStatus(state, now), rec, testResults(rec, now))
+    }
+
     private fun toast(id: Int) = Toast.makeText(this, id, Toast.LENGTH_LONG).show()
 
     fun push(s: Screen) { stack = stack + s }
@@ -252,6 +286,8 @@ class MainActivity : AppCompatActivity() {
             "hibernation" -> SystemScreens.open(this, SystemScreens.hibernation(this))
             "dnd" -> SystemScreens.open(this, SystemScreens.dnd())
             "maker" -> Makers.current()?.let { Makers.open(this, it) }
+            "battery_list" -> SystemScreens.open(this, SystemScreens.batteryList())
+            "app" -> SystemScreens.open(this, SystemScreens.appDetails(this))
         }
     }
 
@@ -265,6 +301,42 @@ class MainActivity : AppCompatActivity() {
         val screen = stack.last()
         // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
         key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
+        pendingImport?.let { imp ->
+            val current = Repo.state(this).tasks.count { it.deletedAt == null }
+            val lines = buildList {
+                add(getString(R.string.restore_summary_counts, imp.active.toString(), imp.done.toString()))
+                if (imp.trashed > 0) add(getString(R.string.restore_summary_trash, imp.trashed.toString()))
+                if (imp.notes > 0) add(getString(R.string.restore_summary_notes, imp.notes.toString()))
+                if (imp.droppedAttachments > 0) add(getString(R.string.import_attachments, imp.droppedAttachments.toString()))
+                add(getString(if (imp.verified) R.string.restore_summary_verified else R.string.import_unverified))
+                imp.createdAt?.let { add(getString(R.string.restore_summary_date, L10n.dueText(this@MainActivity, it))) }
+                add(getString(R.string.restore_summary_safety, current.toString()))
+            }
+            ConfirmDialog(
+                title = stringResource(R.string.restore_summary_title), text = lines.joinToString("\n"),
+                confirm = stringResource(R.string.restore),
+                onConfirm = {
+                    lifecycleScope.launch {
+                        val message = withContext(Dispatchers.IO) { applyImport(imp) }
+                        safety = Repo.store(this@MainActivity).safetyCopies()
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                    }
+                },
+                onDismiss = { pendingImport = null },
+            )
+        }
+        reportText?.let { text ->
+            // The report is shown in full before anything is shared; the user picks where it goes.
+            ConfirmDialog(
+                title = stringResource(R.string.compat_title), text = stringResource(R.string.compat_intro) + "\n\n" + text,
+                confirm = stringResource(R.string.compat_send),
+                onConfirm = {
+                    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                    runCatching { startActivity(Intent.createChooser(send, getString(R.string.compat_title))) }
+                },
+                onDismiss = { reportText = null },
+            )
+        }
         exportWarning?.let { titles ->
             ConfirmDialog(
                 title = stringResource(R.string.export_hours_title),
@@ -302,7 +374,7 @@ class MainActivity : AppCompatActivity() {
                     onHealth = { push(Screen.Background) },
                     onBackup = { startExport() },
                     onDismissBackup = { prefs.backupNudgeDismissed = System.currentTimeMillis(); tick = System.currentTimeMillis() },
-                    snack = homeSnack,
+                    snack = homeSnack, newerData = Repo.store(this).newer,
                     onSnackShown = { homeSnack = null },
                 )
             }
@@ -366,8 +438,30 @@ class MainActivity : AppCompatActivity() {
                 onAbout = { push(Screen.About) },
                 onBack = { pop() },
             )
-            Screen.Background -> BackgroundScreen(health ?: Health.check(this), Makers.current(), firstRun = onboarding, onFix = ::fix,
-                onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() })
+            Screen.Background -> HealthScreen(
+                health ?: Health.check(this), scheduleStatus(state, now), Makers.current(), firstRun = onboarding, now = now,
+                onCheck = {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        runCatching { Engine.sync(ctx, reason = "check") }
+                        withContext(Dispatchers.Main) { refreshHealth(); tick = System.currentTimeMillis() }
+                    }
+                },
+                onTest = { push(Screen.AlarmTest) },
+                onReport = { reportText = report(state, now) },
+                onFix = ::fix, onContinue = { onboarding = false; pop() }, onBack = { onboarding = false; pop() },
+            )
+            Screen.AlarmTest -> {
+                // While a test runs, refresh every second so each part's result appears as it happens.
+                LaunchedEffect(Unit) { while (true) { delay(1000); tick = System.currentTimeMillis() } }
+                val rec = TestAlarm.record(this)
+                AlarmTestScreen(rec, testResults(rec, now),
+                    onStart = { TestAlarm.start(ctx); tick = System.currentTimeMillis() },
+                    onAnswer = { part, yes ->
+                        if (part == TestAlarm.Part.SOUND) TestAlarm.answer(ctx, sound = yes) else TestAlarm.answer(ctx, vibration = yes)
+                        tick = System.currentTimeMillis()
+                    },
+                    onFix = ::fix, onReport = { reportText = report(state, now) }, onBack = { pop() })
+            }
             Screen.Trash -> TrashScreen(state, now,
                 onRestore = { t -> act { s -> Tasks.restore(s, t.id) } },
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },

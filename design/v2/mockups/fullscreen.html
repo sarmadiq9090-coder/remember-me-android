@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Full-screen setting</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .dialog { top: 250px; }
+  .dialog .sup { padding: 0 24px 12px; font-size: 14px; line-height: 22px; color: var(--on-surface-variant); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar"><span class="iconbtn on-surface"><i data-i="back"></i></span><div class="title t-title-l">الإعدادات</div><span class="iconbtn"><i data-i="search"></i></span></div>
+  <div class="grow" style="overflow:hidden">
+    <div class="group-h">التنبيه</div>
+    <div class="group">
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="h">النغمة الافتراضية</div><div class="s">Chime</div></div></div>
+      <div class="row"><i data-i="alarm"></i><div class="txt"><div class="h">نوع التنبيه الافتراضي</div><div class="s">تذكير عادي</div></div></div>
+      <div class="row"><i data-i="fullscreen"></i><div class="txt"><div class="h">الشاشة الكاملة</div><div class="s">دائمًا</div></div></div>
+      <div class="row"><i data-i="snooze"></i><div class="txt"><div class="h">خيارات التأجيل</div><div class="s num">5، 10، 15، 30 دقيقة، ساعة، غدًا</div></div></div>
+      <div class="row"><i data-i="vibrate"></i><div class="txt"><div class="h">الاهتزاز</div></div><span class="switch on"></span></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <!-- Single-choice dialog: a tap applies and closes; «إلغاء» at the end. -->
+  <div class="dialog">
+    <div class="dt">الشاشة الكاملة</div>
+    <div class="sup">إن لم يسمح أندرويد بعرضها، يصلك إشعار عادي.</div>
+    <div class="opt"><span class="radio on"></span>دائمًا</div>
+    <div class="opt"><span class="radio"></span>للتذكيرات المهمة فقط</div>
+    <div class="opt"><span class="radio"></span>مطفأة، إشعار عادي فقط</div>
+    <div class="acts"><span class="btn text">إلغاء</span></div>
+  </div>
+  <div class="gesturebar"></div>
+</div></body></html>

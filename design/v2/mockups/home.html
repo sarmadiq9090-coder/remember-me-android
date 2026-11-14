@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Home 1.0.0</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Small TopAppBar: brand mark + «ذكرني»; actions: search, settings. -->
+  <div class="topbar">
+    <span class="brand" data-brand></span>
+    <div class="title t-title-l">ذكرني</div>
+    <!-- actions: «طريقة العرض» (menu: القائمة، الأجندة، اليوم، الأسبوع، الشهر), «بحث», «الإعدادات» -->
+    <span class="iconbtn"><i data-i="calendar"></i></span>
+    <span class="iconbtn"><i data-i="search"></i></span>
+    <span class="iconbtn"><i data-i="settings"></i></span>
+  </div>
+  <!-- Quick filter chips: shown only when 2+ lists are in use or a saved filter exists (a one-list user never sees this row). -->
+  <div class="chips">
+    <span class="chip sel"><i data-i="check"></i>الكل</span>
+    <span class="chip"><i data-i="flagfill"></i>مهم</span>
+    <span class="chip">عمل</span>
+    <span class="chip">المنزل</span>
+    <span class="chip">هذا الأسبوع</span>
+    <span class="chip"><i data-i="lists"></i>القوائم…</span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="sec" style="padding-top:12px"><i data-i="warning" class="s20 err"></i><span class="t err">المتأخرة</span><span class="n num">1</span></div>
+    <div class="group">
+      <div class="rem late"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div>
+          <div class="ttl">دواء الضغط</div>
+          <div class="meta"><span class="it"><i data-i="repeat"></i>كل يوم</span><span class="tag"><i data-i="flagfill"></i>مهم</span><span class="tag neutral"><i data-i="alarm"></i>منبّه</span></div></div></div>
+    </div>
+
+    <div class="sec"><span class="t">اليوم</span><span class="n num">3</span></div>
+    <div class="group">
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div>
+          <div class="ttl">اجتماع الفريق</div>
+          <div class="meta"><span class="it"><i data-i="label"></i>عمل</span><span class="it num"><i data-i="tasks"></i>2 من 5</span></div></div></div>
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">7:00 <span class="ap">م</span></span><span class="tag snz"><i data-i="snooze"></i>مؤجّل</span></div>
+          <div class="ttl">شراء الخبز والحليب</div>
+          <div class="meta"><span class="it"><i data-i="label"></i>المنزل</span><span class="it"><i data-i="vibrate"></i>اهتزاز فقط</span></div></div></div>
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">م</span></span></div>
+          <div class="ttl">مراجعة درس الرياضيات</div>
+          <div class="meta"><span class="it"><i data-i="repeat"></i>كل الأحد، الثلاثاء، الخميس</span><span class="tag outline"><i data-i="flag"></i>متوسط</span></div></div></div>
+    </div>
+
+    <div class="sec"><span class="t">القادمة</span><span class="n num">4</span></div>
+    <div class="group">
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">ص</span></span><span class="when">غدًا</span></div>
+          <div class="ttl">دفع الإيجار</div>
+          <div class="meta"><span class="it"><i data-i="repeat"></i>كل شهر</span><span class="it"><i data-i="bell"></i>تنبيهان</span></div></div></div>
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">10:00 <span class="ap">ص</span></span><span class="when">السبت 21 نوفمبر</span></div>
+          <div class="ttl">عيد ميلاد سارة</div></div></div>
+    </div>
+  </div>
+  <!-- The screen's one primary: centred Extended FAB «تذكير جديد», 16 dp above the gesture area. Tap = Quick Add sheet.
+       No NavigationBar (V16 kept, FEATURES F-064): views come from the top-bar menu, lists are the chips above. -->
+  <div class="fab center"><i data-i="add"></i>تذكير جديد</div>
+  <div class="gesturebar"></div>
+</div></body></html>

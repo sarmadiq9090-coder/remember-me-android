@@ -4,7 +4,9 @@ Reminders that stay until you deal with them, on Android 8 and later. Arabic fir
 A port of FastKiwi's Remember Me for Windows: the same data file, the same repeat rules, the same
 snooze choices, and backups that move between the phone and the PC.
 
-Proprietary FastKiwi software (D-051). Local repository only; nothing is published.
+Proprietary FastKiwi software (D-051). Publishing under Apache-2.0 is proposed (D-079,
+[docs/OPEN-SOURCE-PROPOSAL.md](docs/OPEN-SOURCE-PROPOSAL.md)) and needs the owner's approval; until then
+no licence is granted. Local repository only; nothing is published. `LICENSES/` holds third-party texts.
 
 - **Research**: [RESEARCH.md](RESEARCH.md) (the Windows app, Android limits, patterns)
 - **Decisions**: [DECISIONS.md](DECISIONS.md) (councils, D-001 … D-018)
@@ -13,6 +15,9 @@ Proprietary FastKiwi software (D-051). Local repository only; nothing is publish
 - **Third-party notices**: [THIRD_PARTY.md](THIRD_PARTY.md)
 - **For the owner, in Arabic**: [اقرأني.txt](اقرأني.txt)
 - **Changes**: [CHANGELOG.md](CHANGELOG.md)
+- **Roadmap to 1.0** (the owner's PRD with the council's amendments): [docs/ROADMAP.md](docs/ROADMAP.md)
+- **Compatibility matrix** (only phones actually tried): [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
+- **Security** and **contributing**: [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## What it does (v0.1.0)
 

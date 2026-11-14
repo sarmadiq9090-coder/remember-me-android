@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Do Not Disturb help</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .stat { margin: 4px 16px 0; background: var(--sc); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .stat .status { font-size: 15px; line-height: 22px; white-space: normal; gap: 10px; }
+  .stat .status i { width: 22px; height: 22px; }
+  .intro { padding: 20px 24px 8px; font-size: 16px; line-height: 28px; }
+  .steps { padding: 4px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; font-size: 16px; line-height: 28px; }
+  .note { padding: 16px 24px; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); display: flex; gap: 8px; align-items: center; }
+  .on-s { color: var(--on-surface); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar"><span class="iconbtn on-surface"><i data-i="back"></i></span><div class="title t-title-l">المنبّه المهم وعدم الإزعاج</div></div>
+  <div class="grow" style="overflow:hidden">
+    <div class="stat">
+      <span class="status adv on-s"><i data-i="dnd"></i>عدم الإزعاج الآن: مفعّل</span>
+      <span class="status need"><i data-i="errorfill"></i>ذكرني: غير مسموح له</span>
+    </div>
+    <div class="intro">ذكرني لا يتجاوز «عدم الإزعاج» من تلقاء نفسه. إن أردت أن يرنّ المنبّه المهم أثناءه، اسمح له من إعدادات الهاتف:</div>
+    <div class="steps">
+      <div class="step"><span class="stepn num">1</span><span>افتح إعدادات «عدم الإزعاج»</span></div>
+      <div class="step"><span class="stepn num">2</span><span>في «التطبيقات» أو «الاستثناءات» أضف «ذكرني»</span></div>
+      <div class="step"><span class="stepn num">3</span><span>تأكّد أن «المنبّهات» مسموحة</span></div>
+    </div>
+    <div class="note"><i data-i="info" class="s18"></i>تختلف الأسماء حسب الشركة المصنعة للهاتف.</div>
+  </div>
+  <!-- One primary, full width, in the thumb zone -->
+  <div class="bottombar"><span class="btn filled lg block"><i data-i="open"></i>افتح إعدادات عدم الإزعاج</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

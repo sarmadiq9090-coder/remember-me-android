@@ -124,6 +124,7 @@ class QcScreenshotsTest {
             go(Screen.Background); shot("$prefix-06-background")
             go(Screen.Trash); shot("$prefix-07-trash")
             go(Screen.About); shot("$prefix-08-about")
+            go(Screen.AlarmTest); shot("$prefix-09-alarm-test")
         }
         val due = Tasks.due(Repo.state(app), Instant.now()).first()
         val intent = Intent(app, AlertActivity::class.java).putExtra(AlertActivity.EXTRA_ID, due.id)

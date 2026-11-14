@@ -21,13 +21,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Label
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.OutlinedFlag
-import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -103,7 +96,7 @@ fun SectionHeader(
         m.padding(start = Dimens.xxl, end = Dimens.l, top = Dimens.m, bottom = Dimens.xs).semantics(mergeDescendants = true) { heading() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (error) Icon(Icons.Rounded.WarningAmber, null, tint = color, modifier = Modifier.padding(end = Dimens.s).size(20.dp))
+        if (error) Icon(Ms.WarningAmber, null, tint = color, modifier = Modifier.padding(end = Dimens.s).size(20.dp))
         Text(text, style = MaterialTheme.typography.titleSmall, color = color)
         if (count != null) Text(
             count.toString(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -259,7 +252,7 @@ fun StatusBanner(icon: ImageVector?, text: String, action: String, alarm: Boolea
             if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.padding(end = Dimens.m))
             Text(text, color = fg, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f).padding(vertical = Dimens.s))
             TextButton(onClick = onAction, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(action, color = fg) }
-            if (onDismiss != null) TooltipIconButton(Icons.Rounded.Close, stringResource(R.string.not_now), onDismiss, tint = fg)
+            if (onDismiss != null) TooltipIconButton(Ms.Close, stringResource(R.string.not_now), onDismiss, tint = fg)
         }
     }
 }
@@ -293,13 +286,13 @@ fun TaskMeta(t: Task, color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         if (repeat != null) Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Rounded.Repeat, null, tint = color, modifier = Modifier.size(16.dp))
+            Icon(Ms.Repeat, null, tint = color, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(Dimens.xs))
             Text(repeat, style = MaterialTheme.typography.bodySmall, color = color)
         }
         if (t.priority != Priority.NORMAL) PriorityTag(t.priority)
         if (hasCategory) Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.AutoMirrored.Rounded.Label, null, tint = color, modifier = Modifier.size(16.dp))
+            Icon(Ms.Label, null, tint = color, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(Dimens.xs))
             Text(categoryName(t.category), style = MaterialTheme.typography.bodySmall, color = color)
         }
@@ -323,7 +316,7 @@ fun PriorityTag(p: Priority) {
         border = if (high) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Row(Modifier.padding(horizontal = Dimens.s, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(if (high) Icons.Rounded.Flag else Icons.Rounded.OutlinedFlag, null, modifier = Modifier.size(16.dp))
+            Icon(if (high) Ms.Flag else Ms.OutlinedFlag, null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(Dimens.xs))
             Text(priorityName(p), style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

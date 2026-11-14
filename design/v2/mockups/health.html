@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Reminder Health</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .gh { display: flex; align-items: baseline; gap: 8px; padding: 16px 32px 8px; }
+  .gh .t { font-size: 15px; line-height: 22px; font-weight: 700; color: var(--primary); flex: 1; }
+  .gh .n { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--on-surface-variant); }
+  .sum { margin: 4px 16px 0; background: var(--error-container); color: var(--on-error-container); border-radius: 16px; padding: 16px; display: flex; gap: 12px; --icon-cut: var(--error-container); }
+  .sum .t { font-size: 17px; line-height: 26px; font-weight: 700; }
+  .sum .b { font-size: 14px; line-height: 22px; }
+  .sum .m { font-size: 13px; line-height: 20px; opacity: .9; }
+  .sum .btn.outlined { border-color: var(--on-error-container); color: var(--on-error-container); margin-top: 8px; }
+  .hl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .hl .h { flex: 1 1 auto; }
+  .row .status i[data-i] { width: 18px; height: 18px; }
+  .row.need .status.need { color: var(--on-error-container); }
+  .row.need .btn.filled { background: var(--error); color: var(--on-error); }
+  .row > i.st { width: 24px; height: 24px; }
+  .ok-i { color: var(--primary) !important; }
+  .rec-i { color: var(--tertiary) !important; }
+  .kvbox { background: var(--sc); padding: 12px 16px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Pushed screen. ⋮ holds «تقرير التوافق». -->
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">صحة التذكيرات</div>
+    <span class="iconbtn"><i data-i="more"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <!-- Summary: never shows "all ready" while an essential is missing. -->
+    <div class="sum"><i data-i="warning"></i>
+      <div class="grow">
+        <div class="t">إذن ضروري واحد غير مفعّل</div>
+        <div class="b">قد لا تصل التذكيرات في وقتها.</div>
+        <div class="m num">آخر فحص: 4:18 م</div>
+        <span class="btn outlined sm"><i data-i="refresh"></i>افحص الآن</span>
+      </div>
+    </div>
+
+    <div class="gh"><span class="t">ضروري</span><span class="n num">2 من 3 جاهز</span></div>
+    <div class="group">
+      <div class="row"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">الإشعارات</span><span class="status ok">جاهز</span></div></div></div>
+      <div class="row"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">المنبّهات في وقتها</span><span class="status ok">جاهز</span></div><div class="s">إذن «المنبّهات والتذكيرات»</div></div></div>
+      <div class="row need top"><i data-i="errorfill" class="st"></i><div class="txt">
+        <div class="hl"><span class="h">صوت قناة التذكيرات</span><span class="status need">مطلوب</span></div>
+        <div class="s">الصوت مطفأ لقناة «التذكيرات»</div>
+        <div class="acts2" style="align-items:center"><span class="src">أندرويد</span><span class="grow"></span><span class="btn filled sm">إصلاح</span></div></div></div>
+    </div>
+
+    <div class="gh"><span class="t">يُنصح به</span><span class="n num">2 من 3 جاهز</span></div>
+    <div class="group">
+      <div class="row"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">الشاشة الكاملة</span><span class="status ok">جاهز</span></div></div></div>
+      <div class="row top"><i data-i="infofill" class="st rec-i"></i><div class="txt">
+        <div class="hl"><span class="h">البطارية</span><span class="status rec">مقيّدة</span></div>
+        <div class="s">قد يؤخّر أندرويد التذكيرات</div>
+        <div class="acts2" style="align-items:center"><span class="src">أندرويد</span><span class="grow"></span><span class="btn tonal sm">اسمح</span></div></div></div>
+      <div class="row"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">التشغيل بعد إعادة التشغيل</span><span class="status ok">جاهز</span></div><div class="s">وصل بعد آخر تشغيل للهاتف</div></div></div>
+    </div>
+
+    <div class="gh"><span class="t">الهاتف الآن</span></div>
+    <div class="group">
+      <div class="row top"><i data-i="vibrate"></i><div class="txt"><div class="hl"><span class="h">الهاتف صامت</span><span class="status adv">للعلم</span></div><div class="s">التذكير العادي سيهتز فقط. المنبّه المهم يرنّ.</div></div></div>
+      <div class="row"><i data-i="dnd"></i><div class="txt"><div class="h">عدم الإزعاج</div><div class="s">مطفأ</div></div></div>
+    </div>
+
+    <div class="gh"><span class="t">الشركة المصنعة</span></div>
+    <div class="group">
+      <div class="row top"><i data-i="phone"></i><div class="txt">
+        <div class="h">Xiaomi: التشغيل التلقائي</div>
+        <div class="s">لم يُجرَّب على هاتف بعد</div>
+        <div class="acts2" style="align-items:center"><span class="src">الشركة المصنعة</span><span class="grow"></span><span class="btn outlined sm">افتح الإعدادات</span></div></div></div>
+    </div>
+
+    <div class="gh"><span class="t">الجدولة</span></div>
+    <div class="group">
+      <div class="kvbox">
+        <div class="kv"><span>مجدولة</span><b class="num">12</b></div>
+        <div class="kv"><span>تحتاج معالجة</span><b class="num">1</b></div>
+        <div class="kv"><span>آخر تأخير مُقاس</span><b class="num">4 ثوانٍ</b></div>
+      </div>
+    </div>
+  </div>
+  <!-- Outlined while an essential is missing (the row's «إصلاح» is the primary); filled when all essentials are ready. -->
+  <div class="bottombar"><span class="btn outlined lg block"><i data-i="test"></i>اختبر التنبيه الآن</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

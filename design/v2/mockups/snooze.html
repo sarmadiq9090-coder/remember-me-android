@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Snooze sheet</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .bg { flex: 1; min-height: 0; overflow: hidden; }
+  .sheet .opt { min-height: 52px; }
+  .sheet .opt .res { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); white-space: nowrap; }
+  .sheet .opt > i[data-i] { color: var(--on-surface-variant); }
+  .note { display: flex; gap: 8px; align-items: center; padding: 8px 24px 0; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+  .foot { display: flex; justify-content: flex-end; padding: 4px 12px 8px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="bg">
+    <div class="topbar"><span class="brand" data-brand></span><div class="title t-title-l">ذكرني</div><span class="iconbtn"><i data-i="search"></i></span><span class="iconbtn"><i data-i="settings"></i></span></div>
+    <div class="sec"><i data-i="warning" class="s20 err"></i><span class="t err">المتأخرة</span><span class="n num">1</span></div>
+    <div class="group">
+      <div class="rem late"><span class="done-btn"></span><div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div><div class="ttl">دواء الضغط</div></div></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <!-- Snooze sheet (from a row swipe «أجّل», the reminder screen or the notification). A tap applies at once and shows the new time in a snackbar with «تراجع». -->
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-t">أجّل</div>
+    <div class="sh-s">دواء الضغط</div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt num">5 دقائق</span><span class="res num">حتى 4:25 م</span></div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt num">10 دقائق</span><span class="res num">حتى 4:30 م</span></div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt num">15 دقيقة</span><span class="res num">حتى 4:35 م</span></div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt num">30 دقيقة</span><span class="res num">حتى 4:50 م</span></div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt">ساعة</span><span class="res num">حتى 5:20 م</span></div>
+    <div class="opt"><i data-i="snooze"></i><span class="txt">غدًا في الوقت نفسه</span><span class="res num">الأحد 2:00 م</span></div>
+    <div class="rowsep"></div>
+    <div class="opt"><i data-i="event"></i><span class="txt">أجّل حتى…</span></div>
+    <div class="note"><i data-i="repeat" class="s18"></i>التكرار لا يتغيّر</div>
+    <div class="foot"><span class="btn text">إلغاء</span></div>
+    <div class="gesturebar" style="background:var(--sc-low)"></div>
+  </div>
+</div></body></html>

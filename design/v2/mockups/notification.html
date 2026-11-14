@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Notifications</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  /* The shade is the phone's own UI (neutral here); the app controls only the icon, accent, texts, actions and flags. */
+  .phone { --shade: #E9ECEF; --card: #FFFFFF; --sys-ink: #1F1F1F; --sys-muted: #4A4A4A; background: var(--shade); }
+  @media (prefers-color-scheme: dark) { .phone { --shade: #121314; --card: #2A2B2D; --sys-ink: #ECECEC; --sys-muted: #C4C4C4; } }
+  .phone { --icon-cut: var(--card); }
+  .shade-h { padding: 8px 24px 8px; color: var(--sys-ink); }
+  .ncard { margin: 0 12px 8px; background: var(--card); color: var(--sys-ink); border-radius: 24px; padding: 16px 16px 8px; }
+  .nhead { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 18px; color: var(--sys-muted); }
+  .nicon { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; flex: none; }
+  .nicon i { width: 18px; height: 18px; }
+  .nhead > i[data-i] { width: 18px; height: 18px; }
+  .nt { font-size: 16px; line-height: 24px; font-weight: 600; margin: 8px 36px 0 0; }
+  .nb { font-size: 14px; line-height: 22px; color: var(--sys-muted); margin: 0 36px 0 0; }
+  .nacts { display: flex; gap: 4px; margin: 8px 24px 0 0; flex-wrap: wrap; }
+  .nacts span { color: var(--primary); font-size: 14px; font-weight: 600; padding: 0 12px; min-height: 48px; display: inline-flex; align-items: center; border-radius: 20px; }
+  .cap { margin: 10px 24px 6px; font-size: 13px; line-height: 20px; color: var(--sys-muted); font-weight: 600; }
+  .dot { color: var(--sys-muted); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar" style="color:var(--sys-ink)"></div>
+  <div class="shade-h"><div class="t-headline-s num">4:20</div><div class="t-body-m" style="color:var(--sys-muted)">السبت 14 نوفمبر</div></div>
+
+  <!-- (a) Due reminder: ongoing (setOngoing), pin glyph in the header, three actions: تم (first), أجّل 10 دقائق, أجّل حتى… (F-044) -->
+  <div class="cap">تذكير مثبّت (عند حلول الموعد)</div>
+  <div class="ncard">
+    <div class="nhead"><span class="nicon"><i data-i="bellfill"></i></span><span>ذكرني</span><span class="dot">•</span><span>الآن</span><i data-i="pin"></i><span class="grow"></span><i data-i="collapse" class="s20"></i></div>
+    <div class="nt">دواء الضغط</div>
+    <div class="nb num">حان الوقت، 2:00 م، كل يوم</div>
+    <div class="nb">حبة واحدة بعد الغداء مع كوب ماء.</div>
+    <div class="nacts"><span>تم</span><span class="num">أجّل 10 دقائق</span><span>أجّل حتى…</span></div>
+  </div>
+
+  <!-- (b) «منبّه مهم»: alarm-stream channel; the header says «منبّه» with the alarm glyph, text says it keeps ringing -->
+  <div class="cap">منبّه مهم</div>
+  <div class="ncard">
+    <div class="nhead"><span class="nicon"><i data-i="alarm"></i></span><span>ذكرني</span><span class="dot">•</span><span>منبّه</span><span class="grow"></span><i data-i="collapse" class="s20"></i></div>
+    <div class="nt">اجتماع الفريق</div>
+    <div class="nb num">5:30 م، يرنّ حتى تتعامل معه</div>
+    <div class="nacts"><span>تم</span><span class="num">أجّل 10 دقائق</span></div>
+  </div>
+
+  <!-- (c) Morning summary F-030: off by default, quiet channel summary_v1, no sound, one action «افتح» -->
+  <div class="cap">ملخص الصباح (اختياري، مطفأ افتراضيًا)</div>
+  <div class="ncard">
+    <div class="nhead"><span class="nicon"><i data-i="sun"></i></span><span>ملخص الصباح</span><span class="dot">•</span><span class="num">8:00 ص</span><span class="grow"></span><i data-i="collapse" class="s20"></i></div>
+    <div class="nt num">لديك 4 تذكيرات اليوم</div>
+    <div class="nb num">أولها 5:30 م: اجتماع الفريق</div>
+    <div class="nacts"><span>افتح</span></div>
+  </div>
+  <!-- (d) F-052: after «تم» from the notification, a quiet note with «تراجع»; setTimeoutAfter(10 s) -->
+  <div class="cap">بعد «تم» من الإشعار (10 ثوانٍ)</div>
+  <div class="ncard" style="padding-bottom:4px">
+    <div class="nhead"><span class="nicon"><i data-i="check"></i></span><span>ذكرني</span><span class="dot">•</span><span>الآن</span></div>
+    <div style="display:flex;align-items:center;gap:8px;margin:0 36px 0 0"><div class="nt" style="margin:4px 0 0;flex:1">أُنجز «دواء الضغط»</div><div class="nacts" style="margin:0"><span>تراجع</span></div></div>
+  </div>
+  <div class="grow"></div>
+  <div class="gesturebar"></div>
+</div></body></html>

@@ -18,7 +18,20 @@ data class Plan(
     val wakeAt: Instant?,
     val alertLog: Map<String, String>,
     val noticeLog: Map<String, String>,
+    /** What the next wake is for: a due time, an early notice or a "sound again" moment (D-020). */
+    val wakeKind: WakeKind? = null,
+    /** Active reminders with a time still ahead (shown in the health centre). */
+    val scheduled: Int = 0,
+    /** Slot A: the next due time (setAlarmClock). Never depends on slot B (D-079). */
+    val dueAt: Instant? = null,
+    /** Slot B: the next early notice or "sound again" moment (setExactAndAllowWhileIdle). */
+    val otherAt: Instant? = null,
+    /** What slot B is for: NOTICE or AGAIN. */
+    val otherKind: WakeKind? = null,
 )
+
+/** Why the engine must run next; the alarm API is chosen from it (D-020). */
+enum class WakeKind { DUE, NOTICE, AGAIN }
 
 object Planner {
     /** Repeated alert sounds stop after this many, as on Windows (createRepeatBeep). */
@@ -31,7 +44,18 @@ object Planner {
         val loud = HashSet<String>()
         val newAlertLog = HashMap<String, String>()
         var wake: Instant? = null
-        fun consider(at: Instant) { if (at.isAfter(now) && (wake == null || at.isBefore(wake))) wake = at }
+        var kind: WakeKind? = null
+        var slotA: Instant? = null
+        var slotB: Instant? = null
+        var slotBKind: WakeKind? = null
+        // The earliest moment wins; at the same moment a due time outranks a notice or a re-alert.
+        fun consider(at: Instant, k: WakeKind) {
+            if (!at.isAfter(now)) return
+            if (k == WakeKind.DUE) { if (slotA == null || at.isBefore(slotA)) slotA = at }
+            else if (slotB == null || at.isBefore(slotB) || (at == slotB && k.ordinal < slotBKind!!.ordinal)) { slotB = at; slotBKind = k }
+            val w = wake
+            if (w == null || at.isBefore(w) || (at == w && k.ordinal < kind!!.ordinal)) { wake = at; kind = k }
+        }
 
         for (t in due) {
             val dueAt = t.dueAt!!
@@ -42,19 +66,24 @@ object Planner {
             // Loud when this occurrence has not sounded yet, or a later "remind again" slot has come.
             if (oldSlot == null || slot > oldSlot) loud += t.id
             newAlertLog[t.id] = iso + "|" + maxOf(slot, oldSlot ?: 0L)
-            if (again != null && slot < MAX_AGAIN) consider(dueAt.plusMillis((slot + 1) * again))
+            if (again != null && slot < MAX_AGAIN) consider(dueAt.plusMillis((slot + 1) * again), WakeKind.AGAIN)
         }
 
-        val notices = Tasks.upcoming(state, now).filter { noticeLog[it.id] != Codec.iso(it.dueAt!!) }
+        // Several notices per reminder (F-046): each has its own key, so each is shown once.
+        val notices = Tasks.upcoming(state, now).filter { noticeLog[it.id] != Tasks.noticeKey(it, now) }
         val newNoticeLog = HashMap<String, String>()
+        var scheduled = 0
         for (t in state.tasks) {
             if (!t.active || t.dueAt == null) continue
-            val iso = Codec.iso(t.dueAt)
-            if (noticeLog[t.id] == iso || notices.any { it.id == t.id }) newNoticeLog[t.id] = iso
-            if (t.dueAt.isAfter(now)) consider(t.dueAt)
-            Tasks.noticeAt(t)?.let { at -> if (at.isAfter(t.updatedAt)) consider(at) }
+            val key = Tasks.noticeKey(t, now)
+            val logged = noticeLog[t.id]
+            if (key != null) newNoticeLog[t.id] = key
+            // Kept while it still belongs to this occurrence (a later notice of it replaces it).
+            else if (logged != null && logged.substringBefore('#') == Codec.iso(t.dueAt)) newNoticeLog[t.id] = logged
+            if (t.dueAt.isAfter(now)) { consider(t.dueAt, WakeKind.DUE); scheduled++ }
+            for (at in Tasks.noticeTimes(t)) if (at.isAfter(t.updatedAt)) consider(at, WakeKind.NOTICE)
         }
-        return Plan(due, loud, notices, wake, newAlertLog, newNoticeLog)
+        return Plan(due, loud, notices, wake, newAlertLog, newNoticeLog, kind, scheduled, slotA, slotB, slotBKind)
     }
 
     private fun slotOf(key: String) = key.substringAfterLast('|').toLongOrNull() ?: 0L

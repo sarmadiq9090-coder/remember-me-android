@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Settings 1.0.0</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .row { min-height: 64px; }
+  .row .val { font-size: 13px; line-height: 20px; }
+  .okline { display: flex; align-items: center; gap: 4px; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+  .okline i { width: 18px; height: 18px; color: var(--primary); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">الإعدادات</div>
+    <span class="iconbtn"><i data-i="search"></i></span>
+  </div>
+  <!-- Off-screen groups below «شاشة القفل»: «العرض» (اللغة، السمة، أسماء الأشهر، أول يوم في الأسبوع، التاريخ الهجري وتعديله ±2),
+       «الصلاة» (الطريقة، المدينة), «ملخص الصباح» (مطفأ، 8:00 ص), «التنظيم» (القوائم والوسوم، القوالب، سجل التغييرات مطفأ،
+       إكمال تلقائي عند إنهاء الخطوات مطفأ), «بياناتك» (حفظ نسخة، نسخة تلقائية أسبوعية، تشفير النسخة، استعادة، نسخ الأمان،
+       استيراد تقويم .ics، تصدير .ics، تقرير التوافق، سجل التنبيهات، سلة المحذوفات، حذف كل البيانات), «حول» (الخصوصية، التراخيص، الإصدار). -->
+  <div class="grow" style="overflow:hidden">
+    <div class="group" style="margin-top:4px">
+      <div class="row"><i data-i="health"></i><div class="txt"><div class="h">صحة التذكيرات</div>
+        <div class="okline"><i data-i="okfill"></i>كل الأذونات الضرورية جاهزة</div></div><i data-i="chevron" class="chev"></i></div>
+    </div>
+
+    <div class="group-h">التنبيه</div>
+    <div class="group">
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="h">نغمة التذكير الافتراضية</div><div class="s">نغمة الهاتف للإشعارات</div></div></div>
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="h">نغمة التذكيرات المهمة</div><div class="s">نغمة المنبّه في الهاتف</div></div></div>
+      <div class="row"><i data-i="alarm"></i><div class="txt"><div class="h">التذكيرات المهمة</div><div class="s">منبّه مهم، يرنّ حتى والهاتف صامت</div></div></div>
+      <div class="row"><i data-i="fullscreen"></i><div class="txt"><div class="h">الشاشة الكاملة</div><div class="s">دائمًا</div></div></div>
+      <div class="row"><i data-i="clock"></i><div class="txt"><div class="h">مدة رنين المنبّه المهم</div><div class="s">دقيقة</div></div></div>
+      <div class="row"><i data-i="snooze"></i><div class="txt"><div class="h">خيارات التأجيل</div><div class="s num">5، 10، 15، 30 دقيقة، ساعة، غدًا</div></div></div>
+      <div class="row"><i data-i="again"></i><div class="txt"><div class="h">إعادة التنبيه بالصوت</div><div class="s num">كل 5 دقائق، حتى 3 مرات</div></div></div>
+      <div class="row"><i data-i="vibrate"></i><div class="txt"><div class="h">الاهتزاز</div><div class="s">عادي</div></div></div>
+    </div>
+
+    <div class="group-h">شاشة القفل</div>
+    <div class="group">
+      <div class="row"><i data-i="eye"></i><div class="txt"><div class="h">على شاشة القفل</div><div class="s">أظهر التفاصيل</div></div></div>
+      <div class="row"><i data-i="pin"></i><div class="txt"><div class="h">تثبيت التذكير على شاشة القفل</div><div class="s">يبقى ظاهرًا حتى تتعامل معه</div></div><span class="switch on"></span></div>
+    </div>
+  </div>
+  <div class="gesturebar"></div>
+</div></body></html>

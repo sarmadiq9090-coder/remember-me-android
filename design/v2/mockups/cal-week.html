@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Calendar: week</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .viewseg { margin: 0 16px 4px; flex: none; }
+  .viewseg > div { font-size: 14px; padding: 4px 2px; gap: 4px; }
+  .dnav { display: flex; align-items: center; padding: 0 4px; flex: none; }
+  .dnav .mid { flex: 1; text-align: center; font-size: 17px; line-height: 26px; font-weight: 700; }
+  .wd { background: var(--sc); display: flex; align-items: flex-start; gap: 12px; padding: 8px 16px 8px 16px; min-height: 64px; }
+  .wd .dc { width: 56px; flex: none; display: flex; flex-direction: column; align-items: center; }
+  .wd .dn { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--on-surface-variant); }
+  .wd .dd { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .wd.today .dd { background: var(--primary-container); color: var(--on-primary-container); font-weight: 700; }
+  .wd.today .dn { color: var(--primary); font-weight: 700; }
+  .wd .ls { flex: 1; min-width: 0; padding-top: 4px; display: flex; flex-direction: column; gap: 2px; }
+  .wd .ln { display: flex; gap: 8px; font-size: 14px; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-items: center; }
+  .wd .ln .t { font-weight: 500; font-variant-numeric: tabular-nums; flex: none; min-width: 52px; }
+  .wd .ln.late { color: var(--error); }
+  .wd .ln.late .x { color: var(--on-surface); }
+  .wd .ln i[data-i] { width: 16px; height: 16px; }
+  .wd .more { font-size: 13px; line-height: 20px; color: var(--primary); font-weight: 500; }
+  .wd .none { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); padding-top: 4px; }
+  .wd.empty { min-height: 52px; align-items: center; }
+  .wd.empty .ls { padding-top: 0; }
+  .wd.empty .dd { width: 32px; height: 28px; font-size: 18px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <div class="title t-title-l" style="padding-inline-start:16px">نوفمبر 2026</div>
+    <span class="btn text">اليوم</span>
+    <!-- «طريقة العرض» (active: a calendar view is on). Menu: القائمة، الأجندة، اليوم، الأسبوع، الشهر -->
+    <span class="iconbtn" style="background:var(--secondary-container);color:var(--on-secondary-container)"><i data-i="calendar"></i></span>
+    <span class="iconbtn"><i data-i="settings"></i></span>
+  </div>
+  <!-- A view of Home, not a destination. System Back from a calendar view returns to the list view; the view menu lists القائمة، الأجندة، اليوم، الأسبوع، الشهر. -->
+  <div class="seg viewseg"><div>أجندة</div><div>يوم</div><div class="sel"><i data-i="check"></i>أسبوع</div><div>شهر</div></div>
+  <div class="dnav">
+    <span class="iconbtn"><i data-i="chevron" style="transform:scaleX(-1)"></i></span>
+    <div class="mid num">14 إلى 20 نوفمبر</div>
+    <span class="iconbtn"><i data-i="chevron"></i></span>
+  </div>
+  <div class="grow" style="overflow:hidden;padding-top:4px">
+    <div class="group">
+      <div class="wd today"><div class="dc"><span class="dn">اليوم</span><span class="dd">14</span></div>
+        <div class="ls">
+          <div class="ln late"><i data-i="warning"></i><span class="t">2:00 م</span><span class="x">دواء الضغط</span><span style="font-size:13px">متأخر</span></div>
+          <div class="ln"><span class="t">5:30 م</span><span>اجتماع الفريق</span></div>
+          <div class="ln"><span class="t">7:00 م</span><span>شراء الخبز والحليب</span></div>
+          <div class="more">+2 أخرى</div>
+        </div></div>
+      <div class="wd"><div class="dc"><span class="dn">الأحد</span><span class="dd">15</span></div>
+        <div class="ls">
+          <div class="ln"><span class="t">9:00 ص</span><span>دفع الإيجار</span></div>
+          <div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div>
+        </div></div>
+      <div class="wd"><div class="dc"><span class="dn">الاثنين</span><span class="dd">16</span></div>
+        <div class="ls">
+          <div class="ln"><span class="t">10:30 ص</span><span>موعد طبيب الأسنان</span></div>
+          <div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div>
+        </div></div>
+      <div class="wd empty"><div class="dc"><span class="dn">الثلاثاء</span><span class="dd">17</span></div>
+        <div class="ls"><div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div></div></div>
+      <div class="wd empty"><div class="dc"><span class="dn">الأربعاء</span><span class="dd">18</span></div>
+        <div class="ls"><div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div></div></div>
+      <div class="wd"><div class="dc"><span class="dn">الخميس</span><span class="dd">19</span></div>
+        <div class="ls">
+          <div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div>
+          <div class="ln"><span class="t">9:00 م</span><span>اتصل بأحمد</span></div>
+        </div></div>
+      <div class="wd empty"><div class="dc"><span class="dn">الجمعة</span><span class="dd">20</span></div>
+        <div class="ls"><div class="ln"><span class="t">2:00 م</span><span>دواء الضغط</span></div></div></div>
+    </div>
+  </div>
+  <div class="fab center"><i data-i="add"></i>تذكير جديد</div>
+  <div class="gesturebar"></div>
+</div></body></html>

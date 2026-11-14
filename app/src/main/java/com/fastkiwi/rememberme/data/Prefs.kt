@@ -27,6 +27,107 @@ class Prefs(context: Context) {
         get() = p.getBoolean("notifAsked", false)
         set(v) = p.edit { putBoolean("notifAsked", v) }
 
+    /** The data schema the phone's data is at (Migrations); null on a phone that never stored it. */
+    var dataSchema: Int?
+        get() = if (p.contains("dataSchema")) p.getInt("dataSchema", 1) else null
+        set(v) = p.edit { if (v == null) remove("dataSchema") else putInt("dataSchema", v) }
+
+    /** The versionCode that last opened the data (null before 0.2.0). */
+    var lastVersion: Int?
+        get() = if (p.contains("lastVersion")) p.getInt("lastVersion", 0) else null
+        set(v) = p.edit { if (v == null) remove("lastVersion") else putInt("lastVersion", v) }
+
+    // ---- 1.0.0 alert settings (phone only, never in data.json; FEATURES.md "Data format") ----
+
+    /** Default tone for normal reminders and for important ones; null = the phone's own default. */
+    var normalTone: com.fastkiwi.rememberme.core.ToneRef?
+        get() = p.getString("normalTone", null)?.let { com.fastkiwi.rememberme.core.ToneRef.parse(runCatching { com.fastkiwi.rememberme.core.Codec.json.parseToJsonElement(it) }.getOrNull()) }
+        set(v) = p.edit { if (v == null) remove("normalTone") else putString("normalTone", v.toJson().toString()) }
+    var importantTone: com.fastkiwi.rememberme.core.ToneRef?
+        get() = p.getString("importantTone", null)?.let { com.fastkiwi.rememberme.core.ToneRef.parse(runCatching { com.fastkiwi.rememberme.core.Codec.json.parseToJsonElement(it) }.getOrNull()) }
+        set(v) = p.edit { if (v == null) remove("importantTone") else putString("importantTone", v.toJson().toString()) }
+
+    /** «شاشة التذكير الكاملة»: always (default, 0.1 behaviour), important, off. */
+    var fullScreenMode: String
+        get() = p.getString("fullScreenMode", "always")?.takeIf { it in setOf("always", "important", "off") } ?: "always"
+        set(v) = p.edit { putString("fullScreenMode", v) }
+
+    /** «تثبيت التذكير على شاشة القفل»: on by default. */
+    var pinDefault: Boolean
+        get() = p.getBoolean("pinDefault", true)
+        set(v) = p.edit { putBoolean("pinDefault", v) }
+
+    var vibrateDefault: Boolean
+        get() = p.getBoolean("vibrateDefault", true)
+        set(v) = p.edit { putBoolean("vibrateDefault", v) }
+
+    /** short, normal, long. */
+    var vibrationPattern: String
+        get() = p.getString("vibrationPattern", "normal")?.takeIf { it in setOf("short", "normal", "long") } ?: "normal"
+        set(v) = p.edit { putString("vibrationPattern", v) }
+
+    /** How long «منبّه مهم» rings: 30, 60 (default) or 120 seconds. */
+    var ringSeconds: Int
+        get() = p.getInt("ringSeconds", 60).takeIf { it in setOf(30, 60, 120) } ?: 60
+        set(v) = p.edit { putInt("ringSeconds", v) }
+
+    /** Read the title aloud by default (F-031), off. */
+    var speakDefault: Boolean
+        get() = p.getBoolean("speakDefault", false)
+        set(v) = p.edit { putBoolean("speakDefault", v) }
+
+    /** Hijri display (F-051) and its ±2 day adjustment. */
+    var hijriDisplay: Boolean
+        get() = p.getBoolean("hijriDisplay", false)
+        set(v) = p.edit { putBoolean("hijriDisplay", v) }
+    var hijriAdjust: Int
+        get() = p.getInt("hijriAdjust", 0).coerceIn(-2, 2)
+        set(v) = p.edit { putInt("hijriAdjust", v.coerceIn(-2, 2)) }
+
+    /** Prayer times (F-050): method, Asr rule and city; empty = not set up (nothing is assumed). */
+    var prayerMethod: String
+        get() = p.getString("prayerMethod", "") ?: ""
+        set(v) = p.edit { putString("prayerMethod", v) }
+    var prayerAsr: String
+        get() = p.getString("prayerAsr", "STANDARD") ?: "STANDARD"
+        set(v) = p.edit { putString("prayerAsr", v) }
+    var prayerCity: String
+        get() = p.getString("prayerCity", "") ?: ""
+        set(v) = p.edit { putString("prayerCity", v) }
+
+    /** Morning summary (F-030): minutes after midnight, or -1 = off (default). */
+    var summaryMinutes: Int
+        get() = p.getInt("summaryMinutes", -1)
+        set(v) = p.edit { putInt("summaryMinutes", v) }
+
+    /** Change history (F-072), off by default. */
+    var historyOn: Boolean
+        get() = p.getBoolean("historyOn", false)
+        set(v) = p.edit { putBoolean("historyOn", v) }
+
+    /** Weekly automatic backup to a folder the user picked (F-087): the tree URI, or "" = off. */
+    var autoBackupUri: String
+        get() = p.getString("autoBackupUri", "") ?: ""
+        set(v) = p.edit { putString("autoBackupUri", v) }
+    var lastAutoBackup: Long
+        get() = p.getLong("lastAutoBackup", 0)
+        set(v) = p.edit { putLong("lastAutoBackup", v) }
+
+    /** Quiet re-posts after a swipe, per occurrence (F-021): "taskId|dueAt" → count. */
+    var repostLog: Map<String, String>
+        get() = decode(p.getString("repostLog", "") ?: "")
+        set(v) = p.edit { putString("repostLog", encode(v)) }
+
+    /** The versionCode whose «ما الجديد» was shown (F-106). */
+    var whatsNewSeen: Int
+        get() = p.getInt("whatsNewSeen", 0)
+        set(v) = p.edit { putInt("whatsNewSeen", v) }
+
+    /** Auto-complete a reminder when all its steps are ticked (F-071), off. */
+    var autoCompleteSteps: Boolean
+        get() = p.getBoolean("autoCompleteSteps", false)
+        set(v) = p.edit { putBoolean("autoCompleteSteps", v) }
+
     var onboarded: Boolean
         get() = p.getBoolean("onboarded", false)
         set(v) = p.edit { putBoolean("onboarded", v) }

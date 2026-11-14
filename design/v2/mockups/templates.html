@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Templates</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .hint { display: flex; gap: 8px; align-items: flex-start; padding: 0 24px 4px; font-size: 14px; line-height: 22px; color: var(--on-surface-variant); }
+  .hint i { margin-top: 2px; }
+  .row { min-height: 72px; }
+  .row .ic { width: 40px; height: 40px; border-radius: 50%; background: var(--tertiary-container); color: var(--on-tertiary-container); display: flex; align-items: center; justify-content: center; flex: none; }
+  .row .ic i { width: 22px; height: 22px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar"><span class="iconbtn on-surface"><i data-i="back"></i></span><div class="title t-title-l">من قالب</div></div>
+  <div class="grow" style="overflow:hidden">
+    <div class="hint"><i data-i="info" class="s18"></i><span>القالب يملأ الحقول فقط. لا يُحفظ شيء قبل «حفظ».</span></div>
+    <div class="group-h">مناسبات</div>
+    <div class="group">
+      <div class="row"><span class="ic"><i data-i="cake"></i></span><div class="txt"><div class="h">عيد ميلاد</div><div class="s">كل سنة، تنبيه قبل يوم</div></div><i data-i="chevron" class="chev"></i></div>
+      <div class="row"><span class="ic"><i data-i="heart"></i></span><div class="txt"><div class="h">ذكرى سنوية</div><div class="s">كل سنة، تنبيه قبل أسبوع</div></div><i data-i="chevron" class="chev"></i></div>
+    </div>
+    <div class="group-h">الفواتير والمواعيد</div>
+    <div class="group">
+      <div class="row"><span class="ic"><i data-i="receipt"></i></span><div class="txt"><div class="h">دفع فاتورة شهرية</div><div class="s">كل شهر، تنبيه قبل يومين</div></div><i data-i="chevron" class="chev"></i></div>
+      <div class="row"><span class="ic"><i data-i="medical"></i></span><div class="txt"><div class="h">موعد طبي</div><div class="s">تنبيه قبل يوم وقبل ساعتين</div></div><i data-i="chevron" class="chev"></i></div>
+      <div class="row"><span class="ic"><i data-i="event"></i></span><div class="txt"><div class="h">تجديد وثيقة</div><div class="s num">تنبيه قبل 30 يومًا</div></div><i data-i="chevron" class="chev"></i></div>
+    </div>
+    <div class="group-h">الروتين</div>
+    <div class="group">
+      <div class="row"><span class="ic"><i data-i="pill"></i></span><div class="txt"><div class="h">دواء يومي</div><div class="s">كل يوم، منبّه مهم</div></div><i data-i="chevron" class="chev"></i></div>
+      <div class="row"><span class="ic"><i data-i="wrench"></i></span><div class="txt"><div class="h">صيانة دورية</div><div class="s num">كل 6 أشهر</div></div><i data-i="chevron" class="chev"></i></div>
+      <div class="row"><span class="ic"><i data-i="repeat"></i></span><div class="txt"><div class="h">متابعة أسبوعية</div><div class="s">كل أسبوع</div></div><i data-i="chevron" class="chev"></i></div>
+    </div>
+  </div>
+  <div class="gesturebar"></div>
+</div></body></html>

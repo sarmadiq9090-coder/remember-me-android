@@ -22,21 +22,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Label
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Alarm
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Event
-import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.OutlinedFlag
-import androidx.compose.material.icons.rounded.Remove
-import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -159,10 +144,10 @@ fun EditScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(if (task == null) R.string.new_reminder else R.string.edit_reminder)) },
-                navigationIcon = { TooltipIconButton(Icons.Rounded.Close, stringResource(R.string.back), ::close) },
+                navigationIcon = { TooltipIconButton(Ms.Close, stringResource(R.string.back), ::close) },
                 actions = {
                     if (task != null) Box {
-                        TooltipIconButton(Icons.Rounded.MoreVert, stringResource(R.string.more_options), { menu = true })
+                        TooltipIconButton(Ms.MoreVert, stringResource(R.string.more_options), { menu = true })
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(text = { Text(stringResource(R.string.delete)) }, onClick = { menu = false; onDelete(task) })
                         }
@@ -174,7 +159,7 @@ fun EditScreen(
             Box(Modifier.imePadding()) {
                 BottomActionBar {
                     Button(onClick = ::save, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                        Icon(Icons.Rounded.Check, null, modifier = Modifier.size(20.dp))
+                        Icon(Ms.Check, null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.size(Dimens.s))
                         Text(stringResource(R.string.save))
                     }
@@ -198,11 +183,11 @@ fun EditScreen(
             )
             SectionHeader(stringResource(R.string.schedule_section))
             val rows = mutableListOf<@Composable () -> Unit>()
-            rows += { SwitchRow(Icons.Rounded.Alarm, stringResource(R.string.remind_at_time), null, timed) { timed = it } }
+            rows += { SwitchRow(Ms.Alarm, stringResource(R.string.remind_at_time), null, timed) { timed = it } }
             if (timed) {
-                rows += { SettingsRow(Icons.Rounded.Event, stringResource(R.string.date), L10n.date(context, dueAt!!, zone), { dialog = "date" }, overline = true) }
-                rows += { SettingsRow(Icons.Rounded.Schedule, stringResource(R.string.time), L10n.time(context, dueAt!!, zone), { dialog = "time" }, overline = true) }
-                rows += { SettingsRow(Icons.Rounded.Repeat, stringResource(R.string.repeat), repeatLabel(rep), { dialog = "repeat" }, overline = true) }
+                rows += { SettingsRow(Ms.Event, stringResource(R.string.date), L10n.date(context, dueAt!!, zone), { dialog = "date" }, overline = true) }
+                rows += { SettingsRow(Ms.Schedule, stringResource(R.string.time), L10n.time(context, dueAt!!, zone), { dialog = "time" }, overline = true) }
+                rows += { SettingsRow(Ms.Repeat, stringResource(R.string.repeat), repeatLabel(rep), { dialog = "repeat" }, overline = true) }
                 when (rep) {
                     Repeat.DAYS -> rows += {
                         Column(Modifier.padding(horizontal = Dimens.l, vertical = Dimens.m)) {
@@ -234,11 +219,11 @@ fun EditScreen(
                     }
                     else -> Unit
                 }
-                rows += { SettingsRow(Icons.Rounded.Notifications, stringResource(R.string.early_notice), earlyLabel(early), { dialog = "early" }, overline = true) }
+                rows += { SettingsRow(Ms.Notifications, stringResource(R.string.early_notice), earlyLabel(early), { dialog = "early" }, overline = true) }
             }
             Group(rows)
             if (timed && task == null && !dueAt!!.isAfter(now)) Row(Modifier.padding(horizontal = Dimens.xxl), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                Icon(Ms.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.size(Dimens.s))
                 Text(stringResource(R.string.time_passed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
             }
@@ -247,13 +232,13 @@ fun EditScreen(
             val categories = Category.entries.map { it.code to categoryName(it) }
             if (bigText) {
                 Group(listOf(
-                    { SettingsRow(Icons.Rounded.Flag, stringResource(R.string.priority), priorities.first { it.first == priority }.second, { dialog = "priority" }, overline = true) },
-                    { SettingsRow(Icons.AutoMirrored.Rounded.Label, stringResource(R.string.category), categories.first { it.first == category }.second, { dialog = "category" }, overline = true) },
+                    { SettingsRow(Ms.Flag, stringResource(R.string.priority), priorities.first { it.first == priority }.second, { dialog = "priority" }, overline = true) },
+                    { SettingsRow(Ms.Label, stringResource(R.string.category), categories.first { it.first == category }.second, { dialog = "category" }, overline = true) },
                 ))
             } else {
                 Column(Modifier.padding(horizontal = Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
                     Text(stringResource(R.string.priority), style = MaterialTheme.typography.titleSmall)
-                    Segments(priorities, priority, icons = mapOf("medium" to Icons.Rounded.OutlinedFlag, "high" to Icons.Rounded.Flag)) { priority = it }
+                    Segments(priorities, priority, icons = mapOf("medium" to Ms.OutlinedFlag, "high" to Ms.Flag)) { priority = it }
                     Spacer(Modifier.height(Dimens.s))
                     Text(stringResource(R.string.category), style = MaterialTheme.typography.titleSmall)
                     Segments(categories, category) { category = it }
@@ -355,8 +340,8 @@ fun Segments(options: List<Pair<String, String>>, selected: String, icons: Map<S
 fun Stepper(label: String, value: Int, min: Int, max: Int, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l, vertical = Dimens.xs)) {
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        TooltipIconButton(Icons.Rounded.Remove, stringResource(R.string.decrease), { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min)
+        TooltipIconButton(Ms.Remove, stringResource(R.string.decrease), { onChange((value - 1).coerceAtLeast(min)) }, enabled = value > min)
         Text(value.toString(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = Dimens.s))
-        TooltipIconButton(Icons.Rounded.Add, stringResource(R.string.increase), { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max)
+        TooltipIconButton(Ms.Add, stringResource(R.string.increase), { onChange((value + 1).coerceAtMost(max)) }, enabled = value < max)
     }
 }

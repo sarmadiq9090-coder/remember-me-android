@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Prayer-relative time</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .bg { flex: 1; min-height: 0; overflow: hidden; }
+  .seg { margin: 4px 16px 12px; }
+  .lab { font-size: 15px; line-height: 22px; font-weight: 700; padding: 4px 24px 8px; }
+  .pch { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 24px 12px; }
+  .pch .chip { min-height: 40px; font-size: 15px; }
+  .offset { display: flex; align-items: center; gap: 12px; padding: 0 16px 12px; flex-wrap: wrap; }
+  .offset .seg { margin: 0; flex: 1 1 140px; }
+  .stepper { display: flex; align-items: center; gap: 4px; }
+  .stepper .sb { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--outline); display: flex; align-items: center; justify-content: center; color: var(--on-surface); }
+  .stepper .v { min-width: 84px; text-align: center; font-size: 16px; line-height: 24px; font-weight: 500; }
+  .pv { margin: 0 16px; background: var(--sc-high); border-radius: 16px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; }
+  .pv .a { font-size: 17px; line-height: 26px; font-weight: 700; }
+  .pv .b { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); }
+  .note { display: flex; gap: 8px; align-items: flex-start; padding: 12px 24px 0; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+  .note i { margin-top: 1px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="bg">
+    <div class="topbar"><span class="iconbtn on-surface"><i data-i="close"></i></span><div class="title t-title-l">تذكير جديد</div></div>
+  </div>
+  <div class="scrim"></div>
+  <!-- Time sheet with the prayer-relative option (pending approval in FEATURES.md). -->
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-t">الوقت</div>
+    <div class="seg"><div><i data-i="clock"></i>ساعة محددة</div><div class="sel"><i data-i="check"></i>حسب الصلاة</div></div>
+    <div class="lab">الصلاة</div>
+    <div class="pch">
+      <span class="chip">الفجر</span><span class="chip">الظهر</span><span class="chip sel"><i data-i="check"></i>العصر</span><span class="chip">المغرب</span><span class="chip">العشاء</span>
+    </div>
+    <div class="offset">
+      <div class="seg"><div>قبل</div><div class="sel"><i data-i="check"></i>بعد</div></div>
+      <div class="stepper"><span class="sb"><i data-i="minus" class="s20"></i></span><span class="v num">15 دقيقة</span><span class="sb"><i data-i="add" class="s20"></i></span></div>
+    </div>
+    <div class="pv"><i data-i="event" class="pri"></i><div><div class="a num">اليوم نحو 3:05 م (تقريبي)</div><div class="b num">العصر 2:50 م في بغداد</div></div></div>
+    <div class="note"><i data-i="info" class="s18"></i><span>تُحسب الأوقات على هاتفك من المدينة التي تختارها، دون موقع ودون إنترنت.</span></div>
+    <div style="padding:0 12px"><span class="btn text">المدينة: بغداد</span><span class="btn text">الطريقة: أم القرى</span></div>
+    <div class="acts"><span class="btn outlined">إلغاء</span><span class="btn filled">تم</span></div>
+    <div class="gesturebar" style="background:var(--sc-low)"></div>
+  </div>
+</div></body></html>

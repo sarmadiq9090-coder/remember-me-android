@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Lock screen notifications</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  /* Lock screen is system UI. Wallpaper as in the widget page; cards neutral system colours. */
+  .phone { background: linear-gradient(160deg, #3F5A4C 0%, #24392E 55%, #142219 100%); color: #fff;
+    --card: rgba(255,255,255,.92); --sys-ink: #1F1F1F; --sys-muted: #4A4A4A; }
+  @media (prefers-color-scheme: dark) { .phone { background: linear-gradient(160deg, #24342C 0%, #18241E 60%, #0E1612 100%);
+    --card: rgba(42,43,45,.94); --sys-ink: #ECECEC; --sys-muted: #C4C4C4; } }
+  .phone { --icon-cut: #fff; }
+  .statusbar { color: #fff; }
+  .lockic { display: flex; justify-content: center; padding-top: 4px; color: #fff; }
+  .clock { text-align: center; font-size: 84px; line-height: 96px; font-weight: 400; margin-top: 8px; color: #fff; font-variant-numeric: tabular-nums; }
+  .date { text-align: center; font-size: 16px; line-height: 24px; color: rgba(255,255,255,.9); }
+  .ncard { margin: 0 12px 8px; background: var(--card); color: var(--sys-ink); border-radius: 24px; padding: 14px 16px 6px; }
+  .nhead { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 18px; color: var(--sys-muted); }
+  .nhead > i[data-i] { width: 18px; height: 18px; }
+  .nicon { width: 28px; height: 28px; border-radius: 50%; background: #246A4B; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+  .nicon i { width: 18px; height: 18px; }
+  .nt { font-size: 16px; line-height: 24px; font-weight: 600; margin: 6px 36px 0 0; }
+  .nb { font-size: 14px; line-height: 22px; color: var(--sys-muted); margin: 0 36px 0 0; }
+  .nacts { display: flex; gap: 4px; margin: 4px 24px 0 0; }
+  .nacts span { color: #246A4B; font-size: 14px; font-weight: 600; padding: 0 12px; min-height: 48px; display: inline-flex; align-items: center; }
+  @media (prefers-color-scheme: dark) { .nacts span { color: #8FD5AF; } }
+  .cap { margin: 16px 24px 8px; font-size: 13px; line-height: 20px; color: #fff; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .dot { color: var(--sys-muted); }
+  .shortcuts { display: flex; justify-content: space-between; padding: 0 32px 12px; flex: none; }
+  .shortcuts span { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.18); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="lockic"><i data-i="lock"></i></div>
+  <div class="clock">4:20</div>
+  <div class="date">السبت 14 نوفمبر</div>
+
+  <!-- (a) Setting «على شاشة القفل» = «أخفِ التفاصيل»: setPublicVersion() with no title/note; actions kept -->
+  <div class="cap">على شاشة القفل: أخفِ التفاصيل</div>
+  <div class="ncard">
+    <div class="nhead"><span class="nicon"><i data-i="bellfill"></i></span><span>ذكرني</span><span class="dot">•</span><span>الآن</span></div>
+    <div class="nt">لديك تذكير</div>
+    <div class="nb">افتح القفل لرؤيته</div>
+    <div class="nacts"><span>تم</span><span class="num">أجّل 10 دقائق</span></div>
+  </div>
+
+  <!-- (b) «أظهر التفاصيل» + «تثبيت التذكير على شاشة القفل»: full content, ongoing (pin glyph) -->
+  <div class="cap">على شاشة القفل: أظهر التفاصيل + مثبّت</div>
+  <div class="ncard">
+    <div class="nhead"><span class="nicon"><i data-i="bellfill"></i></span><span>ذكرني</span><span class="dot">•</span><span>الآن</span><i data-i="pin"></i></div>
+    <div class="nt">دواء الضغط</div>
+    <div class="nb num">حان الوقت، 2:00 م</div>
+    <div class="nacts"><span>تم</span><span class="num">أجّل 10 دقائق</span></div>
+  </div>
+  <div class="grow"></div>
+  <div class="shortcuts"><span></span><span></span></div>
+  <div class="gesturebar" style="--on-surface:#fff"></div>
+</div></body></html>

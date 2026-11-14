@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Quick Add, unclear time</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<script>KIT.icons.mic = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"/></svg>';</script>
+<style>
+  .bg { flex: 1; min-height: 0; overflow: hidden; }
+  .scrim { z-index: 1; }
+  .ime { position: absolute; left: 0; right: 0; bottom: 24px; z-index: 2; }
+  .gesturebar.k { position: absolute; left: 0; right: 0; bottom: 0; background: var(--sc-highest); z-index: 2; }
+  .sheet.qa { bottom: 294px; z-index: 3; padding-bottom: 4px; }
+  .qfield { margin: 4px 16px 0; background: var(--sc-highest); border-radius: 8px 8px 0 0; border-bottom: 2px solid var(--primary); padding: 8px 16px 10px; }
+  .qfield .lbl { font-size: 12px; line-height: 16px; color: var(--primary); }
+  .qfield .v { font-size: 16px; line-height: 28px; }
+  .qfield { display: flex; align-items: center; gap: 4px; padding-inline-end: 4px; }
+  .qfield .in { flex: 1; min-width: 0; }
+  .preview { margin: 12px 16px 0; background: var(--sc-high); border-radius: 16px; padding: 12px 16px; }
+  .ask { display: flex; align-items: center; gap: 10px; font-size: 16px; line-height: 26px; font-weight: 700; }
+  .ask i { color: var(--tertiary); }
+  .pv2 { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); padding-inline-start: 34px; }
+  .pv2 b { color: var(--on-surface); font-weight: 500; }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .choices .chip { min-height: 40px; font-size: 15px; background: var(--sc-low); }
+  .hint { font-size: 13px; line-height: 20px; color: var(--on-surface-variant); padding: 10px 24px 0; display: flex; gap: 6px; align-items: center; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="bg">
+    <div class="topbar"><span class="brand" data-brand></span><div class="title t-title-l">ذكرني</div><span class="iconbtn"><i data-i="search"></i></span><span class="iconbtn"><i data-i="settings"></i></span></div>
+    <div class="sec"><span class="t">اليوم</span><span class="n num">3</span></div>
+    <div class="group">
+      <div class="rem"><span class="done-btn"></span><div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div><div class="ttl">اجتماع الفريق</div></div></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <!-- Unclear phrase: the app asks, offering at most 4 dated choices. «حفظ» stays disabled until one is picked. -->
+  <div class="sheet qa">
+    <div class="handle"></div>
+    <div class="qfield"><div class="in"><div class="lbl">اكتب التذكير وموعده</div><div class="v">اتصل بأحمد الخميس 9<span class="caret"></span></div></div><span class="iconbtn" title="إدخال صوتي" aria-label="إدخال صوتي"><i data-i="mic"></i></span></div>
+    <div class="preview">
+      <div class="ask"><i data-i="info"></i><span>الساعة 9 صباحًا أم مساءً؟</span></div>
+      <div class="pv2">العنوان: <b>اتصل بأحمد</b></div>
+      <div class="choices">
+        <span class="chip num"><i data-i="event"></i>الخميس 19 نوفمبر، 9:00 ص</span>
+        <span class="chip num"><i data-i="event"></i>الخميس 19 نوفمبر، 9:00 م</span>
+        <span class="chip">بلا موعد</span>
+      </div>
+    </div>
+    <div class="hint"><i data-i="info" class="s16"></i>اختر موعدًا أو «بلا موعد»</div>
+    <div class="acts">
+      <span class="btn outlined">خيارات أكثر</span>
+      <span class="btn filled disabled"><i data-i="check"></i>حفظ</span>
+    </div>
+  </div>
+  <div class="ime">
+    <div class="kr"><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span></div>
+    <div class="kr"><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span></div>
+    <div class="kr"><span class="k m"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k"></span><span class="k m"></span></div>
+    <div class="kr"><span class="k m"></span><span class="k"></span><span class="k w"></span><span class="k"></span><span class="k m"></span></div>
+  </div>
+  <div class="gesturebar k"></div>
+</div></body></html>

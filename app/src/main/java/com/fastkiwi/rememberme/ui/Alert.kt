@@ -17,11 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -98,10 +93,11 @@ fun AlertScreen(
     onEdit: () -> Unit,
     onLater: () -> Unit,
     hidden: Boolean = false,
+    pickFirst: Boolean = false,
 ) {
     val context = LocalContext.current
     val zone = ZoneId.systemDefault()
-    var picking by rememberSaveable { mutableStateOf(false) }
+    var picking by rememberSaveable(task.id) { mutableStateOf(pickFirst) }
     val bigText = LocalDensity.current.fontScale >= 1.5f
     val due = task.dueAt!!
     val minutesLate = (now.toEpochMilli() - due.toEpochMilli()) / 60_000
@@ -134,7 +130,7 @@ fun AlertScreen(
                         modifier = Modifier.padding(horizontal = Dimens.l, vertical = Dimens.s))
                 }
                 Spacer(Modifier.weight(1f))
-                TooltipIconButton(Icons.Rounded.Edit, stringResource(R.string.open_task), onEdit)
+                TooltipIconButton(Ms.Edit, stringResource(R.string.open_task), onEdit)
                 val laterDesc = stringResource(R.string.keep_waiting)
                 TextButton(onClick = onLater, modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = laterDesc }) {
                     Text(stringResource(R.string.later))
@@ -147,11 +143,11 @@ fun AlertScreen(
             ) {
                 Spacer(Modifier.size(Dimens.l))
                 Box(Modifier.size(64.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Rounded.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
+                    Icon(Ms.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
                 }
                 TimeText(due, MaterialTheme.typography.displayLarge, if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, ampmSize = 28)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (late) Icon(Icons.Rounded.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp).padding(end = Dimens.xs))
+                    if (late) Icon(Ms.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp).padding(end = Dimens.xs))
                     Text(
                         if (late) L10n.lateLine(context, due, now)
                         else stringResource(R.string.due_now),
@@ -185,7 +181,7 @@ fun AlertScreen(
                     }
                     val done: @Composable (Modifier) -> Unit = { m ->
                         Button(onClick = onDone, modifier = m.heightIn(min = 64.dp)) {
-                            Icon(Icons.Rounded.Check, null, modifier = Modifier.size(24.dp))
+                            Icon(Ms.Check, null, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.size(Dimens.s))
                             Text(stringResource(R.string.done), style = MaterialTheme.typography.labelLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold))
                         }

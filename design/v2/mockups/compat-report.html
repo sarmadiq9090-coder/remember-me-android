@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Compatibility report</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .intro { padding: 0 24px 12px; font-size: 14px; line-height: 22px; color: var(--on-surface-variant); }
+  .rep { margin: 0 16px; background: var(--sc); border-radius: 16px; padding: 12px 16px; font-size: 13px; line-height: 21px; }
+  .rep div { padding: 1px 0; }
+  .rep .k { color: var(--on-surface-variant); }
+  .lt { direction: ltr; unicode-bidi: isolate; }
+  .not { padding: 12px 24px 0; }
+  .not .t { font-size: 15px; line-height: 22px; font-weight: 700; margin-bottom: 4px; }
+  .not .l { display: flex; gap: 8px; align-items: center; font-size: 14px; line-height: 24px; color: var(--on-surface-variant); }
+  .not .l i { width: 18px; height: 18px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar"><span class="iconbtn on-surface"><i data-i="back"></i></span><div class="title t-title-l">تقرير التوافق</div></div>
+  <div class="grow" style="overflow:hidden">
+    <div class="intro">تقرير قصير عن هاتفك ونتائج الفحص، لتشاركه بنفسك إن أردت. لا يُرسَل شيء تلقائيًا.</div>
+    <!-- Exactly the text that will be shared (ACTION_SEND, text/plain). Latin runs are bidi-isolated. -->
+    <div class="rep num">
+      <div class="lt" style="text-align:right">compat-report@1</div>
+      <div><span class="k">التطبيق:</span> <span class="lt">1.0.0 (100)</span></div>
+      <div><span class="k">الهاتف:</span> <span class="lt">Xiaomi 23021RAA2Y</span></div>
+      <div><span class="k">أندرويد:</span> 14 (<span class="lt">API 34</span>)، <span class="lt">HyperOS 1.0</span></div>
+      <div><span class="k">اللغة:</span> <span class="lt">ar</span></div>
+      <div><span class="k">الإشعارات:</span> جاهز، القناة: صوت مطفأ</div>
+      <div><span class="k">المنبّهات الدقيقة:</span> جاهز (<span class="lt">USE_EXACT_ALARM</span>)</div>
+      <div><span class="k">الشاشة الكاملة:</span> مسموح، <span class="k">البطارية:</span> مقيّدة، <span class="k">عدم الإزعاج:</span> مطفأ</div>
+      <div><span class="k">اختبار التنبيه:</span> المنبّه نجح (1 ث)، الإشعار نجح، الصوت غير معروف، الاهتزاز نجح، الشاشة الكاملة لم ينجح، الأزرار نجح</div>
+      <div><span class="k">التأخير:</span> الوسيط 2 ث، الأسوأ 41 ث</div>
+      <div><span class="k">التذكيرات المؤقتة:</span> <span class="lt">11–100</span></div>
+    </div>
+    <div class="not">
+      <div class="t">ما لا يتضمنه التقرير:</div>
+      <div class="l"><i data-i="eyeoff"></i>العناوين والملاحظات والأوقات والقوائم</div>
+      <div class="l"><i data-i="eyeoff"></i>معرّفات الهاتف والحسابات</div>
+      <div class="l"><i data-i="eyeoff"></i>الموقع والمنطقة الزمنية</div>
+    </div>
+  </div>
+  <div class="bottombar"><span class="btn outlined lg"><i data-i="copy"></i>نسخ</span><span class="btn filled lg"><i data-i="share"></i>مشاركة</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

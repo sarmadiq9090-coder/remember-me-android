@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Home on a tablet</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  body { width: 1280px; height: 800px; }
+  .phone { width: 1280px; height: 800px; }
+  .main { flex: 1; min-height: 0; display: flex; }
+  .list { width: 440px; flex: none; display: flex; flex-direction: column; min-height: 0; position: relative; }
+  .list .fab { bottom: 16px; left: 50%; transform: translateX(-50%); }
+  .list .topbar .brand { margin-inline-start: 16px; }
+  .rem.selected { background: var(--secondary-container); }
+  .detail { flex: 1; min-width: 0; margin: 8px 16px 16px; background: var(--sc-low); border-radius: 28px; display: flex; flex-direction: column; overflow: hidden; }
+  .detail .dt { display: flex; align-items: center; padding: 8px 8px 0 16px; }
+  html[dir=rtl] .detail .dt { padding: 8px 16px 0 8px; }
+  .detail .hero { padding: 8px 32px 16px; }
+  .detail .big { font-size: 45px; line-height: 56px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .detail .big .ap { font-size: 24px; }
+  .detail .grp { margin: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  .detail .grp .row { background: var(--sc); border-radius: 16px; margin-bottom: 8px; }
+  .detail .prog { display: flex; align-items: center; gap: 12px; }
+  .detail .prog .lin { flex: 1; }
+  .detail .acts { margin-top: auto; display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px 20px; }
+  .detail .acts .btn { min-width: 160px; }
+  .banner { margin: 4px 16px 4px; }
+  .detail { --icon-cut: var(--sc-low); }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="main">
+    <!-- List pane: the phone Home, unchanged (banner, chips, sections) -->
+    <div class="list">
+      <div class="topbar">
+        <span class="brand" data-brand></span>
+        <div class="title t-title-l">ذكرني</div>
+        <span class="iconbtn"><i data-i="calendar"></i></span>
+        <span class="iconbtn"><i data-i="search"></i></span>
+        <span class="iconbtn"><i data-i="settings"></i></span>
+      </div>
+      <div class="banner alarm"><i data-i="warning"></i><div class="msg">قد لا تصل التذكيرات في وقتها.</div><span class="btn text">إصلاح</span></div>
+      <div class="chips">
+        <span class="chip sel"><i data-i="check"></i>الكل</span>
+        <span class="chip"><i data-i="flagfill"></i>مهم</span>
+        <span class="chip">عمل</span>
+        <span class="chip">المنزل</span>
+      </div>
+      <div class="grow" style="overflow:hidden">
+        <div class="sec" style="padding-top:8px"><i data-i="warning" class="s20 err"></i><span class="t err">المتأخرة</span><span class="n num">1</span></div>
+        <div class="group">
+          <div class="rem late"><span class="done-btn"></span>
+            <div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div>
+              <div class="ttl">دواء الضغط</div>
+              <div class="meta"><span class="it"><i data-i="repeat"></i>كل يوم</span><span class="tag"><i data-i="flagfill"></i>مهم</span></div></div></div>
+        </div>
+        <div class="sec"><span class="t">اليوم</span><span class="n num">3</span></div>
+        <div class="group">
+          <div class="rem selected"><span class="done-btn"></span>
+            <div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div>
+              <div class="ttl">اجتماع الفريق</div>
+              <div class="meta"><span class="it"><i data-i="label"></i>عمل</span><span class="it num"><i data-i="tasks"></i>2 من 5</span></div></div></div>
+          <div class="rem"><span class="done-btn"></span>
+            <div class="body"><div class="tl"><span class="time">7:00 <span class="ap">م</span></span><span class="tag snz"><i data-i="snooze"></i>مؤجّل</span></div>
+              <div class="ttl">شراء الخبز والحليب</div></div></div>
+          <div class="rem"><span class="done-btn"></span>
+            <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">م</span></span></div>
+              <div class="ttl">مراجعة درس الرياضيات</div></div></div>
+        </div>
+        <div class="sec"><span class="t">القادمة</span><span class="n num">4</span></div>
+      </div>
+      <!-- No NavigationRail (one destination): the extended FAB sits at the bottom of the list pane -->
+      <div class="fab"><i data-i="add"></i>تذكير جديد</div>
+    </div>
+    <!-- Detail pane: the selected reminder; edit opens the editor in this pane -->
+    <div class="detail">
+      <div class="dt"><span class="grow"></span>
+        <span class="iconbtn"><i data-i="edit"></i></span><span class="iconbtn"><i data-i="more"></i></span></div>
+      <div class="hero">
+        <div class="big">5:30 <span class="ap">م</span></div>
+        <div class="t-body-l muted">اليوم، السبت 14 نوفمبر</div>
+        <div class="t-headline-m" style="margin-top:8px">اجتماع الفريق</div>
+      </div>
+      <div class="grp">
+        <div class="row"><i data-i="event"></i><div class="txt"><div class="ov">التاريخ</div><div class="h reg">السبت 14 نوفمبر 2026</div></div></div>
+        <div class="row"><i data-i="repeat"></i><div class="txt"><div class="ov">التكرار</div><div class="h reg">كل أسبوع يوم السبت</div></div></div>
+        <div class="row"><i data-i="bell"></i><div class="txt"><div class="ov">التنبيهات</div><div class="h reg">عند الموعد، قبل 15 دقيقة</div></div></div>
+        <div class="row"><i data-i="label"></i><div class="txt"><div class="ov">التصنيف</div><div class="h reg">عمل</div></div></div>
+        <div class="row" style="grid-column:1 / span 2"><i data-i="tasks"></i><div class="txt"><div class="ov">الخطوات</div>
+          <div class="prog"><span class="h reg num">2 من 5</span><span class="lin"><b style="width:40%"></b></span></div></div></div>
+      </div>
+      <!-- Pane actions: secondary first, primary at the end -->
+      <div class="acts"><span class="btn outlined lg">أجّل</span><span class="btn filled lg"><i data-i="check"></i>تم</span></div>
+    </div>
+  </div>
+  <div class="gesturebar"></div>
+</div></body></html>

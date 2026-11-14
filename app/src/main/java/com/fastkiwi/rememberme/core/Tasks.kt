@@ -182,15 +182,33 @@ object Tasks {
     fun due(state: AppState, now: Instant): List<Task> =
         state.tasks.filter { it.active && it.dueAt != null && !it.dueAt.isAfter(now) }.sortedBy { it.dueAt }
 
-    /** The moment of a task's early notice, or null. */
+    /** The moment of a task's first early notice (`remindBefore`), or null. */
     fun noticeAt(t: Task): Instant? = if (t.remindBefore > 0 && t.dueAt != null) t.dueAt.minusSeconds(t.remindBefore * 60L) else null
+
+    /**
+     * All early-notice lead times of a task, largest first (FEATURES.md F-046): `remindBefore`, which
+     * Windows knows, plus up to 3 more kept in the Android extension.
+     */
+    fun noticeMinutes(t: Task): List<Int> =
+        (listOf(t.remindBefore) + AlertExt.of(t).alerts).filter { it > 0 }.distinct().sortedDescending()
+
+    /** The notice moments of a task, earliest first. */
+    fun noticeTimes(t: Task): List<Instant> = t.dueAt?.let { d -> noticeMinutes(t).map { d.minusSeconds(it * 60L) } }.orEmpty()
+
+    /**
+     * The notice that applies at [now]: the latest moment that has come (and is after the last change),
+     * as its log key — the due time alone for `remindBefore` (the 0.1 key), else "due#minutes".
+     */
+    fun noticeKey(t: Task, now: Instant): String? {
+        val d = t.dueAt ?: return null
+        if (!t.active || !d.isAfter(now)) return null
+        val m = noticeMinutes(t).lastOrNull { val at = d.minusSeconds(it * 60L); !at.isAfter(now) && at.isAfter(t.updatedAt) } ?: return null
+        return if (m == t.remindBefore) Codec.iso(d) else Codec.iso(d) + "#" + m
+    }
 
     /**
      * Tasks whose early notice is due now. A notice moment at or before the task's last change is
      * skipped, so a snooze or an edit that moves the time into the lead window does not announce at once.
      */
-    fun upcoming(state: AppState, now: Instant): List<Task> = state.tasks.filter { t ->
-        val at = noticeAt(t)
-        t.active && at != null && t.dueAt!!.isAfter(now) && !at.isAfter(now) && at.isAfter(t.updatedAt)
-    }
+    fun upcoming(state: AppState, now: Instant): List<Task> = state.tasks.filter { noticeKey(it, now) != null }
 }

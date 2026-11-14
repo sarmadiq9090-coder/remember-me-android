@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Home swipe actions</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  /* Swipe actions on a reminder row (Compose SwipeToDismissBox; directions follow the layout direction automatically):
+     - StartToEnd (in RTL the finger moves right → left, the row slides LEFT): «تم». Applies at once, haptic, Undo snackbar.
+       The revealed background sits at the START edge (right in RTL): primary + check + «تم».
+     - EndToStart (in RTL the row slides RIGHT): «أجّل». Opens the snooze sheet; the row springs back (confirmValueChange
+       returns false). Background at the END edge (left in RTL): tertiaryContainer + snooze + «أجّل».
+     TalkBack: both also exist as customActions «تم» / «أجّل» on the row. Threshold: 40 % of the row width. */
+  .swipe.toend > .rem { transform: translateX(-120px); border-radius: 4px; }
+  .swipe.tostart > .rem { transform: translateX(120px); border-radius: 4px; }
+  .group > .swipe { border-radius: 4px; }
+  .group > .swipe:first-child { border-top-left-radius: 20px; border-top-right-radius: 20px; }
+  .group > .swipe:last-child { border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+  .swipe .bg i[data-i] { width: 24px; height: 24px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="brand" data-brand></span>
+    <div class="title t-title-l">ذكرني</div>
+    <span class="iconbtn"><i data-i="calendar"></i></span>
+    <span class="iconbtn"><i data-i="search"></i></span>
+    <span class="iconbtn"><i data-i="settings"></i></span>
+  </div>
+  <div class="chips">
+    <span class="chip sel"><i data-i="check"></i>الكل</span>
+    <span class="chip"><i data-i="flagfill"></i>مهم</span>
+    <span class="chip">عمل</span>
+    <span class="chip">المنزل</span>
+    <span class="chip">هذا الأسبوع</span>
+    <span class="chip"><i data-i="lists"></i>القوائم…</span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="sec" style="padding-top:12px"><i data-i="warning" class="s20 err"></i><span class="t err">المتأخرة</span><span class="n num">1</span></div>
+    <div class="group">
+      <div class="rem late"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">2:00 <span class="ap">م</span></span><span class="when lateinfo">متأخر ساعتين</span></div>
+          <div class="ttl">دواء الضغط</div>
+          <div class="meta"><span class="it"><i data-i="repeat"></i>كل يوم</span><span class="tag"><i data-i="flagfill"></i>مهم</span><span class="tag neutral"><i data-i="alarm"></i>منبّه</span></div></div></div>
+    </div>
+
+    <div class="sec"><span class="t">اليوم</span><span class="n num">2</span></div>
+    <div class="group">
+      <!-- StartToEnd = «تم» -->
+      <div class="swipe toend"><div class="bg done"><i data-i="check"></i>تم</div>
+        <div class="rem"><span class="done-btn"></span>
+          <div class="body"><div class="tl"><span class="time">5:30 <span class="ap">م</span></span></div>
+            <div class="ttl">اجتماع الفريق</div>
+            <div class="meta"><span class="it"><i data-i="label"></i>عمل</span><span class="it num"><i data-i="tasks"></i>2 من 5</span></div></div></div></div>
+      <!-- EndToStart = «أجّل» -->
+      <div class="swipe tostart"><div class="bg snooze">أجّل<i data-i="snooze"></i></div>
+        <div class="rem"><span class="done-btn"></span>
+          <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">م</span></span></div>
+            <div class="ttl">مراجعة درس الرياضيات</div>
+            <div class="meta"><span class="it"><i data-i="repeat"></i>كل الأحد، الثلاثاء، الخميس</span></div></div></div></div>
+    </div>
+
+    <div class="sec"><span class="t">القادمة</span><span class="n num">4</span></div>
+    <div class="group">
+      <div class="rem"><span class="done-btn"></span>
+        <div class="body"><div class="tl"><span class="time">9:00 <span class="ap">ص</span></span><span class="when">غدًا</span></div>
+          <div class="ttl">دفع الإيجار</div>
+          <div class="meta"><span class="it"><i data-i="repeat"></i>كل شهر</span><span class="it"><i data-i="bell"></i>تنبيهان</span></div></div></div>
+    </div>
+  </div>
+  <!-- Undo snackbar after a swipe «تم» (SnackbarDuration.Long), above the FAB -->
+  <div class="snack" style="bottom:112px"><span class="grow">أُنجز «شراء الخبز والحليب»</span><span class="btn text">تراجع</span></div>
+  <div class="fab center"><i data-i="add"></i>تذكير جديد</div>
+  <div class="gesturebar"></div>
+</div></body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Editor 1.0.0 (top)</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .form { padding: 8px 16px 0; }
+  .dt { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .dt .chip { color: var(--on-surface); font-size: 15px; min-height: 40px; background: var(--sc-high); border-color: transparent; }
+  .row.add { color: var(--primary); font-weight: 500; min-height: 56px; }
+  .row.add > i[data-i] { color: var(--primary); }
+  .row.sm { min-height: 56px; padding-top: 8px; padding-bottom: 8px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- TopAppBar: close (asks before discarding) + title; ⋮ in edit mode (السجل، نسخ، حذف). No Save up here. -->
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="close"></i></span>
+    <div class="title t-title-l">تذكير جديد</div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <!-- PRD §6.2 order: 1 title, 2 date/time, 3 repeat, 4 alerts, 5 list & tags, 6 priority, 7 note & steps, 8 advanced (collapsed) -->
+    <div class="form"><div class="field"><span class="lbl">العنوان</span>موعد طبيب الأسنان</div></div>
+    <div class="group-h">الموعد</div>
+    <div class="group">
+      <!-- date and time as two chips on one row; × = «بلا موعد» (the reminder becomes untimed) -->
+      <div class="row"><i data-i="event"></i>
+        <div class="dt"><span class="chip">الاثنين 16 نوفمبر</span><span class="chip num">10:30 ص</span></div>
+        <span class="iconbtn"><i data-i="close" class="s20"></i></span></div>
+      <div class="row"><i data-i="repeat"></i><div class="txt"><div class="ov">التكرار</div><div class="h reg">لا يتكرر</div></div></div>
+    </div>
+    <div class="group-h">التنبيهات</div>
+    <div class="group">
+      <div class="row sm"><i data-i="bell"></i><div class="txt"><div class="h reg">عند الموعد</div></div><span class="switch on"></span></div>
+      <div class="row sm"><i data-i="bell"></i><div class="txt"><div class="h reg">قبل يوم</div><div class="s num">الأحد 15 نوفمبر، 10:30 ص</div></div><span class="switch on"></span></div>
+      <div class="row sm"><i data-i="bell"></i><div class="txt"><div class="h reg">قبل ساعتين</div><div class="s num">8:30 ص</div></div><span class="switch"></span></div>
+      <div class="row add"><i data-i="add"></i><div class="txt">إضافة تنبيه</div></div>
+    </div>
+    <div class="group-h">التنظيم</div>
+    <div class="group">
+      <div class="row"><i data-i="label"></i><div class="txt"><div class="ov">التصنيف</div><div class="h reg">شخصي</div></div></div>
+      <div class="row"><i data-i="tag"></i><div class="txt"><div class="ov">الوسوم</div><div class="h reg">صحة</div></div></div>
+    </div>
+  </div>
+  <!-- The single primary: «حفظ», full width, sticky at the bottom, rides above the keyboard (imePadding) -->
+  <div class="bottombar"><span class="btn filled lg block"><i data-i="check"></i>حفظ</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

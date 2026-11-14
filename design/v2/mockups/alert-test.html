@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Alert test results</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .head { margin: 0 16px 0; background: var(--sc); border-radius: 16px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; }
+  .head .t { font-size: 17px; line-height: 26px; font-weight: 700; }
+  .head .b { font-size: 14px; line-height: 22px; color: var(--on-surface-variant); }
+  .hl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .hl .h { flex: 1 1 auto; }
+  .n { font-size: 13px; color: var(--on-surface-variant); font-weight: 500; }
+  .row > i.st { width: 24px; height: 24px; }
+  .ok-i { color: var(--primary) !important; }
+  .row.need .status.need { color: var(--on-error-container); }
+  .row.need .btn.tonal { background: var(--on-error-container); color: var(--error-container); }
+  .q { font-size: 15px; line-height: 24px; font-weight: 500; margin-top: 6px; }
+  .note { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); margin-top: 6px; }
+  .note i { width: 18px; height: 18px; margin-top: 1px; color: var(--tertiary); }
+  .row.ask { background: var(--sc-high); }
+  .row { min-height: 0; padding-top: 10px; padding-bottom: 10px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <span class="iconbtn on-surface"><i data-i="back"></i></span>
+    <div class="title t-title-l">اختبار التنبيه</div>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="head"><i data-i="test" style="color:var(--primary)"></i>
+      <div><div class="t">انتهى الاختبار</div><div class="b num">4 نجحت، 1 لم ينجح، 1 ينتظر جوابك</div><div class="b num" style="opacity:.85">اختبرتَ: تذكير عادي، بعد 10 ثوانٍ</div></div></div>
+    <div class="group-h" style="padding-top:12px">الأجزاء الستة</div>
+    <div class="group">
+      <div class="row top"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">المنبّه في وقته</span><span class="status ok">نجح</span></div><div class="s num">وصل بعد 10 ثوانٍ، متأخرًا ثانية واحدة</div></div></div>
+      <div class="row top"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">الإشعار</span><span class="status ok">نجح</span></div><div class="s">ظهر مع زرّي «تم» و«أجّل»</div></div></div>
+      <!-- User answer needed: status «غير معروف» until answered.
+           Objective sub-check under «الصوت» (F-009): «بدأ تشغيل الصوت» نجح/لم ينجح, s «مستوى الصوت 60–80 %» (player isPlaying within 3 s, volume band).
+           The start screen asks the style (تذكير عادي / منبّه مهم) and the delay (بعد 10 ثوانٍ / بعد ساعة / غدًا 7:00 ص) (F-027). -->
+      <div class="row top ask"><i data-i="volume" class="st"></i><div class="txt">
+        <div class="hl"><span class="h">الصوت</span><span class="status unk">ينتظر جوابك</span></div>
+        <div class="q">هل سمعت الصوت؟</div>
+        <div class="acts2"><span class="btn outlined sm" style="min-width:88px">لا</span><span class="btn outlined sm" style="min-width:88px">نعم</span></div>
+        <div class="note"><i data-i="infofill"></i><span>الهاتف صامت: التذكير العادي سيهتز فقط.</span></div></div></div>
+      <div class="row top"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">الاهتزاز</span><span class="status ok">نجح</span></div><div class="s">أجبتَ: نعم</div></div></div>
+      <div class="row need top"><i data-i="errorfill" class="st"></i><div class="txt">
+        <div class="hl"><span class="h">الشاشة الكاملة</span><span class="status need">لم ينجح</span></div>
+        <div class="s">أندرويد لم يسمح بعرضها فوق شاشة القفل</div>
+        <div class="acts2" style="align-items:center"><span class="src">أندرويد</span><span class="grow"></span><span class="btn tonal sm">اسمح</span></div></div></div>
+      <div class="row top"><i data-i="okfill" class="st ok-i"></i><div class="txt"><div class="hl"><span class="h">الأزرار</span><span class="status ok">نجح</span></div><div class="s">ضغطتَ «تم» في الإشعار</div></div></div>
+    </div>
+    <div class="cap2" style="padding-top:8px">الاختبار لا يحفظ أي تذكير.</div>
+  </div>
+  <div class="bottombar"><span class="btn outlined lg"><i data-i="refresh"></i>أعد الاختبار</span><span class="btn filled lg"><i data-i="check"></i>تم</span></div>
+  <div class="gesturebar" style="background:var(--sc)"></div>
+</div></body></html>

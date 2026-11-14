@@ -135,7 +135,7 @@ class AppUiTest {
             rule.waitUntil(10_000) { Repo.state(app).tasks.any { it.title == "موعد طبيب الأسنان" && it.dueAt != null } }
             rule.onNodeWithContentDescription("الإعدادات").performClick()
             shot("06-settings-ar")
-            rule.onNodeWithText("السماح بالعمل في الخلفية").performClick()
+            rule.onNodeWithText("صحة التذكيرات").performClick()
             shot("07-background-ar")
         }
     }

@@ -8,6 +8,7 @@ import com.fastkiwi.rememberme.core.Planner
 import com.fastkiwi.rememberme.core.SnoozePreset
 import com.fastkiwi.rememberme.data.Prefs
 import com.fastkiwi.rememberme.data.Store
+import com.fastkiwi.rememberme.data.Migrations
 import java.io.File
 import java.time.ZoneId
 
@@ -20,7 +21,19 @@ object Repo {
     @Volatile private var prefs: Prefs? = null
 
     fun store(context: Context): Store = store ?: synchronized(this) {
-        store ?: Store(File(context.applicationContext.filesDir, "data")).also { store = it }
+        store ?: Store(File(context.applicationContext.filesDir, "data")).also { st ->
+            // Bring older data up to this build's schema before anything reads it (a copy is kept first).
+            val prefs = prefs(context)
+            // A new version of the app: keep a copy of the data as it was before this version touches it.
+            val had = st.file.exists()
+            val code = com.fastkiwi.rememberme.BuildConfig.VERSION_CODE
+            val last = prefs.lastVersion ?: if (had) 1 else code
+            if (had && last != code && !st.newer) runCatching { st.safetyCopy("before-update-v$last-") }
+            prefs.lastVersion = code
+            val from = prefs.dataSchema ?: Migrations.CURRENT
+            if (!st.newer) prefs.dataSchema = st.migrate(from, Migrations.CURRENT, Migrations.steps).coerceAtLeast(from)
+            store = st
+        }
     }
 
     fun prefs(context: Context): Prefs = prefs ?: synchronized(this) {

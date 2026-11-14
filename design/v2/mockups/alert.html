@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Reminder screen 1.0.0</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 4px 24px 0; gap: 4px; }
+  .bigtime { font-size: 57px; line-height: 72px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .bigtime .ap { font-size: 28px; font-weight: 500; }
+  .snz { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .snz .btn { padding: 0 6px; min-height: 48px; font-size: 14px; }
+  .foot { padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 12px; background: var(--sc-low); border-radius: 28px 28px 0 0; flex: none; }
+  .pair { display: flex; gap: 16px; flex-wrap: wrap; }
+  .pair .btn { flex: 1 1 0; }
+  .note { margin: 16px 16px 0; background: var(--sc); border-radius: 16px; padding: 12px 16px; font-size: 16px; line-height: 28px; }
+  .skip { align-self: center; }
+  /* 200 % text: the pair stacks, «تم» on top (FlowRow with the primary first when wrapped) */
+  html.fs2 .pair { flex-direction: column-reverse; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <!-- Top row: queue (start); open-to-edit and «لاحقًا» (end). No back arrow; Back = «لاحقًا» (the notification stays). -->
+  <div class="topbar" style="padding:0 16px 0 4px">
+    <span class="pill num">1 من 3</span>
+    <span class="grow"></span>
+    <span class="iconbtn"><i data-i="edit"></i></span>
+    <span class="btn text">لاحقًا</span>
+  </div>
+  <div class="grow" style="overflow:hidden">
+    <div class="hero">
+      <div class="disc" style="width:64px;height:64px;background:var(--tertiary-container);color:var(--on-tertiary-container);margin:4px 0 4px">
+        <i data-i="alarm" style="width:32px;height:32px"></i></div>
+      <span class="tag" style="margin-bottom:4px"><i data-i="alarm"></i>منبّه مهم</span>
+      <div class="bigtime">2:00 <span class="ap">م</span></div>
+      <div class="t-body-l muted">حان الوقت</div>
+      <div class="t-headline-m" style="margin-top:8px">دواء الضغط</div>
+      <div class="t-body-m muted" style="display:flex;gap:12px;align-items:center;margin-top:4px;flex-wrap:wrap;justify-content:center">
+        <span style="display:inline-flex;gap:4px;align-items:center"><i data-i="repeat" class="s18"></i>كل يوم</span>
+        <span class="tag"><i data-i="flagfill"></i>مهم</span></div>
+    </div>
+    <div class="note">حبة واحدة بعد الغداء مع كوب ماء.</div>
+  </div>
+  <!-- Thumb zone (the dock never scrolls): snooze presets (S), Skip (repeats only, T), then the pair:
+       «أجّل 10 دقائق» (S, start) · «تم» (P, end). 16 dp gap; taps are ignored for the first 1 s after the screen appears. -->
+  <div class="foot">
+    <div class="t-title-s muted" style="padding:0 4px">أجّل مدة أخرى</div>
+    <div class="snz">
+      <span class="btn outlined neutral">5 دقائق</span><span class="btn outlined neutral">15 دقيقة</span><span class="btn outlined neutral">30 دقيقة</span>
+      <span class="btn outlined neutral">ساعة</span><span class="btn outlined neutral num">غدًا 2:00 م</span><span class="btn outlined neutral">أجّل حتى…</span>
+    </div>
+    <span class="btn text skip">تخطَّ هذه المرة</span>
+    <div class="pair">
+      <span class="btn tonal xl" style="font-size:17px;font-weight:500"><i data-i="snooze"></i>أجّل 10 دقائق</span>
+      <span class="btn filled xl"><i data-i="check"></i>تم</span>
+    </div>
+  </div>
+  <div class="gesturebar" style="background:var(--sc-low)"></div>
+</div></body></html>

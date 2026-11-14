@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Ringtone picker</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .bg { flex: 1; min-height: 0; overflow: hidden; }
+  .sheet .opt { padding-block: 4px; padding-inline: 24px 12px; }
+  .sheet .opt .h2 { display: flex; align-items: center; gap: 8px; }
+  .sheet .opt .h2 i { width: 20px; height: 20px; color: var(--on-surface-variant); }
+  .sheet .opt.sel { background: var(--secondary-container); color: var(--on-secondary-container); border-radius: 16px; margin: 0 12px; padding-inline: 12px 0; }
+  .sheet .opt.sel .s, .sheet .opt.sel .h2 i { color: var(--on-secondary-container); }
+  .playing { background: var(--primary); color: var(--on-primary); }
+  .note { display: flex; gap: 8px; align-items: flex-start; padding: 12px 24px 0; font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+  .note i { margin-top: 1px; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="bg">
+    <div class="topbar"><span class="iconbtn on-surface"><i data-i="close"></i></span><div class="title t-title-l">تعديل التذكير</div></div>
+    <div class="group-h">خيارات التنبيه</div>
+    <div class="group">
+      <div class="row"><i data-i="alarm"></i><div class="txt"><div class="ov">نوع التنبيه</div><div class="h reg">منبّه مهم</div></div></div>
+      <div class="row"><i data-i="music"></i><div class="txt"><div class="ov">النغمة</div><div class="h reg">النغمة الافتراضية</div></div></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <!-- Ringtone sheet: radio rows; a trailing 48 dp play/stop button previews the tone (cd «استمع» / «أوقف»). -->
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-t">النغمة</div>
+    <div class="sh-s">لهذا التذكير</div>
+    <div class="opt"><span class="radio"></span><div class="txt"><div class="h2"><i data-i="music"></i>النغمة الافتراضية</div><div class="s">نغمة الهاتف للإشعارات، من الإعدادات</div></div><span class="iconbtn"><i data-i="play" class="s20"></i></span></div>
+    <div class="opt"><span class="radio"></span><div class="txt"><div class="h2"><i data-i="bellring"></i>نغمات ذكرني</div><div class="s">3 نغمات مدمجة</div></div></div>
+    <div class="opt"><span class="radio"></span><div class="txt"><div class="h2"><i data-i="bell"></i>من نغمات الهاتف…</div><div class="s">يفتح منتقي النغمات في أندرويد</div></div></div>
+    <div class="opt sel"><span class="radio on"></span><div class="txt"><div class="h2"><i data-i="folder"></i>من ملفاتي…</div><div class="s">جرس-هادئ.mp3، نسخة محفوظة داخل التطبيق</div></div><span class="iconbtn playing"><i data-i="stop" class="s20"></i></span></div>
+    <div class="opt"><span class="radio"></span><div class="txt"><div class="h2"><i data-i="vibrate"></i>صامت (اهتزاز فقط)</div></div></div>
+    <div class="note"><i data-i="info" class="s18"></i><span>في «تذكير عادي» يتبع الصوت مستوى صوت الإشعارات؛ إن كان الهاتف صامتًا سيهتز فقط.</span></div>
+    <div class="acts"><span class="btn outlined">إلغاء</span><span class="btn filled">تم</span></div>
+    <div class="gesturebar" style="background:var(--sc-low)"></div>
+  </div>
+</div></body></html>

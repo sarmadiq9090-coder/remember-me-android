@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Calendar: day</title>
+<link rel="stylesheet" href="../kit/kit.css"><script src="../kit/kit.js"></script>
+<style>
+  .viewseg { margin: 0 16px 4px; flex: none; }
+  .viewseg > div { font-size: 14px; padding: 4px 2px; gap: 4px; }
+  .dnav { display: flex; align-items: center; padding: 0 4px; flex: none; }
+  .dnav .mid { flex: 1; text-align: center; }
+  .dnav .d { font-size: 17px; line-height: 26px; font-weight: 700; }
+  .dnav .hj { font-size: 13px; line-height: 20px; color: var(--on-surface-variant); }
+  .untimed { margin: 4px 16px 8px; background: var(--sc); border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 8px 16px; min-height: 48px; flex: none; }
+  .untimed .k { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--on-surface-variant); flex: none; }
+  .untimed .v { font-size: 15px; line-height: 24px; }
+  .tl { position: relative; margin: 0 0 0 16px; }
+  html[dir=rtl] .tl { margin: 0 0 0 16px; }
+  .hr { position: absolute; inset-inline: 0; height: 60px; display: flex; }
+  .hr .hl { width: 56px; flex: none; font-size: 13px; line-height: 18px; color: var(--on-surface-variant); text-align: center; transform: translateY(-9px); font-variant-numeric: tabular-nums; }
+  .hr .ln { flex: 1; border-top: 1px solid var(--outline-variant); }
+  .blk { position: absolute; inset-inline-start: 64px; inset-inline-end: 0; background: var(--sc-high); border-radius: 8px; padding: 6px 12px; display: flex; gap: 8px; align-items: center; font-size: 15px; line-height: 22px; min-height: 40px; }
+  .blk .bt { font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .blk.late { color: var(--error); }
+  .blk.late .ti { color: var(--on-surface); }
+  .blk i[data-i] { width: 18px; height: 18px; }
+  .now { position: absolute; inset-inline-start: 56px; inset-inline-end: 0; height: 2px; background: var(--primary); }
+  .now::before { content: ""; position: absolute; inset-inline-start: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+  .nowlb { position: absolute; inset-inline-end: 0; transform: translateY(-24px); font-size: 12px; line-height: 16px; font-weight: 700; color: var(--primary); background: var(--surface); padding: 2px 6px; border-radius: 6px; font-variant-numeric: tabular-nums; }
+</style></head>
+<body><div class="phone">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <div class="title t-title-l" style="padding-inline-start:16px">نوفمبر 2026</div>
+    <span class="btn text">اليوم</span>
+    <!-- «طريقة العرض» (active: a calendar view is on). Menu: القائمة، الأجندة، اليوم، الأسبوع، الشهر -->
+    <span class="iconbtn" style="background:var(--secondary-container);color:var(--on-secondary-container)"><i data-i="calendar"></i></span>
+    <span class="iconbtn"><i data-i="settings"></i></span>
+  </div>
+  <!-- A view of Home, not a destination. System Back from a calendar view returns to the list view; the view menu lists القائمة، الأجندة، اليوم، الأسبوع، الشهر. -->
+  <div class="seg viewseg"><div>أجندة</div><div class="sel"><i data-i="check"></i>يوم</div><div>أسبوع</div><div>شهر</div></div>
+  <!-- Previous day (start, points right in RTL) · date + Hijri (optional setting) · next day (end) -->
+  <div class="dnav">
+    <span class="iconbtn"><i data-i="chevron" style="transform:scaleX(-1)"></i></span>
+    <div class="mid"><div class="d">السبت 14 نوفمبر</div><div class="hj num">4 جمادى الآخرة 1448</div></div>
+    <span class="iconbtn"><i data-i="chevron"></i></span>
+  </div>
+  <div class="untimed"><span class="k">بلا وقت</span><span class="v">شراء هدية لسارة</span></div>
+  <div class="grow" style="overflow:hidden;padding-top:12px">
+    <div class="tl">
+      <div class="hr" style="top:0"><span class="hl">1 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:60px"><span class="hl">2 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:120px"><span class="hl">3 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:180px"><span class="hl">4 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:240px"><span class="hl">5 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:300px"><span class="hl">6 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:360px"><span class="hl">7 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:420px"><span class="hl">8 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:480px"><span class="hl">9 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:540px"><span class="hl">10 م</span><span class="ln"></span></div>
+      <div class="hr" style="top:600px"><span class="hl">11 م</span><span class="ln"></span></div>
+      <div class="blk late" style="top:62px"><i data-i="warning"></i><span class="bt">2:00 م</span><span class="ti">دواء الضغط</span><span style="margin-inline-start:auto;font-size:13px">متأخر</span></div>
+      <div class="now" style="top:200px"><span class="nowlb">الآن 4:20 م</span></div>
+      <div class="blk" style="top:272px"><span class="bt">5:30 م</span><span class="ti">اجتماع الفريق</span></div>
+      <div class="blk" style="top:362px"><i data-i="snooze"></i><span class="bt">7:00 م</span><span class="ti">شراء الخبز والحليب</span><span class="muted" style="margin-inline-start:auto;font-size:13px">مؤجّل</span></div>
+      <div class="blk" style="top:482px"><span class="bt">9:00 م</span><span class="ti">مراجعة درس الرياضيات</span></div>
+    </div>
+  </div>
+  <div class="fab center"><i data-i="add"></i>تذكير جديد</div>
+  <div class="gesturebar"></div>
+</div></body></html>

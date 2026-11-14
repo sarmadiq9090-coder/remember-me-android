@@ -4,6 +4,7 @@ import android.app.KeyguardManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,9 +16,14 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.fastkiwi.rememberme.alarm.RingService
 import com.fastkiwi.rememberme.core.AppState
+import com.fastkiwi.rememberme.core.Codec
+import com.fastkiwi.rememberme.data.AlertLog
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.ui.AlertScreen
+import com.fastkiwi.rememberme.ui.TestAlertScreen
+import com.fastkiwi.rememberme.alarm.TestAlarm
 import com.fastkiwi.rememberme.ui.AppTheme
 import com.fastkiwi.rememberme.ui.L10n
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +38,10 @@ import java.time.Instant
  */
 class AlertActivity : AppCompatActivity() {
     private var first by mutableStateOf<String?>(null)
+    /** Opened by «اختبر التنبيه الآن»: shows the test reminder instead of the queue. */
+    private var test by mutableStateOf(false)
+    /** Opened by «أجّل حتى…» on the notification: the time picker comes first (F-044). */
+    private var pick by mutableStateOf(false)
     private var tick by mutableLongStateOf(System.currentTimeMillis())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +53,11 @@ class AlertActivity : AppCompatActivity() {
             window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
         }
         first = intent.getStringExtra(EXTRA_ID)
+        test = intent.getBooleanExtra(EXTRA_TEST, false)
+        pick = intent.getBooleanExtra(EXTRA_PICK, false)
+        if (test) TestAlarm.screenShown(this)
+        else first?.let { id -> Repo.state(this).tasks.firstOrNull { it.id == id }?.dueAt?.let { due ->
+            runCatching { AlertLog(this).add(AlertLog.Event.SCREEN_SHOWN, AlertLog(this).keyOf(id, Codec.iso(due))) } } }
         setContent {
             val state by Repo.store(this).state.collectAsState()
             AppTheme(Repo.theme(state)) { Content(state) }
@@ -53,11 +68,17 @@ class AlertActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         first = intent.getStringExtra(EXTRA_ID) ?: first
+        pick = intent.getBooleanExtra(EXTRA_PICK, false)
+        if (intent.getBooleanExtra(EXTRA_TEST, false)) { test = true; TestAlarm.screenShown(this) }
     }
 
     @androidx.compose.runtime.Composable
     private fun Content(state: AppState) {
         val now = Instant.ofEpochMilli(maxOf(tick, System.currentTimeMillis()))
+        if (test) {
+            TestAlertScreen(now, onDone = { TestAlarm.actionDone(this); finish() })
+            return
+        }
         val queue = Tasks.due(state, now)
         if (queue.isEmpty()) {
             LaunchedEffect(Unit) { finish() }
@@ -69,6 +90,8 @@ class AlertActivity : AppCompatActivity() {
         val due = task.dueAt
         fun act(block: (AppState) -> AppState?) {
             first = null
+            pick = false
+            RingService.stop(this)
             lifecycleScope.launch(Dispatchers.IO) { Repo.change(this@AlertActivity) { s -> block(s) ?: s } }
         }
         AlertScreen(
@@ -80,7 +103,17 @@ class AlertActivity : AppCompatActivity() {
             onLater = { finish() },
             // Lock-screen privacy: the title and note wait for the unlock.
             hidden = Repo.prefs(this).lockPrivacy && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
+            pickFirst = pick && task.id == first,
         )
+    }
+
+    /** A volume key on the reminder screen silences the ringing (F-016); the reminder stays. */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) && RingService.ringingId != 0) {
+            RingService.stop(this)
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     private fun openInApp(id: String) {
@@ -93,5 +126,9 @@ class AlertActivity : AppCompatActivity() {
         } else open()
     }
 
-    companion object { const val EXTRA_ID = "id" }
+    companion object {
+        const val EXTRA_ID = "id"
+        const val EXTRA_TEST = "test"
+        const val EXTRA_PICK = "pick"
+    }
 }

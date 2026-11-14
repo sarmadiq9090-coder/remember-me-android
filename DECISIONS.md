@@ -166,7 +166,7 @@ them: [RESEARCH.md](RESEARCH.md).
   Scan Kiwi's spec. The main points: one list with sections instead of tabs (4/5), the time as each row's
   hero, one primary action at the bottom of each screen, a complete Material 3 scheme from the Windows
   brand green with the lavender bell as tertiary, `Icons.Rounded` only, stable components only.
-- **Difference from Scan Kiwi:** digits stay Western in Arabic (owner rule D-071); the Arabic comma «، »
+- **Difference from Scan Kiwi:** digits stay Western in Arabic (brain D-012); the Arabic comma «، »
   is still the separator.
 - QC against the spec: the screenshots in `screenshots/qc/` (Arabic and English, light and dark, 200 %
   text) plus tests for the button order, a single «حفظ», 48 dp targets and the row semantics.

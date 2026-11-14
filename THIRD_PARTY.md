@@ -12,7 +12,8 @@ here sends data anywhere: the app has no internet permission.
 | Kotlin standard library | 2.2.21 | Apache-2.0 | Language runtime. |
 | kotlinx.coroutines (android) | 1.10.2 | Apache-2.0 | Background work. |
 | kotlinx.serialization (JSON) | 1.9.0 | Apache-2.0 | Reading and writing data.json as a JSON tree. |
-| Jetpack Compose (ui, foundation, material3, material-icons-extended) | BOM 2025.12.01 | Apache-2.0 | The interface and its icons (Material Symbols/Icons, Apache-2.0). |
+| Jetpack Compose (ui, foundation, material3) | BOM 2025.12.01 | Apache-2.0 | The interface. |
+| Material Symbols Rounded (google/material-design-icons, `symbols/android/*/materialsymbolsrounded/*_24px.xml`) | fetched 2026-11-15 | Apache-2.0 | 94 icons as `res/drawable/ms_*.xml` (`tools/vendor_symbols.py` removes the tint and sets RTL mirroring). |
 | AndroidX activity-compose | 1.11.0 | Apache-2.0 | Activities hosting Compose. |
 | AndroidX core-ktx | 1.17.0 | Apache-2.0 | Notifications, permissions, compat helpers. |
 | AndroidX appcompat | 1.7.1 | Apache-2.0 | Per-app language on every Android version. |
