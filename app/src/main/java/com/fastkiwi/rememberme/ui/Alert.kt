@@ -142,18 +142,19 @@ fun AlertDock(
             if (showSkip) TextButton(onClick = onSkip, modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = Dimens.touch)) {
                 Text(stringResource(R.string.skip_this_time), textAlign = TextAlign.Center)
             }
+            val pairPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.m, vertical = Dimens.s)
             val done: @Composable (Modifier) -> Unit = { m ->
-                Button(onClick = onDone, modifier = m.heightIn(min = Dimens.alertButton)) {
+                Button(onClick = onDone, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
                     Icon(Ms.Check, null, modifier = Modifier.size(24.dp))
                     Spacer(Modifier.size(Dimens.s))
                     Text(stringResource(R.string.done), style = MaterialTheme.typography.labelLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold))
                 }
             }
             val snooze: @Composable (Modifier) -> Unit = { m ->
-                FilledTonalButton(onClick = onSnooze, modifier = m.heightIn(min = Dimens.alertButton)) {
-                    Icon(Ms.Snooze, null, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.size(Dimens.s))
-                    Text(stringResource(R.string.snooze_for, defaultSnooze), style = MaterialTheme.typography.labelLarge.copy(fontSize = 18.sp),
+                FilledTonalButton(onClick = onSnooze, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
+                    Icon(Ms.Snooze, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.size(Dimens.xs))
+                    Text(stringResource(R.string.snooze_for, defaultSnooze), style = MaterialTheme.typography.labelLarge.copy(fontSize = 17.sp),
                         textAlign = TextAlign.Center)
                 }
             }
