@@ -459,8 +459,16 @@ class MainActivity : AppCompatActivity() {
                     },
                     onExportSelected = { ids -> exportSelected(ids) },
                     // [home] end
-                    // [lead] calendar views (F-064) and lists
+                    // [lead] calendar views (F-064), Quick Add (F-042), shortcuts (F-122)
                     hijri = prefs.hijriDisplay, hijriAdjust = prefs.hijriAdjust,
+                    onQuickAdd = { openQuickAdd() },
+                    onNewOnDay = { day ->
+                        val at = day.atTime(9, 0).atZone(zone).toInstant()
+                        editPrefill = com.fastkiwi.rememberme.core.TemplateFill(com.fastkiwi.rememberme.core.TaskInput(title = "", dueAt = if (at.isAfter(Instant.now())) at else null))
+                        push(Screen.Edit(null))
+                    },
+                    todayRequest = todayRequest,
+                    scrollToId = lastAddedId, onScrolled = { lastAddedId = null },
                 )
             }
             is Screen.Edit -> {

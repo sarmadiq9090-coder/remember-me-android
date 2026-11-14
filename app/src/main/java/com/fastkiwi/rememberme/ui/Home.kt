@@ -181,6 +181,11 @@ fun HomeScreen(
     onNewOnDay: (java.time.LocalDate) -> Unit = { onQuickAdd() },
     hijri: Boolean = false,
     hijriAdjust: Int = 0,
+    /** Bumped by the «اليوم» launcher shortcut (F-122): open the day view on today. */
+    todayRequest: Long = 0L,
+    /** A reminder just added (Quick Add): scrolled into view once (DESIGN-SPEC §5.3). */
+    scrollToId: String? = null,
+    onScrolled: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val res = LocalResources.current
@@ -194,6 +199,9 @@ fun HomeScreen(
     var calDay by rememberSaveable { mutableStateOf(now.atZone(zone).toLocalDate().toEpochDay()) }
     val calSelected = java.time.LocalDate.ofEpochDay(calDay)
     val inCalendar = view != HomeView.LIST
+    LaunchedEffect(todayRequest) {
+        if (todayRequest > 0) { viewName = HomeView.DAY.name; calDay = now.atZone(zone).toLocalDate().toEpochDay() }
+    }
     var quick by rememberSaveable { mutableStateOf(QuickFilters.ALL) }
     var selected by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<String>()) }
     /** Ids the Snooze sheet is open for (one row, or the selection), and whether the date-time picker is up. */
@@ -407,6 +415,20 @@ fun HomeScreen(
                 return@Column
             }
             val filtered = quickQuery != null
+            // The list position of a row, in the order the items below are emitted.
+            fun indexOf(id: String): Int? {
+                var i = 0
+                if (overdue.isNotEmpty()) { i++; overdue.indexOfFirst { it.id == id }.takeIf { it >= 0 }?.let { return i + it }; i += overdue.size }
+                i++
+                if (today.isEmpty()) i++ else { today.indexOfFirst { it.id == id }.takeIf { it >= 0 }?.let { return i + it }; i += today.size }
+                if (upcoming.isNotEmpty()) { i++; upcoming.indexOfFirst { it.id == id }.takeIf { it >= 0 }?.let { return i + it }; i += upcoming.size }
+                return null
+            }
+            LaunchedEffect(scrollToId, state) {
+                val id = scrollToId ?: return@LaunchedEffect
+                indexOf(id)?.let { runCatching { listState.animateScrollToItem(it) } }
+                onScrolled()
+            }
             LazyColumn(state = listState, contentPadding = PaddingValues(bottom = Dimens.fabClearance)) {
                 if (overdue.isNotEmpty()) {
                     item(key = "h-overdue") { SectionHeader(stringResource(R.string.tab_overdue), overdue.size, error = true) }

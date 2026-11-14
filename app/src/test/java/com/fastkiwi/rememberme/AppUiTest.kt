@@ -127,10 +127,12 @@ class AppUiTest {
             rule.onNodeWithText("القادمة").assertExists()
             shot("02-home-scrolled-ar")
             // Scrolled down, the button is an icon: it still has its name.
+            // The FAB opens Quick Add (DESIGN-SPEC W2): one line, the preview, then «حفظ».
             rule.onNode(hasContentDescription("تذكير جديد") or hasText("تذكير جديد"), useUnmergedTree = true).performClick()
-            rule.onNodeWithText("العنوان").performTextInput("موعد طبيب الأسنان")
+            rule.onNodeWithText("اكتب التذكير وموعده").performTextInput("موعد طبيب الأسنان بعد ساعة")
+            rule.mainClock.advanceTimeBy(500)
+            rule.onNodeWithText("العنوان: موعد طبيب الأسنان", substring = true).assertExists()
             shot("04-new-reminder-ar")
-            // One «حفظ» only, at the bottom.
             rule.onAllNodesWithText("حفظ").assertCountEquals(1)
             rule.onNodeWithText("حفظ").performClick()
             rule.waitUntil(10_000) { Repo.state(app).tasks.any { it.title == "موعد طبيب الأسنان" && it.dueAt != null } }
