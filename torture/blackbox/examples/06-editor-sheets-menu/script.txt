@@ -1,0 +1,13 @@
+# The full editor: a choice sheet, the ⋮ menu, delete and undo.
+start onboarded
+tap "تذكير جديد"
+tap "خيارات أكثر"
+tap "العنوان"
+type "موعد طبيب الأسنان"
+tap "التصنيف"
+back
+tap "حفظ"
+tap "موعد طبيب الأسنان"
+tap-desc "خيارات أخرى"
+tap "حذف"
+tap "تراجع"

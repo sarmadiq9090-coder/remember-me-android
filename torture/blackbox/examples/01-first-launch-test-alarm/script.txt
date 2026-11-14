@@ -1,0 +1,11 @@
+# First launch as a real new user, then the app's own alarm test, with the phone locked.
+# The app opens by itself before the first line below (picture 00).
+screenshot
+tap "السماح"
+tap "اختبر التنبيه الآن"
+tap "ابدأ الاختبار"
+lock
+wait 15
+tap "تم"
+unlock
+screenshot

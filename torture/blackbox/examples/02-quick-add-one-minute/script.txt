@@ -1,0 +1,13 @@
+# A returning user writes a reminder for one minute from now in the quick-add sheet,
+# looks at it, locks the phone, waits, and answers the alert with «تم».
+start onboarded
+tap "تذكير جديد"
+tap "اكتب التذكير وموعده"
+type "اشرب الماء بعد دقيقة"
+tap "حفظ"
+tap "اشرب الماء"
+back
+lock
+wait 65
+tap "تم"
+unlock
