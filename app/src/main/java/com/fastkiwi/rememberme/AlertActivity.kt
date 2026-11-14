@@ -23,6 +23,7 @@ import com.fastkiwi.rememberme.data.AlertLog
 import com.fastkiwi.rememberme.core.Tasks
 import com.fastkiwi.rememberme.ui.AlertScreen
 import com.fastkiwi.rememberme.ui.TestAlertScreen
+import com.fastkiwi.rememberme.ui.toggleStep
 import com.fastkiwi.rememberme.alarm.TestAlarm
 import com.fastkiwi.rememberme.ui.AppTheme
 import com.fastkiwi.rememberme.ui.L10n
@@ -43,6 +44,8 @@ class AlertActivity : AppCompatActivity() {
     /** Opened by «أجّل حتى…» on the notification: the time picker comes first (F-044). */
     private var pick by mutableStateOf(false)
     private var tick by mutableLongStateOf(System.currentTimeMillis())
+    /** The tone is playing (the screen then says a volume key silences it). */
+    private var ringing by mutableStateOf(RingService.ringingId != 0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         L10n.apply(this)
@@ -61,7 +64,7 @@ class AlertActivity : AppCompatActivity() {
         setContent {
             val state by Repo.store(this).state.collectAsState()
             AppTheme(Repo.theme(state)) { Content(state) }
-            LaunchedEffect(Unit) { while (true) { delay(15_000); tick = System.currentTimeMillis() } }
+            LaunchedEffect(Unit) { while (true) { delay(15_000); tick = System.currentTimeMillis(); ringing = RingService.ringingId != 0 } }
         }
     }
 
@@ -92,6 +95,7 @@ class AlertActivity : AppCompatActivity() {
             first = null
             pick = false
             RingService.stop(this)
+            ringing = false
             lifecycleScope.launch(Dispatchers.IO) { Repo.change(this@AlertActivity) { s -> block(s) ?: s } }
         }
         AlertScreen(
@@ -104,6 +108,15 @@ class AlertActivity : AppCompatActivity() {
             // Lock-screen privacy: the title and note wait for the unlock.
             hidden = Repo.prefs(this).lockPrivacy && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
             pickFirst = pick && task.id == first,
+            arrivedLateMs = androidx.compose.runtime.remember(task.id, due) { due?.let { arrivedLate(task.id, it) } },
+            lateReasonOff = due != null && bootedAfter(due),
+            ringing = ringing,
+            // Ticking a step here keeps the reminder due; only its checklist changes (F-070).
+            onToggleStep = { stepId ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    runCatching { Repo.change(this@AlertActivity) { s -> s.copy(tasks = s.tasks.map { if (it.id == task.id) toggleStep(it, stepId).copy(updatedAt = Instant.now()) else it }) } }
+                }
+            },
         )
     }
 
@@ -111,10 +124,22 @@ class AlertActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) && RingService.ringingId != 0) {
             RingService.stop(this)
+            ringing = false
             return true
         }
         return super.onKeyDown(keyCode, event)
     }
+
+    /** How late this occurrence's alert was posted, from the alert log (F-025), or null when unknown. */
+    private fun arrivedLate(id: String, due: Instant): Long? = runCatching {
+        val log = AlertLog(this)
+        val key = log.keyOf(id, Codec.iso(due))
+        log.entries().firstOrNull { it.key == key && (it.event == AlertLog.Event.POSTED || it.event == AlertLog.Event.LATE) && it.lateMs >= 0 }?.lateMs
+    }.getOrNull()
+
+    /** The phone started after [due]: it was off (or restarting) at the reminder's time. */
+    private fun bootedAfter(due: Instant): Boolean =
+        System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime() > due.toEpochMilli()
 
     private fun openInApp(id: String) {
         val open = { startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_OPEN, id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); finish() }

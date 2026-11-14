@@ -120,7 +120,8 @@ class AppUiTest {
             // One list with sections (DESIGN-SPEC V1): Overdue first, then Today, then Upcoming.
             rule.onNodeWithText("المتأخرة").assertExists()
             rule.onNodeWithText("دواء الضغط", useUnmergedTree = true).assertExists()
-            rule.onNodeWithText("اليوم").assertExists()
+            // DESIGN-SPEC §7.4: the section «اليوم» exactly once on Home in list view.
+            rule.onAllNodesWithText("اليوم").assertCountEquals(1)
             shot("01-home-ar")
             rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription("دفع الإيجار", substring = true))
             rule.onNodeWithText("القادمة").assertExists()
@@ -148,8 +149,10 @@ class AppUiTest {
         ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
             rule.onNodeWithText(first.title).assertExists()
             rule.onNodeWithText("1 من 2").assertExists()
-            rule.onNodeWithText("10 دقائق").assertExists()
+            rule.onNodeWithText("أجّل 10 دقائق").assertExists()
             shot("05-alert-ar")
+            // Taps in the first second are ignored (DESIGN-SPEC §5.8).
+            rule.mainClock.advanceTimeBy(1_100)
             rule.onNodeWithText("تم").performClick()
             // The change is saved off the main thread; the screen then moves to the next reminder.
             rule.waitUntil(10_000) { Tasks.due(Repo.state(app), Instant.now()).size == 1 }
@@ -157,7 +160,7 @@ class AppUiTest {
         }
     }
 
-    /** DESIGN-SPEC §3.3: on a repeating reminder «تم» (primary) is at the end: left of «تخطَّ هذه المرة» in Arabic. */
+    /** DESIGN-SPEC §5.8: «تم» (primary) is at the end: left of «أجّل 10 دقائق» in Arabic; «تخطَّ هذه المرة» for a repeat. */
     @Test fun theReminderScreenPutsDoneAtTheEnd() {
         val now = Instant.now()
         sample(now)
@@ -166,8 +169,9 @@ class AppUiTest {
         ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
             rule.onAllNodesWithText("تم").assertCountEquals(1)
             val done = rule.onNodeWithText("تم", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            val skip = rule.onNodeWithText("تخطَّ هذه المرة", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            assertTrue("Done $done should be left of Skip $skip in RTL", done.right <= skip.left + 1)
+            val snooze = rule.onNodeWithText("أجّل 10 دقائق", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue("Done $done should be left of Snooze $snooze in RTL", done.right <= snooze.left + 1)
+            rule.onNodeWithText("تخطَّ هذه المرة").assertExists()
             // Every clickable thing on the screen is at least 48 × 48 dp.
             assertTouchTargets()
         }
