@@ -348,3 +348,25 @@ QC tests added (`app/src/test/java/com/fastkiwi/rememberme/qc/`): `QcGapsTest` a
 | G-18 | فشل واحد في أداة الاختبار (عدسة النص في Robolectric، بلا كود من التطبيق)؛ موثّق |
 
 الميزات: 75 مُستوفاة، و5 تحتاج هاتف المالك (F-016، F-018، F-019، F-026، F-027).
+
+## مشكلة أداة معروفة: فشلا monkey (قرار القائد، 2026-11-15) — Known tool issue
+
+في تشغيل التعذيب الشامل الأخير (`torture/reports/summary-2026-11-15-0804.txt`) فشل اختباران فقط، وكلاهما في
+`UiMonkeyTortureTest` (`monkeyOnTheMainScreens` و`monkeyOnTheMainScreensAnotherSeed`) بالخطأ نفسه:
+
+```
+java.lang.NullPointerException: Cannot invoke "android.view.Surface.destroy()" because "this.mSurface" is null
+    at android.widget.Magnifier$InternalPopupWindow.destroy(Magnifier.java)
+    at android.widget.Magnifier.dismiss(Magnifier.java)
+    … (Compose text-field magnifier, androidx.compose.foundation.text.*)
+```
+
+**سبب الاستبعاد:** المكدس كله من Robolectric وعدسة النص في Compose، ولا يمرّ بأي كود من التطبيق
+(`com.fastkiwi.rememberme`). Robolectric لا يعطي عدسة النص سطحًا (Surface)، أما الهاتف فيعطيها؛ ويحدث عند لمستين
+سريعتين على حقل نص في جولة monkey العشوائية. قرّر القائد أنهما **لا يمنعان إصدار 1.0.0**.
+التعديل الذي يتجنبهما في أداة الاختبار رُفض إذنه لأحد الوكلاء، ولم يُنفَّذ (ولا يُنفَّذ إلا بطلب عبر مالك الجلسة).
+
+English: the two remaining torture failures are both in the UI monkey and both throw the NPE above inside
+Robolectric's `Magnifier` (no app frame in the stack). They are a known Robolectric limit, recorded here by the
+lead's decision; they do not block 1.0.0. The harness change that avoids them was refused for an agent and was
+not made.
