@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -105,14 +106,22 @@ private fun WeekDayRow(b: DayBucket, fmt: CalFormat, onClick: () -> Unit) {
 private fun WeekLine(o: Occurrence, fmt: CalFormat) {
     val overdue = o.overdue(fmt.now)
     val error = MaterialTheme.colorScheme.error
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
-        if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(16.dp))
-        val at = o.at
-        if (at == null) Text(stringResource(R.string.no_time), style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(Dimens.timeColumn))
-        else Text(fmt.timeText(at), style = MaterialTheme.typography.bodyMedium, color = if (overdue) error else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.widthIn(min = 64.dp))
-        Text(o.task.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-        if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
+    // G-03: at large text the title gets its own line (up to 2), instead of a few letters beside the time.
+    val big = LocalDensity.current.fontScale >= 1.5f
+    val title: @Composable (Modifier) -> Unit = { m ->
+        Text(o.task.title, style = MaterialTheme.typography.bodyMedium, maxLines = if (big) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = m)
+    }
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
+            if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(16.dp))
+            val at = o.at
+            if (at == null) Text(stringResource(R.string.no_time), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = if (big) Modifier else Modifier.width(Dimens.timeColumn))
+            else Text(fmt.timeText(at), style = MaterialTheme.typography.bodyMedium, color = if (overdue) error else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.widthIn(min = 64.dp))
+            if (!big) title(Modifier.weight(1f, fill = false))
+            if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
+        }
+        if (big) title(Modifier)
     }
 }
