@@ -135,24 +135,26 @@ fun AlertDock(
     hint: String? = null,
 ) {
     val bigText = LocalDensity.current.fontScale >= 1.5f
+    // F-104: a confirm haptic on «تم» and «أجّل» (the phone's touch-feedback setting applies).
+    val haptic = rememberConfirmHaptic()
     Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = SheetShape, modifier = rememberTapGuard(Unit, guardMs)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.m)) {
             if (hint != null) Text(hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            if (grid) SnoozeGrid(presets, onPreset, onPickTime)
+            if (grid) SnoozeGrid(presets, { i -> haptic(); onPreset(i) }, onPickTime)
             if (showSkip) TextButton(onClick = onSkip, modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = Dimens.touch)) {
                 Text(stringResource(R.string.skip_this_time), textAlign = TextAlign.Center)
             }
             val pairPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.m, vertical = Dimens.s)
             val done: @Composable (Modifier) -> Unit = { m ->
-                Button(onClick = onDone, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
+                Button(onClick = { haptic(); onDone() }, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
                     Icon(Ms.Check, null, modifier = Modifier.size(24.dp))
                     Spacer(Modifier.size(Dimens.s))
                     Text(stringResource(R.string.done), style = MaterialTheme.typography.labelLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold))
                 }
             }
             val snooze: @Composable (Modifier) -> Unit = { m ->
-                FilledTonalButton(onClick = onSnooze, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
+                FilledTonalButton(onClick = { haptic(); onSnooze() }, modifier = m.heightIn(min = Dimens.alertButton), contentPadding = pairPadding) {
                     Icon(Ms.Snooze, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.size(Dimens.xs))
                     Text(stringResource(R.string.snooze_for, defaultSnooze), style = MaterialTheme.typography.labelLarge.copy(fontSize = 17.sp),
@@ -240,6 +242,7 @@ fun AlertScreen(
     val firstLabel = first?.label ?: L10n.duration(context, 10)
     val grid = choices.drop(1).take(5).map { DockChoice(it.label, it.at) } + DockChoice(stringResource(R.string.snooze_until), null)
     val hint = if (task.snoozeCount >= 3) stringResource(R.string.snooze_hint3) else null
+    val haptic = rememberConfirmHaptic()
     Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }.then(rememberTapGuard(task.id, guardMs))) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val bigText = LocalDensity.current.fontScale >= 1.5f
@@ -305,7 +308,7 @@ fun AlertScreen(
                         if (task.steps.isNotEmpty()) StepsCard(task, onToggleStep)
                     }
                     if (!gridInDock) Column(Modifier.fillMaxWidth()) {
-                        SnoozeGrid(grid, onPreset = { i -> grid[i].at?.let(onSnooze) }, onPickTime = { picking = true })
+                        SnoozeGrid(grid, onPreset = { i -> grid[i].at?.let { haptic(); onSnooze(it) } }, onPickTime = { picking = true })
                     }
                     Spacer(Modifier.size(Dimens.l))
                 }
@@ -318,7 +321,7 @@ fun AlertScreen(
             }
         }
     }
-    if (picking) SnoozePicker(now, zone, onPick = { picking = false; onSnooze(it) }, onCancel = { picking = false })
+    if (picking) SnoozePicker(now, zone, onPick = { picking = false; haptic(); onSnooze(it) }, onCancel = { picking = false })
 }
 
 /** Steps progress «2 من 5» (F-070); a tap shows the steps, and ticking works here (§5.8). */
