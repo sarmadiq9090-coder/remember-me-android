@@ -1058,7 +1058,7 @@
     <string name="feedback_review_note">يفتح تطبيق البريد أو المتصفح والنص جاهز؛ راجعه ثم أرسله بنفسك. التطبيق لا يرسل شيئًا بنفسه.</string>
     <string name="feedback_no_mail_app">لا يوجد تطبيق بريد على الهاتف. جرّب «عبر GitHub».</string>
     <string name="feedback_no_browser">لا يوجد متصفح على الهاتف. جرّب «عبر البريد».</string>
-    <string name="feedback_count">%1$s / %2$s</string>
+    <string name="feedback_count">%1$s من %2$s</string>
     <plurals name="minutes">
         <item quantity="zero">%1$s دقيقة</item>
         <item quantity="one">دقيقة</item>

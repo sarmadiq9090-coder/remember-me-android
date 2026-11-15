@@ -49,5 +49,5 @@ S = [
 ("feedback_review_note", "يفتح تطبيق البريد أو المتصفح والنص جاهز؛ راجعه ثم أرسله بنفسك. التطبيق لا يرسل شيئًا بنفسه.", "Your mail app or browser opens with the text ready; check it, then send it yourself. The app sends nothing itself."),
 ("feedback_no_mail_app", "لا يوجد تطبيق بريد على الهاتف. جرّب «عبر GitHub».", "No e-mail app on this phone. Try \"On GitHub\"."),
 ("feedback_no_browser", "لا يوجد متصفح على الهاتف. جرّب «عبر البريد».", "No browser on this phone. Try \"By e-mail\"."),
-("feedback_count", "%1$s / %2$s", "%1$s / %2$s"),
+("feedback_count", "%1$s من %2$s", "%1$s / %2$s"),
 ]

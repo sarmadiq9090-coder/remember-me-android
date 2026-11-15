@@ -388,6 +388,29 @@ class QcScreenshotsTest {
     @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi")
     fun fullScreenSettingArabicLargeText() { RuntimeEnvironment.setFontScale(2f); try { fullScreenSetting("ar-200", false) } finally { RuntimeEnvironment.setFontScale(1f) } }
 
+    /** 1.0.5 (D-081): «حول ذكرني» with its update part, Settings «التحديثات», and «أبلغنا عن مشكلة أو اقتراح» (QC limited to them). */
+    private fun updatesAndFeedback(prefix: String, en: Boolean) {
+        if (en) Repo.prefs(app).language = "en"
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
+            go(Screen.About)
+            shot("$prefix-60-about")
+            rule.onNode(hasText(if (en) "Check for updates" else "تحقق من التحديثات") and hasClickAction()).performScrollTo()
+            shot("$prefix-61-about-updates")
+            go(Screen.Settings)
+            rule.onNode(hasText(if (en) "Download over Wi-Fi only" else "التنزيل عبر Wi-Fi فقط") and hasClickAction()).performScrollTo()
+            shot("$prefix-62-settings-updates")
+            go(Screen.Feedback)
+            rule.onNode(hasText(if (en) "Attach device information" else "أرفق معلومات الجهاز") and hasClickAction()).performClick()
+            shot("$prefix-63-feedback")
+        }
+    }
+
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi") fun updatesArabicLight() = updatesAndFeedback("ar-light", false)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi") fun updatesArabicDark() = updatesAndFeedback("ar-dark", false)
+    @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi") fun updatesEnglishLight() = updatesAndFeedback("en-light", true)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi")
+    fun updatesArabicLargeText() { RuntimeEnvironment.setFontScale(2f); try { updatesAndFeedback("ar-200", false) } finally { RuntimeEnvironment.setFontScale(1f) } }
+
     @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi") fun dueSheetArabicLight() = dueSheet("ar-light", false)
     @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi") fun dueSheetArabicDark() = dueSheet("ar-dark", false)
     @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi") fun dueSheetEnglishLight() = dueSheet("en-light", true)
