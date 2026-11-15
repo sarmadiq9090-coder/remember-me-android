@@ -11,7 +11,9 @@ internet, no statistics.
 ## 2. Adding a reminder
 - Tap New reminder at the bottom and type one line, e.g. "remind me to call mum in an hour" or "meeting
   tomorrow at 9 am".
-- Or tap the Date and time chip (the clock) and pick the date, then the time, without typing them. It starts at
+- New reminder opens a full-screen window: × to close and Save at the top, the field, then the rows Date and
+  time, Category, Priority, From a template and More options. Tap Date and time (the clock) and pick the date,
+  then the time, without typing them. It starts at
   today and the next full hour. A picked time stays even if the text names another, and the × next to it removes
   it. A time that has passed offers "Tomorrow, same time".
 - A preview of the time the app understood is always shown. When the time is unclear the app asks ("9 am or

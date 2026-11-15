@@ -1,5 +1,7 @@
 package com.fastkiwi.rememberme
 
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.ViewCompat
 import android.Manifest
 import android.app.Application
 import android.content.Context
@@ -316,29 +318,53 @@ class QcScreenshotsTest {
         try { tour("ar-dark-200", false) } finally { RuntimeEnvironment.setFontScale(1f) }
     }
 
+    /** The keyboard comes up ([dp] high): the window gets the IME inset; the picture shows a grey keyboard there. */
+    private fun keyboardShot(name: String, dp: Int = 300) {
+        @Suppress("UNCHECKED_CAST")
+        val sc = scenario as ActivityScenario<MainActivity>
+        var px = 0
+        sc.onActivity { a ->
+            px = (dp * a.resources.displayMetrics.density).toInt()
+            ViewCompat.dispatchApplyWindowInsets(a.window.decorView, WindowInsetsCompat.Builder()
+                .setInsets(WindowInsetsCompat.Type.ime(), androidx.core.graphics.Insets.of(0, 0, 0, px))
+                .setVisible(WindowInsetsCompat.Type.ime(), true).build())
+        }
+        rule.mainClock.advanceTimeBy(300)
+        shotRoots(name)
+        val f = File(outDir, "$name.png")
+        val bmp = android.graphics.BitmapFactory.decodeFile(f.path).copy(Bitmap.Config.ARGB_8888, true)
+        val c = android.graphics.Canvas(bmp)
+        c.drawRect(0f, (bmp.height - px).toFloat(), bmp.width.toFloat(), bmp.height.toFloat(), android.graphics.Paint().apply { color = 0xFFC9CDD3.toInt() })
+        val t = android.graphics.Paint().apply { color = 0xFF5F6368.toInt(); textSize = 18 * bmp.width / 412f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true }
+        c.drawText("keyboard / لوحة المفاتيح", bmp.width / 2f, bmp.height - px / 2f, t)
+        FileOutputStream(f).use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
     /**
-     * 1.0.3: the Quick Add sheet alone with its «الموعد» chip (QC limited to the change): not set, filled from
-     * the text, the date picker, the time picker, and a picked moment with its ✕.
+     * 1.0.4: «تذكير جديد» alone (QC limited to the screen): empty, with text (the date read from it), with the
+     * keyboard up, the date and time pickers, and a picked moment.
      */
     private fun dueSheet(prefix: String, en: Boolean) {
         if (en) Repo.prefs(app).language = "en"
         val qa = com.fastkiwi.rememberme.ui.quick.QuickEntry::quickAddIntent
         ActivityScenario.launch<MainActivity>(qa(app, null)).also { scenario = it }.use {
             rule.mainClock.advanceTimeBy(300)
-            shotRoots("$prefix-40-due-unset")
+            shotRoots("$prefix-40-new-empty")
+            keyboardShot("$prefix-40-new-empty-keyboard")
         }
         ActivityScenario.launch<MainActivity>(qa(app, if (en) "call mum in an hour" else "اتصل بأمي بعد ساعة")).also { scenario = it }.use {
             rule.mainClock.advanceTimeBy(300)
-            shotRoots("$prefix-41-due-from-text")
+            shotRoots("$prefix-41-new-text")
+            keyboardShot("$prefix-41-new-text-keyboard")
         }
         ActivityScenario.launch<MainActivity>(qa(app, if (en) "call mum" else "اتصل بأمي")).also { scenario = it }.use {
             rule.mainClock.advanceTimeBy(300)
             rule.onNode(hasContentDescription(if (en) "Date and time:" else "الموعد:", substring = true)).performClick()
-            rule.waitForIdle(); shotRoots("$prefix-42-due-date-picker")
+            rule.waitForIdle(); shotRoots("$prefix-42-new-date-picker")
             rule.onNodeWithText(if (en) "OK" else "موافق").performClick()
-            rule.waitForIdle(); shotRoots("$prefix-43-due-time-picker")
+            rule.waitForIdle(); shotRoots("$prefix-43-new-time-picker")
             rule.onNodeWithText(if (en) "OK" else "موافق").performClick()
-            rule.waitForIdle(); shotRoots("$prefix-44-due-picked")
+            rule.waitForIdle(); shotRoots("$prefix-44-new-picked")
         }
     }
 

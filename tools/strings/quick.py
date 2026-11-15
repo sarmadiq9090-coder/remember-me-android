@@ -21,6 +21,7 @@ S = [
 ("qa_voice_body", "يمرّ الإدخال الصوتي عبر خدمة الكلام في هاتفك (غالبًا من Google)، وقد تعمل هذه الخدمة عبر الإنترنت. نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. ذكرني نفسه لا يرسل شيئًا ولا يطلب إذن الميكروفون.",
  "Voice input uses your phone's speech service. That service may use the internet if the language pack is not installed on the phone. Remember Me itself sends nothing and does not ask for the microphone permission."),
 ("qa_voice_missing", "الإدخال الصوتي غير متاح على هذا الهاتف. اكتب التذكير، أو جرّب ميكروفون لوحة المفاتيح.", "Voice input is not available on this phone. Type the reminder, or try the keyboard's microphone."),
+("qa_close", "إغلاق", "Close"),
 ("qa_due", "الموعد", "Date and time"),
 ("qa_due_desc", "الموعد: %1$s", "Date and time: %1$s"),
 ("qa_due_none", "غير محدد", "not set"),

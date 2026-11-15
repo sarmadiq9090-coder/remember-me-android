@@ -3,7 +3,17 @@ package com.fastkiwi.rememberme.ui.quick
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.semantics.Role
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -95,12 +105,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 
 /**
- * Hosts Quick Add over the current screen: the sheet, its state, and the save. Call it while a [QuickAddRequest]
- * is open; [onDismiss] closes it. After «حفظ» the sheet closes and [onSaved] gets the new reminder's id (show
- * «أُضيف التذكير» with «تراجع» and scroll the row into view; [QuickAddSave.undo] removes it again). [onMore] gets
- * the fields for the editor; [onTemplate] opens «من قالب».
+ * Hosts «تذكير جديد» over the current screen (1.0.4: a full-screen window): its state and the save. Call it while a
+ * [QuickAddRequest] is open; [onDismiss] closes it. After «حفظ» it closes and [onSaved] gets the new reminder's id
+ * (show «أُضيف التذكير» with «تراجع» and scroll the row into view; [QuickAddSave.undo] removes it again). [onMore]
+ * gets the fields for the editor; [onTemplate] opens «من قالب».
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickAddHost(
     request: QuickAddRequest,
@@ -115,25 +124,21 @@ fun QuickAddHost(
     var kept by rememberSaveable(request.id) { mutableStateOf(request.text) }
     val state = remember(request) { QuickAddState(kept, Repo.zone(), weekStart) }
     LaunchedEffect(state) { snapshotFlow { state.text }.collect { kept = it } }
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var saving by remember(request) { mutableStateOf(false) }
-    fun close(then: () -> Unit) {
-        scope.launch { runCatching { sheet.hide() } }.invokeOnCompletion { then() }
-    }
-    QuickAddSheet(
-        state = state, sheetState = sheet,
+    QuickAddScreen(
+        state = state,
         onSave = save@{ input ->
             if (saving) return@save
             saving = true
             scope.launch {
                 val id = withContext(Dispatchers.IO) { QuickAddSave.save(context, input) }
                 saving = false
-                if (id != null) close { onDismiss(); onSaved(id) }
+                if (id != null) { onDismiss(); onSaved(id) }
             }
         },
-        onMore = { input -> close { onDismiss(); onMore(input) } },
-        onTemplate = { close { onDismiss(); onTemplate() } },
+        onMore = { input -> onDismiss(); onMore(input) },
+        onTemplate = { onDismiss(); onTemplate() },
         onDismiss = onDismiss,
     )
 }
@@ -161,15 +166,16 @@ internal object QuickPrefs {
 }
 
 /**
- * The Quick Add sheet (DESIGN-SPEC §5.3): the field (focused, «اكتب التذكير وموعده», mic), the preview card
- * (always before «حفظ»), the chips «من قالب», «التصنيف», «الأهمية», and «خيارات أكثر» · «حفظ». «حفظ» stays
- * disabled while the text is being read and while a question is open.
+ * «تذكير جديد» (DESIGN-SPEC §5.3; 1.0.4, the owner: «اجعلها تبدو احترافيه»): a full-screen Material 3 window. The top
+ * bar has «×» (asks «تجاهل؟» when there is text), the title and «حفظ» (never under the keyboard; enabled when there
+ * is a title and nothing is still being read or asked). Then the field (the mic inside it, the title it will save
+ * under it) and 56 dp list rows: «الموعد» (the moment read from the text or picked, shown once), «التصنيف»,
+ * «الأهمية», «من قالب», «خيارات أكثر».
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun QuickAddSheet(
+fun QuickAddScreen(
     state: QuickAddState,
-    sheetState: SheetState,
     onSave: (TaskInput) -> Unit,
     onMore: (TaskInput) -> Unit,
     onTemplate: () -> Unit,
@@ -242,79 +248,88 @@ fun QuickAddSheet(
         if (state.pending) { delay(Behaviour.QuickAddDebounceMs); state.parseNow() }
     }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
-    val stacked = LocalDensity.current.fontScale >= 1.5f
+    var discard by remember { mutableStateOf(false) }
+    fun requestClose() { if (state.text.isNotBlank()) discard = true else onDismiss() }
+    BackHandler { requestClose() }
+    val now = Instant.now()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = SheetShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        // The handle's touch target is 48 dp wide (the default is 32).
-        dragHandle = { Box(Modifier.sizeIn(minWidth = Dimens.touch, minHeight = Dimens.touch), contentAlignment = Alignment.Center) { BottomSheetDefaults.DragHandle() } },
-    ) {
-        Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dimens.l).padding(bottom = Dimens.l),
-            verticalArrangement = Arrangement.spacedBy(Dimens.m),
-        ) {
-            TextField(
-                value = state.text, onValueChange = state::onTextChange,
-                label = { Text(stringResource(R.string.qa_label)) },
-                minLines = 1, maxLines = 3,
-                trailingIcon = if (!canVoice) null else ({
-                    TooltipIconButton(Ms.Mic, stringResource(R.string.qa_voice), {
-                        if (QuickPrefs.voiceDisclosed(context)) listen() else disclose = true
-                    })
-                }),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                ),
-                modifier = Modifier.fillMaxWidth().focusRequester(focus),
-            )
-            voiceNote?.let { note ->
-                Text(stringResource(note), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-            }
-            if (state.text.isNotBlank()) PreviewCard(state)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
-                // 1.0.3: «الموعد», first in reading order.
-                DueChip(state, onOpen = { L10n.latinDigitsDefault(); dueDialog = "date" })
-                AssistChip(onClick = onTemplate, label = { Text(stringResource(R.string.qa_template)) }, modifier = Modifier.heightIn(min = Dimens.touch),
-                    leadingIcon = { Icon(Ms.DashboardCustomize, null, Modifier.size(18.dp)) })
-                CategoryChip(state.category) { state.category = it }
-                PriorityChip(state.priority) { state.priority = it }
-            }
-            state.pastPick?.let { past ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
-                    Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(Dimens.s))
-                    Text(stringResource(R.string.qa_due_past, L10n.dueText(context, past, Instant.now(), state.zone)), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { state.pickTomorrow() }, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.qa_due_tomorrow)) }
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.surface,
+            topBar = {
+                TopAppBar(
+                    navigationIcon = { TooltipIconButton(Ms.Close, stringResource(R.string.qa_close), { requestClose() }) },
+                    title = { Text(stringResource(R.string.new_reminder), maxLines = 1) },
+                    actions = {
+                        Button(onClick = { state.toInput()?.let(onSave) }, enabled = state.canSave,
+                            modifier = Modifier.padding(end = Dimens.s)) { Text(stringResource(R.string.save)) }
+                    },
+                )
+            },
+        ) { pad ->
+            Column(
+                Modifier.fillMaxSize().padding(pad).consumeWindowInsets(pad).imePadding()
+                    .verticalScroll(rememberScrollState()).padding(top = Dimens.s, bottom = Dimens.l),
+            ) {
+                TextField(
+                    value = state.text, onValueChange = state::onTextChange,
+                    label = { Text(stringResource(R.string.qa_label)) },
+                    minLines = 1, maxLines = 4,
+                    trailingIcon = if (!canVoice) null else ({
+                        TooltipIconButton(Ms.Mic, stringResource(R.string.qa_voice), {
+                            if (QuickPrefs.voiceDisclosed(context)) listen() else disclose = true
+                        })
+                    }),
+                    // What will be saved as the title (never a title the person has not seen).
+                    supportingText = if (state.text.isBlank() || state.title.isEmpty()) null else ({ TitleLine(state.title) }),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
+                    modifier = Modifier.padding(horizontal = Dimens.l).fillMaxWidth().focusRequester(focus),
+                )
+                voiceNote?.let { note ->
+                    Text(stringResource(note), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = Dimens.l, vertical = Dimens.s).semantics { liveRegion = LiveRegionMode.Polite })
                 }
-            }
-            if (state.asking && state.choice == null && !state.pending) Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(Dimens.s))
-                Text(stringResource(R.string.qa_choose_first), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            ButtonPair(
-                stacked = stacked,
-                secondary = { m ->
-                    OutlinedButton(onClick = { onMore(state.draft()) }, modifier = m.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.qa_more)) }
-                },
-                primary = { m ->
-                    Button(onClick = { state.toInput()?.let(onSave) }, enabled = state.canSave, modifier = m.heightIn(min = Dimens.touch)) {
-                        Icon(Ms.Check, null, Modifier.size(20.dp))
+                Spacer(Modifier.height(Dimens.s))
+                // «الموعد»: the moment read from the text, or picked; shown here only.
+                val due = if (state.pending) null else state.dueAt
+                val dueShown = due?.let { L10n.dueText(context, it, now, state.zone) }
+                ListRow(
+                    icon = Ms.Schedule, label = stringResource(R.string.qa_due),
+                    value = dueShown ?: stringResource(R.string.qa_due_none),
+                    valueStrong = dueShown != null,
+                    supporting = if (due != null) repeatText(context, state) else null,
+                    desc = stringResource(R.string.qa_due_desc, dueShown ?: stringResource(R.string.qa_due_none)),
+                    onClick = { L10n.latinDigitsDefault(); dueDialog = "date" },
+                    trailing = if (due == null) null else ({ TooltipIconButton(Ms.Close, stringResource(R.string.qa_due_clear), { state.clearPick() }) }),
+                )
+                if (state.asking && !state.pending) AskBlock(state, now)
+                state.pastPick?.let { past ->
+                    Row(verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = Dimens.l).semantics { liveRegion = LiveRegionMode.Polite }) {
+                        Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(Dimens.s))
-                        Text(stringResource(R.string.save))
+                        Text(stringResource(R.string.qa_due_past, L10n.dueText(context, past, now, state.zone)), style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                        TextButton(onClick = { state.pickTomorrow() }, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.qa_due_tomorrow)) }
                     }
-                },
-            )
+                }
+                RowDivider()
+                CategoryRow(state.category) { state.category = it }
+                PriorityRow(state.priority) { state.priority = it }
+                RowDivider()
+                ListRow(icon = Ms.DashboardCustomize, label = stringResource(R.string.qa_template), desc = stringResource(R.string.qa_template),
+                    onClick = onTemplate, chevron = true)
+                ListRow(icon = Ms.Tune, label = stringResource(R.string.qa_more), desc = stringResource(R.string.qa_more),
+                    onClick = { onMore(state.draft()) }, chevron = true)
+            }
         }
     }
+    if (discard) com.fastkiwi.rememberme.ui.ConfirmDialog(stringResource(R.string.discard_draft_title), null, stringResource(R.string.discard),
+        onConfirm = { discard = false; onDismiss() }, onDismiss = { discard = false }, dismissLabel = stringResource(R.string.keep_editing))
     if (dueDialog != null) {
         val base = (state.dueAt ?: state.suggestedAt()).atZone(state.zone)
         when (dueDialog) {
@@ -387,97 +402,89 @@ private fun LatinDigits(content: @Composable () -> Unit) {
     androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalConfiguration provides latn, content = content)
 }
 
+/** A thin divider between groups of rows, inset from the start like Material 3 lists. */
+@Composable
+private fun RowDivider() {
+    HorizontalDivider(Modifier.padding(start = Dimens.l + 24.dp + Dimens.l, top = Dimens.xs, bottom = Dimens.xs),
+        color = MaterialTheme.colorScheme.outlineVariant)
+}
+
 /**
- * «الموعد» (1.0.3): shows the moment that will be saved (from the text or picked), opens the date and time
- * pickers, and has its own ✕ when a moment is set. TalkBack reads «الموعد: …» or «الموعد: غير محدد».
+ * One Material 3 list row (56 dp at least, the full width): icon · label · value, and a chevron or a trailing
+ * button. TalkBack reads [desc] («الموعد: غير محدد», «التصنيف: شخصي»…).
  */
 @Composable
-private fun DueChip(state: QuickAddState, onOpen: () -> Unit) {
-    val context = LocalContext.current
-    val due = if (state.pending) null else state.dueAt
-    val shown = due?.let { L10n.dueText(context, it, Instant.now(), state.zone) }
-    val desc = stringResource(R.string.qa_due_desc, shown ?: stringResource(R.string.qa_due_none))
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        AssistChip(
-            onClick = onOpen,
-            label = { Text(shown ?: stringResource(R.string.qa_due)) },
-            leadingIcon = { Icon(Ms.Schedule, null, Modifier.size(18.dp)) },
-            modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = desc },
-        )
-        if (due != null) TooltipIconButton(Ms.Close, stringResource(R.string.qa_due_clear), { state.clearPick() })
+private fun ListRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    desc: String,
+    onClick: () -> Unit,
+    value: String? = null,
+    valueStrong: Boolean = false,
+    supporting: String? = null,
+    chevron: Boolean = false,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.weight(1f).heightIn(min = 56.dp)
+                .semantics(mergeDescendants = true) { contentDescription = desc }
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(start = Dimens.l, end = if (trailing == null) Dimens.l else Dimens.xs, top = Dimens.s, bottom = Dimens.s),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(Dimens.l))
+            Column(Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                supporting?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+            value?.let {
+                Spacer(Modifier.width(Dimens.m))
+                Text(it, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (valueStrong) FontWeight.Medium else FontWeight.Normal),
+                    color = if (valueStrong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End)
+            }
+            if (chevron) {
+                Spacer(Modifier.width(Dimens.s))
+                Icon(Ms.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            }
+        }
+        trailing?.let { Box(Modifier.padding(end = Dimens.xs)) { it() } }
     }
 }
 
-/** The preview card: what will be saved, always shown before «حفظ» (never a date the person has not seen). */
+/** The question for an ambiguous time («5 صباحًا أم مساءً؟») with its choices, under «الموعد». */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PreviewCard(state: QuickAddState) {
+private fun AskBlock(state: QuickAddState, now: Instant) {
     val context = LocalContext.current
-    val now = Instant.now()
-    Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {
-        Column(Modifier.padding(start = Dimens.l, end = Dimens.xs, top = Dimens.m, bottom = Dimens.m), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
-            val due = state.dueAt
-            when {
-                state.asking -> {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = Dimens.m)) {
-                        Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.tertiary)
-                        Spacer(Modifier.width(Dimens.m))
-                        Text(question(context, state), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                    }
-                    TitleLine(state.title)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s), modifier = Modifier.padding(end = Dimens.m)) {
-                        state.options.forEach { o ->
-                            FilterChip(
-                                selected = (state.choice as? QuickChoice.At)?.dueAt == o.dueAt,
-                                onClick = { state.choose(QuickChoice.At(o.dueAt)) },
-                                label = { Text(L10n.dueText(context, o.dueAt, now)) },
-                                leadingIcon = { Icon(Ms.Event, null, Modifier.size(18.dp)) },
-                                modifier = Modifier.heightIn(min = Dimens.touch),
-                            )
-                        }
-                        FilterChip(
-                            selected = state.choice == QuickChoice.NoDate,
-                            onClick = { state.choose(QuickChoice.NoDate) },
-                            label = { Text(stringResource(R.string.qa_no_date)) },
-                            modifier = Modifier.heightIn(min = Dimens.touch),
-                        )
-                    }
-                }
-                due != null && !state.noDate -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Ms.Event, null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(Dimens.m))
-                        Column(Modifier.weight(1f)) {
-                            Text(buildAnnotatedString {
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(L10n.dueText(context, due, now)) }
-                                state.phrase?.takeIf { !state.picked }?.let { p ->
-                                    append("  ")
-                                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Normal)) { append(p) }
-                                }
-                            }, style = MaterialTheme.typography.titleMedium)
-                            repeatText(context, state)?.let { r ->
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Ms.Repeat, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                                    Spacer(Modifier.width(Dimens.xs))
-                                    Text(r, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-                        TooltipIconButton(Ms.Close, stringResource(R.string.qa_no_date), { state.clearDate() })
-                    }
-                    TitleLine(state.title)
-                }
-                else -> {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = Dimens.m)) {
-                        Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.width(Dimens.m))
-                        Text(stringResource(R.string.qa_nothing), style = MaterialTheme.typography.bodyMedium)
-                    }
-                    TitleLine(state.title)
-                }
-            }
+    Column(Modifier.padding(horizontal = Dimens.l, vertical = Dimens.s).semantics { liveRegion = LiveRegionMode.Polite },
+        verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(Dimens.s))
+            Text(question(context, state), style = MaterialTheme.typography.titleSmall)
         }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
+            state.options.forEach { o ->
+                FilterChip(
+                    selected = (state.choice as? QuickChoice.At)?.dueAt == o.dueAt,
+                    onClick = { state.choose(QuickChoice.At(o.dueAt)) },
+                    label = { Text(L10n.dueText(context, o.dueAt, now)) },
+                    leadingIcon = { Icon(Ms.Event, null, Modifier.size(18.dp)) },
+                    modifier = Modifier.heightIn(min = Dimens.touch),
+                )
+            }
+            FilterChip(
+                selected = state.choice == QuickChoice.NoDate,
+                onClick = { state.choose(QuickChoice.NoDate) },
+                label = { Text(stringResource(R.string.qa_no_date)) },
+                modifier = Modifier.heightIn(min = Dimens.touch),
+            )
+        }
+        if (state.choice == null) Text(stringResource(R.string.qa_choose_first), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -526,11 +533,12 @@ private fun repeatText(context: Context, state: QuickAddState): String? {
 }
 
 @Composable
-private fun CategoryChip(current: Category, onPick: (Category) -> Unit) {
+private fun CategoryRow(current: Category, onPick: (Category) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val name = categoryName(current)
     Box {
-        AssistChip(onClick = { open = true }, modifier = Modifier.heightIn(min = Dimens.touch), label = { Text(stringResource(R.string.qa_category, categoryName(current))) },
-            leadingIcon = { Icon(Ms.Label, null, Modifier.size(18.dp)) })
+        ListRow(icon = Ms.Label, label = stringResource(R.string.category), value = name,
+            desc = stringResource(R.string.qa_category, name), onClick = { open = true })
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Category.entries.forEach { c ->
                 DropdownMenuItem(text = { Text(categoryName(c)) }, onClick = { onPick(c); open = false },
@@ -541,12 +549,12 @@ private fun CategoryChip(current: Category, onPick: (Category) -> Unit) {
 }
 
 @Composable
-private fun PriorityChip(current: Priority, onPick: (Priority) -> Unit) {
+private fun PriorityRow(current: Priority, onPick: (Priority) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val name = priorityName(current)
     Box {
-        val label = if (current == Priority.NORMAL) stringResource(R.string.priority) else stringResource(R.string.qa_priority, priorityName(current))
-        AssistChip(onClick = { open = true }, modifier = Modifier.heightIn(min = Dimens.touch), label = { Text(label) },
-            leadingIcon = { Icon(if (current == Priority.HIGH) Ms.Flag else Ms.OutlinedFlag, null, Modifier.size(18.dp)) })
+        ListRow(icon = if (current == Priority.HIGH) Ms.Flag else Ms.OutlinedFlag, label = stringResource(R.string.priority), value = name,
+            desc = stringResource(R.string.qa_priority, name), onClick = { open = true })
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             listOf(Priority.NORMAL, Priority.MEDIUM, Priority.HIGH).forEach { p ->
                 DropdownMenuItem(text = { Text(priorityName(p)) }, onClick = { onPick(p); open = false },

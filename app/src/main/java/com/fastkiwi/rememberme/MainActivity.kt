@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme
 
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -397,7 +398,10 @@ class MainActivity : AppCompatActivity() {
         val prefs = Repo.prefs(this)
         // [qcfix] begin: G-07 screen transitions and predictive back (DESIGN-SPEC §3.5). Each screen is its own
         // keyed content, so the editor's remembered fields never carry over to another reminder.
-        com.fastkiwi.rememberme.ui.ScreenStackHost(stack, onBack = { pop() }) { screen -> ScreenContent(screen, state, now, zone, ctx, prefs) }
+        // 1.0.4: «تذكير جديد» is a full-screen window over the screens; what is under it is hidden from TalkBack.
+        androidx.compose.foundation.layout.Box(if (quickAdd != null) androidx.compose.ui.Modifier.clearAndSetSemantics { } else androidx.compose.ui.Modifier) {
+            com.fastkiwi.rememberme.ui.ScreenStackHost(stack, onBack = { pop() }) { screen -> ScreenContent(screen, state, now, zone, ctx, prefs) }
+        }
         // [qcfix] end
         // [quick] begin
         quickAdd?.let { req ->

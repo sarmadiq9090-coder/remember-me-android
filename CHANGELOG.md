@@ -6,6 +6,19 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-15
+
+The owner on 1.0.3's sheet: «الازرار يجب ان تكون افضل ومرتبه اكثر اجعلها تبدو احترافيه».
+
+### Changed
+
+- «تذكير جديد» is a full-screen Material 3 window instead of a bottom sheet: a top bar with «×» (asks
+  «لم يُحفظ هذا التذكير بعد. تجاهله؟» when there is text; Back too), the title and «حفظ», which the keyboard can no
+  longer cover; the field with the mic inside and the title it will save under it; then 56 dp list rows with
+  light dividers: «الموعد» (the moment read from the text or picked, shown once, its own ✕), «التصنيف»,
+  «الأهمية», «من قالب», «خيارات أكثر». The preview card (which repeated the date) and the chips are gone. All of
+  1.0.3's behaviour stays: the text sync, a past time, saving without a date, voice, the draft question.
+
 ## [1.0.3] - 2026-11-15
 
 The owner asked for a time picker in Quick Add («اضف موعد تذكير في هذه شاشه»).

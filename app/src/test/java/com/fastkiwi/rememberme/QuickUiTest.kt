@@ -145,9 +145,9 @@ class QuickUiTest {
             val before = Instant.now()
             type("ذكرني أتصل بأمي بعد ساعة")
             rule.onNodeWithText("العنوان: أتصل بأمي").assertExists()
-            rule.onNodeWithContentDescription("بلا موعد").assertExists()
+            rule.onNodeWithContentDescription("إلغاء الموعد").assertExists()
             rule.onNodeWithText("من قالب").assertExists()
-            rule.onNodeWithText("التصنيف: شخصي").assertExists()
+            rule.onNodeWithContentDescription("التصنيف: شخصي").assertExists()
             assertTouchTargets()
             rule.onNodeWithText("حفظ").assertIsEnabled().performClick()
             rule.waitUntil(10_000) { Repo.state(app).tasks.isNotEmpty() }

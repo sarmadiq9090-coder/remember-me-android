@@ -718,6 +718,7 @@
     <string name="qa_voice_title">الإدخال الصوتي</string>
     <string name="qa_voice_body">يمرّ الإدخال الصوتي عبر خدمة الكلام في هاتفك (غالبًا من Google)، وقد تعمل هذه الخدمة عبر الإنترنت. نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. ذكرني نفسه لا يرسل شيئًا ولا يطلب إذن الميكروفون.</string>
     <string name="qa_voice_missing">الإدخال الصوتي غير متاح على هذا الهاتف. اكتب التذكير، أو جرّب ميكروفون لوحة المفاتيح.</string>
+    <string name="qa_close">إغلاق</string>
     <string name="qa_due">الموعد</string>
     <string name="qa_due_desc">الموعد: %1$s</string>
     <string name="qa_due_none">غير محدد</string>
