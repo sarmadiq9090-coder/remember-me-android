@@ -1,0 +1,3 @@
+clock jumps (SDK 26, seed 4001): 30 came due, 6 rang more than once, 0 never rang, 3 capped
+clock jumps (SDK 33, seed 4001): 30 came due, 6 rang more than once, 0 never rang, 3 capped
+clock jumps (SDK 36, seed 4001): 30 came due, 6 rang more than once, 0 never rang, 3 capped
