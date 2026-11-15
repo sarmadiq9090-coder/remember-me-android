@@ -40,7 +40,6 @@ S = [
 ("style_normal", "تذكير عادي", "Normal reminder"),
 ("style_alarm", "منبّه مهم", "Important alarm"),
 ("style_normal_body", "إشعار بصوت الإشعارات. إن كان الهاتف صامتًا يهتز فقط، وفي «عدم الإزعاج» يبقى صامتًا.", "A notification at notification volume. On a silent phone it only vibrates; in Do Not Disturb it stays silent."),
-("style_alarm_body", "يرنّ بصوت المنبّه حتى والهاتف صامت، ويستمر حتى تتعامل معه. لا يتجاوز «عدم الإزعاج» إلا إذا سمحت له.", "Rings at alarm volume even on a silent phone, until you deal with it. It does not get through Do Not Disturb unless you allow it."),
 ("style_alarm_hint", "يرنّ حتى والهاتف صامت", "Rings even when the phone is silent"),
 ("alert_way", "طريقة التنبيه", "How to alert"),
 ("dnd_allow", "السماح في «عدم الإزعاج»", "Allow in Do Not Disturb"),

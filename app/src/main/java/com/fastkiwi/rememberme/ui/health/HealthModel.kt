@@ -94,6 +94,18 @@ object HealthModel {
     /** How many essential rows are not ready (0 = «كل شيء ضروري جاهز»). Settings' top row uses the same count. */
     fun essentialMissing(h: Health, s: ScheduleStatus): Int = essentials(h, s).count { it.status != HealthStatus.READY }
 
+    /**
+     * Why the sound will not be heard although the essentials may be ready (black-box U2-1), in this order:
+     * "notif_volume" / "alarm_volume" at zero, "channel" («تذكيرات عادية») or "alarm_channel" («منبّهات مهمة») muted.
+     * The summary card lists them under its title, so a green card never implies "you will hear it".
+     */
+    fun soundWarnings(h: Health): List<String> = buildList {
+        if (h.notifVolume == 0) add("notif_volume")
+        if (h.alarmVolume == 0) add("alarm_volume")
+        if (!h.channelSound) add("channel")
+        if (!h.alarmChannelSound) add("alarm_channel")
+    }
+
     /** «يُنصح به». */
     fun recommended(h: Health, s: ScheduleStatus, nowMs: Long): List<HealthItem> = buildList {
         val g = HealthGroup.RECOMMENDED
