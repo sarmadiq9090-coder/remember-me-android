@@ -476,7 +476,7 @@
     <string name="test_running">A test alert will arrive in %1$s. Lock the screen to test the full screen.</string>
     <string name="test_cancel">Cancel the test</string>
     <string name="test_done">Test finished</string>
-    <string name="test_parts">The six parts</string>
+    <string name="test_parts">The test\'s parts</string>
     <string name="test_tested">You tested: %1$s, %2$s</string>
     <string name="part_on_time">Alarm on time</string>
     <string name="part_notif">Notification</string>

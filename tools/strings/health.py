@@ -99,7 +99,7 @@ S = [
 ("test_running", "سيصل تنبيه تجريبي بعد %1$s. اقفل الشاشة إن أردت اختبار الشاشة الكاملة.", "A test alert will arrive in %1$s. Lock the screen to test the full screen."),
 ("test_cancel", "ألغِ الاختبار", "Cancel the test"),
 ("test_done", "انتهى الاختبار", "Test finished"),
-("test_parts", "الأجزاء الستة", "The six parts"),
+("test_parts", "أجزاء الاختبار", "The test's parts"),
 ("test_tested", "اختبرتَ: %1$s، %2$s", "You tested: %1$s, %2$s"),
 ("part_on_time", "المنبّه في وقته", "Alarm on time"),
 ("part_notif", "الإشعار", "Notification"),

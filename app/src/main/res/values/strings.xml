@@ -476,7 +476,7 @@
     <string name="test_running">سيصل تنبيه تجريبي بعد %1$s. اقفل الشاشة إن أردت اختبار الشاشة الكاملة.</string>
     <string name="test_cancel">ألغِ الاختبار</string>
     <string name="test_done">انتهى الاختبار</string>
-    <string name="test_parts">الأجزاء الستة</string>
+    <string name="test_parts">أجزاء الاختبار</string>
     <string name="test_tested">اختبرتَ: %1$s، %2$s</string>
     <string name="part_on_time">المنبّه في وقته</string>
     <string name="part_notif">الإشعار</string>
