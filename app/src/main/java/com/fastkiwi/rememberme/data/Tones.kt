@@ -29,6 +29,12 @@ object Tones {
     fun bundledUri(c: Context, id: String): String? =
         BUNDLED.firstOrNull { it.first == id }?.let { "android.resource://${c.packageName}/${it.second}" }
 
+    /**
+     * What "the default" plays for a style when no default tone was chosen in Remember Me: the phone's own
+     * tone, or, when the phone has none, Remember Me's chime-1 (null here means "the phone's", named by the caller).
+     */
+    fun defaultIsBundled(c: Context, style: AlertPolicy.Style): Boolean = phoneDefault(c, style) == null
+
     /** The phone's own default for a style, or null when the phone has none ("None"). */
     fun phoneDefault(c: Context, style: AlertPolicy.Style): String? = runCatching {
         RingtoneManager.getActualDefaultRingtoneUri(c, if (style == AlertPolicy.Style.ALARM) RingtoneManager.TYPE_ALARM else RingtoneManager.TYPE_NOTIFICATION)?.toString()

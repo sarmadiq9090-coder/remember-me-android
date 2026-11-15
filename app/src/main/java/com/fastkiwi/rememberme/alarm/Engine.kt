@@ -80,7 +80,16 @@ object Engine {
         val visible = plan.due.takeLast(Notifier.MAX_SHOWN)
         // Rung already before the unlock (F-026): shown now, quietly; the locked placeholder goes.
         val rungLocked = runCatching { DirectBoot.rungWhileLocked(app) }.getOrDefault(emptySet())
-        if (rungLocked.isNotEmpty()) { DirectBoot.clearRung(app); DirectBoot.cancelLocked(app) }
+        if (rungLocked.isNotEmpty()) {
+            DirectBoot.clearRung(app); DirectBoot.cancelLocked(app)
+            // The alert log lives in storage that is closed before the unlock: those rings are recorded now.
+            runCatching {
+                val log = com.fastkiwi.rememberme.data.AlertLog(app)
+                for (t in state.tasks) if (t.dueAt != null && t.dueAt.toEpochMilli() in rungLocked)
+                    log.add(com.fastkiwi.rememberme.data.AlertLog.Event.POSTED, log.keyOf(t.id, com.fastkiwi.rememberme.core.Codec.iso(t.dueAt)),
+                        code = "before unlock")
+            }
+        }
         // A swiped reminder comes back quietly only while pinned, at most 5 times per occurrence (F-021).
         val reposts = prefs.repostLog
         for (t in visible) {

@@ -231,6 +231,8 @@ class AlertPipelineTest {
         assertTrue(nm.activeNotifications.none { it.id == DirectBoot.LOCKED_ID })
         assertTrue(plan.due.any { it.id == t.id })
         assertNull("no ring for the occurrence that rang while locked", startedRing())
+        // Black-box U2: the ring before the unlock is in the alert log after it.
+        assertTrue(com.fastkiwi.rememberme.data.AlertLog(app).entries().any { it.event == com.fastkiwi.rememberme.data.AlertLog.Event.POSTED && it.code == "before unlock" })
     }
 
     @Test fun aReminderCanHideItsDetailsOnTheLockScreenWhileThePhoneShowsThem() {

@@ -977,7 +977,13 @@ class Driver(val rule: ComposeTestRule, val session: File) {
                 TimeZone.setDefault(TimeZone.getTimeZone(z))
                 deliverBroadcast(Intent(Intent.ACTION_TIMEZONE_CHANGED).setPackage(app.packageName))
             }
-            "lockscreen-notifications" -> lockMode = when (l.arg(0)) { "all", "hide-sensitive", "none" -> l.arg(0); else -> throw ActionError("use all, hide-sensitive or none") }
+            "lockscreen-notifications" -> {
+                lockMode = when (l.arg(0)) { "all", "hide-sensitive", "none" -> l.arg(0); else -> throw ActionError("use all, hide-sensitive or none") }
+                // Android keeps this choice in its secure settings; apps read it there.
+                val cr = app.contentResolver
+                android.provider.Settings.Secure.putInt(cr, "lock_screen_show_notifications", if (lockMode == "none") 0 else 1)
+                android.provider.Settings.Secure.putInt(cr, "lock_screen_allow_private_notifications", if (lockMode == "all") 1 else 0)
+            }
             "on-error" -> stopOnError = when (l.arg(0)) { "stop" -> true; "continue" -> false; else -> throw ActionError("use on-error stop or on-error continue") }
             "reboot" -> reboot()
             "pick-file" -> pickFile(l.arg(0))

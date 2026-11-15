@@ -40,6 +40,7 @@ class AlertLog(context: Context) {
     }
 
     fun add(event: Event, key: String, lateMs: Long = -1, style: String = "", code: String = "") = synchronized(LOCK) {
+        if (event == Event.SCREEN_SHOWN && key.isNotEmpty() && entries().take(20).any { it.event == event && it.key == key }) return@synchronized
         val e = Entry(System.currentTimeMillis(), event, key, lateMs, style, code.replace("|", "/").take(40))
         val lines = (listOf(e.encode()) + (p.getString("entries", "") ?: "").lines().filter { it.isNotBlank() }).take(MAX)
         p.edit { putString("entries", lines.joinToString("\n")) }

@@ -201,7 +201,9 @@ fun SettingsScreen(
     val asrs = com.fastkiwi.rememberme.ui.settings.PrayerNames.asr(context)
 
     fun tone(t: com.fastkiwi.rememberme.core.ToneRef?, alarm: Boolean): String = when (t?.kind) {
-        null, "default" -> res.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification)
+        null, "default" -> if (com.fastkiwi.rememberme.data.Tones.defaultIsBundled(context,
+                if (alarm) com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM else com.fastkiwi.rememberme.core.AlertPolicy.Style.NORMAL))
+            res.getString(R.string.tone_bundled_default) else res.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification)
         "silent" -> res.getString(R.string.set_tone_silent)
         "bundled" -> res.getString(R.string.set_tone_bundled, t.ref.removePrefix("chime-"))
         else -> t.title.ifEmpty { res.getString(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification) }

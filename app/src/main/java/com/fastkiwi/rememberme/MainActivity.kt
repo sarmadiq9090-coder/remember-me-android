@@ -426,7 +426,10 @@ class MainActivity : AppCompatActivity() {
                 title = stringResource(if (alarm) R.string.set_default_tone_alarm else R.string.set_default_tone_normal),
                 subtitle = null,
                 defaultTone = null,
-                defaultLabel = stringResource(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification),
+                defaultLabel = if (com.fastkiwi.rememberme.data.Tones.defaultIsBundled(ctx,
+                        if (alarm) com.fastkiwi.rememberme.core.AlertPolicy.Style.ALARM else com.fastkiwi.rememberme.core.AlertPolicy.Style.NORMAL))
+                    stringResource(R.string.tone_bundled_default)
+                else stringResource(if (alarm) R.string.set_tone_phone_alarm else R.string.set_tone_phone_notification),
             )
         }
     }

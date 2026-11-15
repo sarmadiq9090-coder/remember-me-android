@@ -6,6 +6,7 @@ S = [
 ("banner_notifications_off", "الإشعارات مطفأة: لن يظهر أي تذكير.", "Notifications are off: no reminder will show."),
 ("banner_autobackup_failed", "لم تُحفظ النسخة التلقائية الأسبوعية. اختر المجلد من جديد في الإعدادات.", "The weekly automatic copy was not saved. Choose the folder again in Settings."),
 ("h_autobackup", "النسخة التلقائية الأسبوعية", "Weekly automatic copy"),
+("tone_bundled_default", "نغمة ذكرني 1 (لا توجد نغمة افتراضية في الهاتف)", "Remember Me tone 1 (the phone has no default tone)"),
 ]
 
 P = {
