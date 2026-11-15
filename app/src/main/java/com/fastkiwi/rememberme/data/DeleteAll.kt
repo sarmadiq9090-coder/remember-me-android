@@ -34,6 +34,14 @@ object DeleteAll {
     fun run(context: Context) {
         val app = context.applicationContext
         runCatching { Engine.drain() }
+        // A ringing reminder stops, and the weekly-backup folder's grant is given back.
+        runCatching { com.fastkiwi.rememberme.alarm.RingService.stop(app, remove = true) }
+        runCatching {
+            Prefs(app).autoBackupUri.takeIf { it.isNotEmpty() }?.let { u ->
+                app.contentResolver.releasePersistableUriPermission(android.net.Uri.parse(u),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            }
+        }
         cancelAlarms(app)
         runCatching { TestAlarm.cancel(app) }
         runCatching { NotificationManagerCompat.from(app).cancelAll() }

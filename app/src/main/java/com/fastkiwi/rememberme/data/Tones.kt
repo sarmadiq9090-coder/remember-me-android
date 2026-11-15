@@ -125,7 +125,7 @@ object Tones {
         if (bytes.isEmpty()) { lastRefusal = Refusal.EMPTY; return null }
         if (!looksLikeAudio(bytes)) { lastRefusal = Refusal.NOT_AUDIO; return null }
         val sha = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-        val ext = displayName.substringAfterLast('.', "").lowercase().takeIf { it.length in 2..4 && it.all(Char::isLetterOrDigit) } ?: "audio"
+        val ext = displayName.substringAfterLast('.', "").lowercase().takeIf { it.length in 2..4 && it.all { c -> c in 'a'..'z' || c in '0'..'9' } } ?: "audio"
         val existing = d.listFiles()?.firstOrNull { it.name.substringBefore('.') == sha }
         if (existing == null) {
             if ((d.listFiles()?.size ?: 0) >= MAX_FILES) { lastRefusal = Refusal.TOO_MANY; return null }

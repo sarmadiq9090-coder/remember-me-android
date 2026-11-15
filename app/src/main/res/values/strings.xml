@@ -220,6 +220,8 @@
     <string name="summary_first">أولها %1$s: %2$s</string>
     <string name="done_undo_title">أُنجز «%1$s»</string>
     <string name="alarm_rings_until">%1$s، يرنّ حتى تتعامل معه</string>
+    <string name="channel_vibrate">تذكيرات بالاهتزاز فقط</string>
+    <string name="channel_vibrate_desc">احتياطية: تهتز إن تعذّر تشغيل الاهتزاز من «ذكرني» لتذكير بلا صوت.</string>
     <string name="cal_view_label">طريقة العرض</string>
     <string name="cal_view_agenda">أجندة</string>
     <string name="cal_view_day">يوم</string>
@@ -598,6 +600,7 @@
     <string name="home_no_repeat">لا يتكرر</string>
     <string name="template_saved">حُفظ القالب في «قوالبي»</string>
     <string name="history_cleared">مُسح سجل التغييرات</string>
+    <string name="change_not_saved">لم يُحفظ التغيير. تحقّق من المساحة الفارغة في الهاتف ثم أعد المحاولة.</string>
     <string name="added_msg">أُضيف التذكير</string>
     <string name="qa_label">اكتب التذكير وموعده</string>
     <string name="qa_title_is">العنوان: %1$s</string>

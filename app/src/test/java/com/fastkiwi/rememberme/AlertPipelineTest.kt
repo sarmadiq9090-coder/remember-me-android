@@ -231,7 +231,7 @@ class AlertPipelineTest {
 
     @Test fun theChannelsAreTheFixedSetAndTheDueOnesHaveNoSoundOfTheirOwn() {
         val ids = nm.notificationChannels.map { it.id }.toSet()
-        assertEquals(setOf("due_normal_v1", "due_alarm_v1", "reminders_v1", "reminders_quiet_v1", "notices_v1", "summary_v1"), ids)
+        assertEquals(setOf("due_normal_v1", "due_alarm_v1", "reminders_v1", "reminders_quiet_v1", "reminders_vibrate_v1", "notices_v1", "summary_v1"), ids)
         assertNull(nm.getNotificationChannel(Notifier.CH_NORMAL).sound)
         assertNull(nm.getNotificationChannel(Notifier.CH_ALARM).sound)
         assertNotNull(nm.getNotificationChannel(Notifier.CH_ALERT).sound)

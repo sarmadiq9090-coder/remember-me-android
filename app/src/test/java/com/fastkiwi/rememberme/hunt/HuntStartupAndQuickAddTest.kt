@@ -67,7 +67,8 @@ class HuntLockedStartTest {
     }
 
     private fun boot() {
-        app.sendBroadcast(android.content.Intent(android.content.Intent.ACTION_BOOT_COMPLETED).setPackage(app.packageName))
+        // Delivered as the system does (Robolectric does not route protected broadcasts sent by the app).
+        com.fastkiwi.rememberme.alarm.SystemReceiver().onReceive(app, android.content.Intent(android.content.Intent.ACTION_BOOT_COMPLETED))
         shadowOf(android.os.Looper.getMainLooper()).idle()
         Engine.drain()
     }

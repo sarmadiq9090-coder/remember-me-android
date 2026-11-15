@@ -55,6 +55,8 @@ object Engine {
     fun sync(context: Context, at: Instant? = null, reason: String = "change") = synchronized(lock) {
         val now = at ?: Instant.now()
         val app = context.applicationContext
+        // A process that started before the unlock finishes its start on the first run after it.
+        com.fastkiwi.rememberme.RememberMeApp.start(app)
         val prefs = Repo.prefs(app)
         // Woken by our own alarm: how late after the armed moment (measured, for Health and the report).
         val armed = prefs.armedAt

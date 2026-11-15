@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.alarm
 
+import com.fastkiwi.rememberme.core.hidesOnLockScreen
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -61,11 +62,11 @@ object Summary {
                 .setContentTitle(l.getString(R.string.channel_summary))
                 .setContentText(L10n.plural(l, R.plurals.reminders_today, n.toLong()))
             // The first title only when details may show on the lock screen (F-030, F-022).
-            if (first != null && !Repo.prefs(c).lockPrivacy) b.setStyle(NotificationCompat.BigTextStyle().bigText(
+            b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            if (first != null && !com.fastkiwi.rememberme.core.AlertExt.of(first).hidesOnLockScreen(Repo.prefs(c).lockPrivacy)) b.setStyle(NotificationCompat.BigTextStyle().bigText(
                 L10n.plural(l, R.plurals.reminders_today, n.toLong()) + "\n" + l.getString(R.string.summary_first, L10n.time(l, first.dueAt!!), L10n.isolate(l, first.title))))
             val notification = b
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setAutoCancel(true).setContentIntent(open).build()
             try { NotificationManagerCompat.from(c).notify(Notifier.MORNING_ID, notification) } catch (_: SecurityException) { }
         }

@@ -220,6 +220,8 @@
     <string name="summary_first">First at %1$s: %2$s</string>
     <string name="done_undo_title">Done: “%1$s”</string>
     <string name="alarm_rings_until">%1$s, rings until you respond</string>
+    <string name="channel_vibrate">Vibrate-only reminders</string>
+    <string name="channel_vibrate_desc">Backup: vibrates when Remember Me cannot run the vibration of a reminder without sound.</string>
     <string name="cal_view_label">View</string>
     <string name="cal_view_agenda">Agenda</string>
     <string name="cal_view_day">Day</string>
@@ -598,6 +600,7 @@
     <string name="home_no_repeat">Does not repeat</string>
     <string name="template_saved">Saved to “My templates”</string>
     <string name="history_cleared">Change history cleared</string>
+    <string name="change_not_saved">The change was not saved. Check the free space on the phone and try again.</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>
     <string name="qa_title_is">Title: %1$s</string>

@@ -4,3 +4,7 @@ S = [
 ("done_undo_title", "أُنجز «%1$s»", "Done: “%1$s”"),
 ("alarm_rings_until", "%1$s، يرنّ حتى تتعامل معه", "%1$s, rings until you respond"),
 ]
+S += [
+("channel_vibrate", "تذكيرات بالاهتزاز فقط", "Vibrate-only reminders"),
+("channel_vibrate_desc", "احتياطية: تهتز إن تعذّر تشغيل الاهتزاز من «ذكرني» لتذكير بلا صوت.", "Backup: vibrates when Remember Me cannot run the vibration of a reminder without sound."),
+]

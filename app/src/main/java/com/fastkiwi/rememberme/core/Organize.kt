@@ -46,7 +46,7 @@ object Organize {
     fun parseSteps(e: JsonElement?): List<Step> = (e as? JsonArray)?.mapNotNull { el ->
         val o = el as? JsonObject ?: return@mapNotNull null
         val text = (o["text"] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return@mapNotNull null
-        Step((o["id"] as? JsonPrimitive)?.takeIf { it.isString }?.content.orEmpty(), text, (o["done"] as? JsonPrimitive)?.booleanOrNull == true)
+        Step((o["id"] as? JsonPrimitive)?.takeIf { it.isString }?.content.orEmpty(), text, (o["done"] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull == true)
     }.orEmpty()
 
     fun parseTags(e: JsonElement?): List<String> =

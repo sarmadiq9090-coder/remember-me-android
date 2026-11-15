@@ -46,6 +46,8 @@ object Notifier {
     const val CH_NORMAL = "due_normal_v1"
     const val CH_ALARM = "due_alarm_v1"
     const val CH_SUMMARY = "summary_v1"
+    /** Fallback for a vibrate-only alert when the ringing service cannot start: vibrates, no sound. */
+    const val CH_VIBRATE = "reminders_vibrate_v1"
     const val TAG_NOTICE = "notice:"
     const val EXTRA_TASK = "rm.task"
     private const val GROUP = "com.fastkiwi.rememberme.DUE"
@@ -74,6 +76,7 @@ object Notifier {
         ch(CH_ALARM, R.string.channel_alarm, R.string.channel_alarm_desc, NotificationManager.IMPORTANCE_HIGH) { setSound(null, null); enableVibration(false) }
         ch(CH_ALERT, R.string.channel_alert, R.string.channel_alert_desc, NotificationManager.IMPORTANCE_HIGH) { setSound(sound, attrs); enableVibration(true) }
         ch(CH_QUIET, R.string.channel_quiet, R.string.channel_quiet_desc, NotificationManager.IMPORTANCE_HIGH) { setSound(null, null); enableVibration(false) }
+        ch(CH_VIBRATE, R.string.channel_vibrate, R.string.channel_vibrate_desc, NotificationManager.IMPORTANCE_HIGH) { setSound(null, null); enableVibration(true) }
         ch(CH_NOTICE, R.string.channel_notice, R.string.channel_notice_desc, NotificationManager.IMPORTANCE_DEFAULT) {}
         ch(CH_SUMMARY, R.string.channel_summary, R.string.channel_summary_desc, NotificationManager.IMPORTANCE_LOW) { setSound(null, null) }
     }
@@ -113,6 +116,8 @@ object Notifier {
             NotificationManager.INTERRUPTION_FILTER_ALARMS -> AlertPolicy.Dnd.ALARMS_ONLY
             else -> {
                 // Reading the policy needs no special access on most versions; when it fails we say "unknown".
+                // Android 8.x has no alarms category: priority mode always lets alarms through there.
+                if (Build.VERSION.SDK_INT < 28) return AlertPolicy.Dnd.PRIORITY_ALARMS_ALLOWED
                 val policy = runCatching { nm.notificationPolicy }.getOrNull() ?: return AlertPolicy.Dnd.PRIORITY_UNKNOWN
                 if (policy.priorityCategories and NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS != 0) AlertPolicy.Dnd.PRIORITY_ALARMS_ALLOWED
                 else AlertPolicy.Dnd.PRIORITY_ALARMS_BLOCKED
@@ -222,7 +227,7 @@ object Notifier {
                 .addAction(R.drawable.ic_check, c.getString(R.string.done), done)
                 .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), snooze)
                 .build())
-        } else b.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        } else b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
         val full = loud && d.fullScreen && canFullScreen(context)
         if (full) { b.setFullScreenIntent(open, true); log.add(AlertLog.Event.FULL_SCREEN, key, style = d.style.name) }
         val n = b.build()
@@ -240,7 +245,9 @@ object Notifier {
         if (d.quiet != AlertPolicy.Quiet.NONE) log.add(AlertLog.Event.QUIET, key, lateMs, d.style.name, d.quiet.name)
         // F-031: read aloud only where a tone may play; locked with «أخفِ التفاصيل» it says «لديك تذكير» only.
         val locked = runCatching { context.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked }.getOrDefault(true)
-        val speak = if (d.playTone && (ext.speak ?: prefs.speakDefault))
+        // F-031: never in silent or vibrate mode, never while Do Not Disturb is on (even when alarms ring).
+        val speakAllowed = d.playTone && ringer(context) == AlertPolicy.Ringer.NORMAL && dnd(context) == AlertPolicy.Dnd.OFF
+        val speak = if (speakAllowed && (ext.speak ?: prefs.speakDefault))
             (if (locked && hideDetails) c.getString(R.string.you_have_reminder) else t.title) else null
         if (RingService.start(context, id, n, chain.sources.map { it.uri }, alarm, seconds, d.playTone, d.vibrate, prefs.vibrationPattern, key,
                 speak, prefs.language)) {
@@ -249,7 +256,8 @@ object Notifier {
         }
         // The service could not start: the same notification again on a channel that sounds by itself.
         log.add(AlertLog.Event.FALLBACK, key, code = "service")
-        val fb = NotificationCompat.Builder(c, n).setChannelId(if (d.playTone) CH_ALERT else CH_QUIET).setSilent(!d.playTone).build()
+        val fb = NotificationCompat.Builder(c, n).setChannelId(when { d.playTone -> CH_ALERT; d.vibrate -> CH_VIBRATE; else -> CH_QUIET })
+            .setSilent(!d.playTone && !d.vibrate).build()
         try { NotificationManagerCompat.from(context).notify(id, fb) } catch (_: SecurityException) { }
     }
 
@@ -327,11 +335,11 @@ object Notifier {
             .setContentText(c.getString(R.string.coming_up, L10n.dueText(c, t.dueAt!!, now)))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true).setContentIntent(open)
-        if (Repo.prefs(context).lockPrivacy) {
-            b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+        // Private either way, so the phone's own "hide sensitive content" can hide more (F-022).
+        b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+        if (AlertExt.of(t).hidesOnLockScreen(Repo.prefs(context).lockPrivacy))
             b.setPublicVersion(NotificationCompat.Builder(c, CH_NOTICE).setSmallIcon(R.drawable.ic_stat_bell)
                 .setContentTitle(c.getString(R.string.you_have_reminder)).build())
-        } else b.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         try { NotificationManagerCompat.from(context).notify(TAG_NOTICE + t.id, 0, b.build()) } catch (_: SecurityException) { }
     }
 
@@ -344,12 +352,12 @@ object Notifier {
 
     fun cancelDue(context: Context, id: String) {
         val nid = dueId(id)
-        if (RingService.ringingId == nid) RingService.stop(context)
+        if (RingService.ringingId == nid) RingService.stop(context, remove = true)
         NotificationManagerCompat.from(context).cancel(nid)
     }
 
     /** After «تم» from the notification: a quiet note with «تراجع» that goes away after 10 s (F-052). */
-    fun postUndo(context: Context, c: com.fastkiwi.rememberme.core.Completion, title: String) {
+    fun postUndo(context: Context, c: com.fastkiwi.rememberme.core.Completion, title: String, hidden: Boolean = Repo.prefs(context).lockPrivacy) {
         if (!canPost(context)) return
         val l = L10n.context(context)
         val undo = PendingIntent.getBroadcast(context, 500, Intent(context, ActionReceiver::class.java).setAction(ActionReceiver.UNDO)
@@ -359,11 +367,9 @@ object Notifier {
             .setContentTitle(l.getString(R.string.done_undo_title, L10n.isolate(l, title)))
             .setSilent(true).setAutoCancel(true).setTimeoutAfter(10_000)
             .addAction(R.drawable.ic_check, l.getString(R.string.undo), undo)
-        if (Repo.prefs(context).lockPrivacy) {
-            b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-            b.setPublicVersion(NotificationCompat.Builder(l, CH_QUIET).setSmallIcon(R.drawable.ic_check)
-                .setContentTitle(l.getString(R.string.done)).addAction(R.drawable.ic_check, l.getString(R.string.undo), undo).build())
-        }
+        b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+        if (hidden) b.setPublicVersion(NotificationCompat.Builder(l, CH_QUIET).setSmallIcon(R.drawable.ic_check)
+            .setContentTitle(l.getString(R.string.done)).addAction(R.drawable.ic_check, l.getString(R.string.undo), undo).build())
         try { NotificationManagerCompat.from(context).notify(UNDO_ID, b.build()) } catch (_: SecurityException) { }
     }
 

@@ -155,7 +155,9 @@ class EngineReliabilityTest {
         Engine.sync(app, now, "time")
         assertTrue(dueTags().isEmpty())
         Engine.sync(app, now.plusSeconds(7200), "time")
-        assertEquals("The same occurrence never sounds twice", 1, loudPosts())
+        // Counted from the alert log: a notification id holds only its latest post, quiet or loud.
+        assertEquals("The same occurrence never sounds twice", 1,
+            com.fastkiwi.rememberme.data.AlertLog(app).entries().count { it.event == com.fastkiwi.rememberme.data.AlertLog.Event.POSTED })
     }
 
     @Test fun aRebootClearsAlarmsAndBootSetsTheSameOneAgain() {

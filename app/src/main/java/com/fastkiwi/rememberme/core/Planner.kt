@@ -70,6 +70,14 @@ object Planner {
         }
 
         // Several notices per reminder (F-046): each has its own key, so each is shown once.
+        // An announced occurrence stays remembered for 2 days while its task exists, even when it is no
+        // longer due (done, trashed, moved on), so «تراجع» or a restore never sounds it a second time.
+        val keepAfter = now.minusSeconds(2 * 86_400)
+        for ((id, entry) in alertLog) {
+            if (id in newAlertLog || state.tasks.none { it.id == id }) continue
+            val at = runCatching { Instant.parse(entry.substringBeforeLast('|')) }.getOrNull() ?: continue
+            if (at.isAfter(keepAfter)) newAlertLog[id] = entry
+        }
         val notices = Tasks.upcoming(state, now).filter { noticeLog[it.id] != Tasks.noticeKey(it, now) }
         val newNoticeLog = HashMap<String, String>()
         var scheduled = 0

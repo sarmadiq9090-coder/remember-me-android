@@ -358,8 +358,12 @@ class MainActivity : AppCompatActivity() {
     private fun pop() { if (stack.size > 1) stack = stack.dropLast(1) else finish() }
 
     /** Data changes run off the main thread; the screen follows the store's state flow. */
+    /** A change from a screen, saved off the main thread; a failed save (disk full) is said, never silently lost. */
     private fun act(block: (AppState) -> AppState) {
-        lifecycleScope.launch(Dispatchers.IO) { runCatching { Repo.change(this@MainActivity, block) } }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val ok = runCatching { Repo.change(this@MainActivity, block) }.isSuccess
+            if (!ok) withContext(Dispatchers.Main) { toast(R.string.change_not_saved) }
+        }
     }
 
     private fun setSetting(key: String, value: JsonPrimitive) = act { s -> s.withSettings(JsonObject(s.settings + (key to value))) }

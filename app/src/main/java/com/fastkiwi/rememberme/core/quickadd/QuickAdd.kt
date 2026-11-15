@@ -31,6 +31,8 @@ data class QuickResult(
     /** 0 = Sunday … 6 = Saturday, for [Repeat.DAYS]. */
     val days: List<Int> = emptyList(),
     val everyDays: Int = 2,
+    /** For [Repeat.HOURS] (an Android addition, «كل 3 ساعات»). */
+    val everyHours: Int = 1,
     val ask: Ask? = null,
     /** At most 4, in time order. */
     val options: List<QuickOption> = emptyList(),
@@ -55,6 +57,7 @@ object QuickAdd {
         val none = QuickResult(title = text, dueAt = null, understood = false)
         val typed = text.take(MAX_TEXT)
         if (Js.trim(typed).isEmpty()) return none
+        AndroidAdditions.parse(typed, now, zone)?.let { return it }
         val reading = ArabicDates.parse(typed) ?: EnglishDates.parse(typed, now, zone) ?: return none
         val week = if (weekStart in listOf(0, 1, 6)) weekStart else 6
         val r = resolve(reading, now, zone, week)

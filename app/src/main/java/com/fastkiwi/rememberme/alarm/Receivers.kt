@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.alarm
 
+import com.fastkiwi.rememberme.core.hidesOnLockScreen
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -96,13 +97,15 @@ class ActionReceiver : BroadcastReceiver() {
                     runCatching { log.add(AlertLog.Event.DONE, logKey) }
                     var done: com.fastkiwi.rememberme.core.Completion? = null
                     var title = ""
+                    var hidden = Repo.prefs(context).lockPrivacy
                     Repo.change(context) { s ->
                         val r = Tasks.complete(s, id, now, zone, due, checked = true)
                         done = r?.second; title = s.task(id)?.title.orEmpty()
+                        s.task(id)?.let { hidden = com.fastkiwi.rememberme.core.AlertExt.of(it).hidesOnLockScreen(Repo.prefs(context).lockPrivacy) }
                         r?.first ?: s
                     }
-                    // «أُنجز «…»» with «تراجع» for 10 s (F-052).
-                    done?.let { Notifier.postUndo(context, it, title) }
+                    // «أُنجز «…»» with «تراجع» for 10 s (F-052), hidden on the lock screen like the reminder.
+                    done?.let { Notifier.postUndo(context, it, title, hidden) }
                 }
                 UNDO -> {
                     val copy = intentCopy ?: id

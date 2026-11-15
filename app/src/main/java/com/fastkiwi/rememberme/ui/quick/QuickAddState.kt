@@ -118,6 +118,7 @@ class QuickAddState(
             repeat = if (due != null) r?.repeat ?: Repeat.NONE else Repeat.NONE,
             days = if (due != null) r?.days.orEmpty() else emptyList(),
             everyDays = (r?.everyDays ?: 2).coerceIn(2, 365),
+            everyHours = (r?.everyHours ?: 1).coerceIn(1, 23),
         )
     }
 

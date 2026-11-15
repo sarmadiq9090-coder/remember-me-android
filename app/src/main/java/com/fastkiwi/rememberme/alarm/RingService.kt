@@ -33,6 +33,8 @@ class RingService : Service() {
     private var notificationId = 0
     private var notification: Notification? = null
     private var key = ""
+    /** The start command being served: stopSelf(startId) never tears down a newer start (Android would crash it). */
+    private var lastStartId = 0
     private var tts: android.speech.tts.TextToSpeech? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -47,6 +49,7 @@ class RingService : Service() {
         if (n == null) { stopSelf(); return START_NOT_STICKY }
         stopPlayback()
         val newId = intent.getIntExtra(EXTRA_ID, 0)
+        lastStartId = startId
         // Another reminder was ringing: keep its notification (Android would remove it on a new id).
         if (notificationId != 0 && notificationId != newId) runCatching { stopForeground(STOP_FOREGROUND_DETACH) }
         notificationId = newId
@@ -63,6 +66,7 @@ class RingService : Service() {
             return START_NOT_STICKY
         }
         val seconds = intent.getIntExtra(EXTRA_SECONDS, 30).coerceIn(1, MAX_SECONDS)
+        if (pendingStop != 0 && pendingStop == newId) { pendingStop = 0; finish("stopped before start"); return START_NOT_STICKY }
         if (intent.getBooleanExtra(EXTRA_PLAY, true)) {
             val sources: Array<String> = intent.getStringArrayExtra(EXTRA_SOURCES)?.filterNotNull()?.toTypedArray() ?: emptyArray()
             if (!play(sources, alarm)) fallback("play")
@@ -154,12 +158,13 @@ class RingService : Service() {
         tts = null
     }
 
-    private fun finish(@Suppress("UNUSED_PARAMETER") why: String) {
+    private fun finish(@Suppress("UNUSED_PARAMETER") why: String, remove: Boolean = false) {
         stopPlayback()
         ringingId = 0
         // The notification stays (detached): only the sound stops.
-        stopForeground(STOP_FOREGROUND_DETACH)
-        stopSelf()
+        // Detached: the reminder's notification stays; removed when the reminder itself is gone (done in the app).
+        stopForeground(if (remove) STOP_FOREGROUND_REMOVE else STOP_FOREGROUND_DETACH)
+        stopSelf(lastStartId)
     }
 
     override fun onTimeout(startId: Int, fgsType: Int) { finish("system timeout") }
@@ -197,9 +202,12 @@ class RingService : Service() {
         } catch (_: Exception) { false }
 
         /** Stops the sound (the notification stays). Never starts the service just to stop it. */
-        fun stop(@Suppress("UNUSED_PARAMETER") c: Context) {
-            val s = instance ?: return
-            s.handler.post { s.finish("stopped") }
+        /** A stop asked before the service exists (a tap right after the post): served at its start. */
+        @Volatile private var pendingStop = 0
+
+        fun stop(@Suppress("UNUSED_PARAMETER") c: Context, remove: Boolean = false) {
+            val s = instance ?: run { pendingStop = ringingId; return }
+            s.handler.post { s.finish("stopped", remove) }
         }
     }
 }
