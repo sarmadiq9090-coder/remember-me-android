@@ -480,6 +480,7 @@ class MainActivity : AppCompatActivity() {
                     todayRequest = todayRequest,
                     scrollToId = lastAddedId, onScrolled = { lastAddedId = null },
                     request = homeRequest, onRequestShown = { homeRequest = null },
+                    onFixNotifications = { fix("notifications") },
                 )
             }
             is Screen.Edit -> {

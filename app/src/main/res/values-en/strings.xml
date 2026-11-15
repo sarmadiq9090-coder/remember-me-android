@@ -680,6 +680,7 @@
     <string name="template_saved">Saved to “My templates”</string>
     <string name="history_cleared">Change history cleared</string>
     <string name="change_not_saved">The change was not saved. Check the free space on the phone and try again.</string>
+    <string name="banner_notifications_off">Notifications are off: no reminder will show.</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>
     <string name="qa_title_is">Title: %1$s</string>

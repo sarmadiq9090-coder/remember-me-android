@@ -194,6 +194,8 @@ fun HomeScreen(
     /** From Lists and tags: open a saved filter's chip, or search for a category. */
     request: HomeRequest? = null,
     onRequestShown: () -> Unit = {},
+    /** The banner's button when notifications are off: Android's own question or its notification settings. */
+    onFixNotifications: () -> Unit = onHealth,
 ) {
     val context = LocalContext.current
     val res = LocalResources.current
@@ -391,6 +393,8 @@ fun HomeScreen(
             if (!searching && !selecting) {
                 // Data from a newer version is kept untouched; say so before anything else (D-079 A18).
                 if (newerData) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_newer), stringResource(R.string.fix), true, onHealth)
+                // Notifications off: say plainly that nothing will show, and fix it in one tap (black-box U2).
+                else if (!health.notifications) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_notifications_off), stringResource(R.string.allow), true, onFixNotifications)
                 else if (!health.essentialOk) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
                 else if (backupNudge) StatusBanner(null, stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
             }

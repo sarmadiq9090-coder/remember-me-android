@@ -680,6 +680,7 @@
     <string name="template_saved">حُفظ القالب في «قوالبي»</string>
     <string name="history_cleared">مُسح سجل التغييرات</string>
     <string name="change_not_saved">لم يُحفظ التغيير. تحقّق من المساحة الفارغة في الهاتف ثم أعد المحاولة.</string>
+    <string name="banner_notifications_off">الإشعارات مطفأة: لن يظهر أي تذكير.</string>
     <string name="added_msg">أُضيف التذكير</string>
     <string name="qa_label">اكتب التذكير وموعده</string>
     <string name="qa_title_is">العنوان: %1$s</string>
