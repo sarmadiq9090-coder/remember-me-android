@@ -82,7 +82,6 @@ object IcsImport {
      * The series anchor of an input whose start is a clamped month end ([read]'s monthAnchor), for [save]:
      * [TaskInput] has no field for it. Weak keys, so a result that is dropped takes its entries with it.
      */
-    private val anchors: MutableMap<TaskInput, Instant> = java.util.Collections.synchronizedMap(java.util.WeakHashMap())
 
     const val MAX_BYTES = 20L * 1024 * 1024
     const val MAX_ITEMS = 5_000
@@ -125,7 +124,7 @@ object IcsImport {
                 continue
             }
             // A clamped month-end start keeps the real day (31, 29 February) as its series anchor.
-            anchors[input]?.let { from ->
+            input.repeatFrom?.let { from ->
                 if (task.repeat == Repeat.MONTHLY || task.repeat == Repeat.YEARLY) {
                     val anchored = task.copy(rule = task.rule.copy(from = from))
                     next = next.copy(tasks = next.tasks.map { if (it.id == anchored.id) anchored else it })
@@ -659,8 +658,8 @@ object IcsImport {
                 title = title, body = body, priority = priority, category = category, dueAt = dueAt,
                 repeat = repeat, days = days, everyDays = everyDays, everyHours = everyHours,
                 remindBefore = early.firstOrNull() ?: 0, alerts = early.takeIf { it.size >= 2 },
+                repeatFrom = anchorFrom,
             )
-            anchorFrom?.let { anchors[input] = it }
             inputs += input
         }
 

@@ -38,6 +38,11 @@ data class TaskInput(
     val steps: List<Organize.Step>? = null,
     /** The phone setting «أنجز التذكير عند إكمال كل الخطوات» (F-071): ticking the last step completes the task. */
     val autoComplete: Boolean = false,
+    /**
+     * A monthly or yearly series' anchor when it differs from [dueAt]: the real day (31, 29 February) of a start
+     * clamped to a short month (calendar import, F-085). Null = [dueAt].
+     */
+    val repeatFrom: Instant? = null,
 )
 
 /**
