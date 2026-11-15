@@ -74,10 +74,17 @@ object Codec {
     /** JavaScript's toISOString(): always UTC with milliseconds. */
     fun iso(at: Instant): String = ISO.format(at)
 
+    /** JavaScript's Date range (±8.64e15 ms, about ±275,000 years): Windows reads nothing outside it. */
+    private val JS_MIN = Instant.ofEpochMilli(-8_640_000_000_000_000L)
+    private val JS_MAX = Instant.ofEpochMilli(8_640_000_000_000_000L)
+
+    /** [at] when Windows could read it too (and its epoch milliseconds never overflow), else null. */
+    fun inRange(at: Instant?): Instant? = at?.takeIf { !it.isBefore(JS_MIN) && !it.isAfter(JS_MAX) }
+
     fun parseInstant(value: JsonElement?): Instant? {
         val text = (value as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
-        return runCatching { Instant.parse(text) }.getOrNull()
-            ?: runCatching { java.time.OffsetDateTime.parse(text).toInstant() }.getOrNull()
+        return inRange(runCatching { Instant.parse(text) }.getOrNull()
+            ?: runCatching { java.time.OffsetDateTime.parse(text).toInstant() }.getOrNull())
     }
 
     private val TASK_KEYS = setOf(

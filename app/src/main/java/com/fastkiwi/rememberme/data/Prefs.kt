@@ -161,9 +161,13 @@ class Prefs(context: Context) {
         set(v) = p.edit { putLong("armedAt", v) }
 
     // Ids and due times never contain tabs or newlines.
-    private fun encode(m: Map<String, String>) = m.entries.joinToString("\n") { "${it.key}\t${it.value}" }
+    // "key TAB value" lines; a tab, a line break or "%" inside a key or a value is escaped, so an odd id
+    // from an imported file (a line break) still reads back (the alert log would otherwise ring it each run).
+    private fun esc(s: String) = s.replace("%", "%25").replace("\t", "%09").replace("\n", "%0A").replace("\r", "%0D")
+    private fun unesc(s: String) = s.replace("%0D", "\r").replace("%0A", "\n").replace("%09", "\t").replace("%25", "%")
+    private fun encode(m: Map<String, String>) = m.entries.joinToString("\n") { "${esc(it.key)}\t${esc(it.value)}" }
     private fun decode(s: String): Map<String, String> = s.lineSequence().mapNotNull { line ->
         val i = line.indexOf('\t')
-        if (i <= 0) null else line.substring(0, i) to line.substring(i + 1)
+        if (i <= 0) null else unesc(line.substring(0, i)) to unesc(line.substring(i + 1))
     }.toMap()
 }

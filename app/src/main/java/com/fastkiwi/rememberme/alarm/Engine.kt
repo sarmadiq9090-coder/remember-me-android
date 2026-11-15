@@ -94,12 +94,19 @@ object Engine {
         for (id in shown) if (id !in dueIds || visible.none { it.id == id }) Notifier.cancelDue(app, id)
         Notifier.postSummary(app, plan.due.size)
         for (t in plan.notices) Notifier.postNotice(app, t, now)
-        // A notice whose task is done, deleted or due is no longer useful.
-        state.tasks.filter { t ->
-            !t.active || t.id in dueIds || Tasks.noticeKey(t, now) == null
+        // A notice whose task is done, deleted or due is no longer useful. Only the ones showing are
+        // cancelled (one system call each, not one per reminder).
+        val notices = runCatching { Notifier.shownNotices(app) }.getOrDefault(emptySet())
+        if (notices.isNotEmpty()) state.tasks.filter { t ->
+            t.id in notices && (!t.active || t.id in dueIds || Tasks.noticeKey(t, now) == null)
         }.forEach { runCatching { Notifier.cancelNotice(app, it.id) } }
 
-        prefs.alertLog = plan.alertLog
+        // While notifications cannot be shown (switched off, permission withdrawn) nothing has been
+        // announced: the loud occurrences keep their old entry, so they ring when notifications return.
+        prefs.alertLog = if (Notifier.canPost(app)) plan.alertLog else {
+            val old = prefs.alertLog
+            plan.alertLog.toMutableMap().apply { for (id in plan.loud) { val o = old[id]; if (o != null) put(id, o) else remove(id) } }
+        }
         prefs.noticeLog = plan.noticeLog
         // Two slots (D-079): A for due times, B for early notices and "sound again"; B never delays A.
         val apiA = arm(app, SLOT_A, plan.dueAt, if (plan.dueAt != null) WakeKind.DUE else null)

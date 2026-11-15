@@ -1,3 +1,6 @@
 one engine run with 2,000 reminders made 1956 NotificationManager.cancel calls (SDK 26)
 one engine run with 2,000 reminders made 1956 NotificationManager.cancel calls (SDK 33)
 one engine run with 2,000 reminders made 1956 NotificationManager.cancel calls (SDK 36)
+one engine run with 2,000 reminders made 0 NotificationManager.cancel calls (SDK 26)
+one engine run with 2,000 reminders made 0 NotificationManager.cancel calls (SDK 33)
+one engine run with 2,000 reminders made 0 NotificationManager.cancel calls (SDK 36)

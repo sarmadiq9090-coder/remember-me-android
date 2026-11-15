@@ -1,0 +1,29 @@
+Remember Me Android torture run 2026-11-15-0340 (heavy=0, seed=default, gradle exit 1)
+commit eac4fa8 on wip/1.0-base
+
+BackupFuzzTortureTest                      tests   4  failed   0  skipped   0  4.713 s
+ChaosTortureTest                           tests  36  failed   0  skipped   1  20.108 s
+EnginePropertyTortureTest                  tests   2  failed   0  skipped   0  170.01 s
+IcsFuzzTortureTest                         tests   3  failed   0  skipped   0  4.065 s
+IcsPropertyTortureTest                     tests   2  failed   1  skipped   0  1.014 s
+IcsTimezoneTortureTest                     tests   2  failed   1  skipped   0  0.436 s
+PerfTortureTest                            tests   4  failed   0  skipped   0  3.353 s
+PlanStressTortureTest                      tests   2  failed   0  skipped   0  6.316 s
+QuickAddFuzzTortureTest                    tests   2  failed   1  skipped   0  2.867 s
+ReceiverFuzzTortureTest                    tests   9  failed   0  skipped   0  11.758 s
+RepeatParityTortureTest                    tests   1  failed   0  skipped   0  0.279 s
+StoreChaosTortureTest                      tests   8  failed   0  skipped   0  1.387 s
+StressTortureTest                          tests  12  failed   0  skipped   3  68.519 s
+TaskOpsPropertyTortureTest                 tests   1  failed   0  skipped   0  7.182 s
+TimeEngineTortureTest                      tests  15  failed   0  skipped   0  15.763 s
+TimeRepeatTortureTest                      tests   4  failed   0  skipped   0  0.3 s
+UiMonkeyTortureTest                        tests   3  failed   2  skipped   0  85.683 s
+blackbox.BlackBoxDriver                    tests   1  failed   0  skipped   1  0.042 s
+TOTAL tests 111, failed 5, skipped 5
+
+FAILURES
+- IcsPropertyTortureTest.exportedRemindersExpandAndImportBackTheSame: java.lang.AssertionError: [dtstart-off-rule] Asia/Baghdad DAYS FREQ=WEEKLY;BYDAY=TU,SA days=[2, 6] from=2027-01-22T03:13 start=2027-01-22T03:13: occurrence 0 app 2027-01-22T03:13 calendar 2027-01-23T03:13 (13 vs 14)NL[dtstart-off-rule] Asia/Tehran DAYS FREQ=WEEKLY;BYDAY=MO,TH days=[1, 4] from=2029-02-02T20:54 start=2029-02-02T20:54: occurrence 0 app 2029-02-02T20:54 calendar 2029-02-05T20:54 (13 vs 14)NL[occurrences] Africa/Cairo YEARLY FREQ=YEARLY;BYMONTH=11;BYMONTHDAY=25 days=[] from=2028-11-25T17:41 start=2028-11-25T17:41: occurrence 2 app 2030-11-25T17:41 calendar 2030-11-25T16:41 (6 vs 6)
+- IcsTimezoneTortureTest.everyZonesVTimezoneGivesJavasOffsets: java.lang.AssertionError: Africa/Cairo: at 2030-11-04T22:00+02:00[Africa/Cairo]: Java +02:00, the file's VTIMEZONE +03:00; Java rules TransitionRule[Gap +02:00 to +03:00, FRIDAY on or after APRIL 24 at 00:00 WALL, standard offset +02:00]; TransitionRule[Overlap +03:00 to +02:00, FRIDAY on or after OCTOBER 26 at 00:00 WALL, standard offset +02:00] | America/Godthab: at 2030-03-31T12:00-01:00[America/Godthab]: Java -01:00, the file's VTIMEZONE -02:00; Java rules TransitionRule[Gap -02:00 to -01:00, SUNDAY on or after MARCH 25 at 01:00 UTC, standard offset -02:00]; TransitionRule[Overlap -01:00 t
+- QuickAddFuzzTortureTest.theNoDateCorpusWithEverydayDecorationsStillHoldsNoDate: java.lang.AssertionError: Arabic comma inside «الخميس، الماضي» → due=null ask=TIME title=«الماضي» | Arabic comma inside «الخميس، الماضي» → due=null ask=TIME title=«الماضي» | Arabic comma inside «السبت، اللي فات» → due=null ask=TIME title=«اللي فات» | Arabic comma inside «السبت، اللي فات» → due=null ask=TIME title=«اللي فات»
+- UiMonkeyTortureTest.monkeyOnTheMainScreens: java.lang.AssertionError: monkey seed 14003: AppNotIdleException (recomposer states over 30 frames: {pending=30}): Compose did not get idle after 4952 attempts in 60 SECONDS. Please check your measure/layout lambdas, they may be causing an infinite composition loop. Or set Espresso's master idling policy if you require a longer timeout. The following Idle Conditions failed . | last events: tap «بحث» | tap «إغلاق البحث» | tap «call the bank، الاثنين 23 نوفمبر، 7:46 م» | back | tap «الرياضة، الخميس 26 نوفمبر، 3:46 ص، كل ال» | type «&#x1f642;&#x1f389;» | tap «ن» | type «1:30» | back | long-press 
+- UiMonkeyTortureTest.monkeyOnTheMainScreensAnotherSeed: java.lang.NullPointerException: Cannot invoke "android.view.Surface.destroy()" because "this.mSurface" is null

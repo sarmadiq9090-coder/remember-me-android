@@ -58,7 +58,7 @@ class ActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == TEST_DONE) { TestAlarm.actionDone(context); return }
         val id = intent.getStringExtra(EXTRA_ID) ?: return
-        val due = intent.getStringExtra(EXTRA_DUE)?.let { runCatching { Instant.parse(it) }.getOrNull() }
+        val due = intent.getStringExtra(EXTRA_DUE)?.let { Codec.inRange(runCatching { Instant.parse(it) }.getOrNull()) }
         val action = intent.action ?: return
         // «تم», «أجّل» and a swipe stop the ringing at once (F-016), before the change is saved.
         if (RingService.ringingId == Notifier.dueId(id)) RingService.stop(context)
@@ -86,7 +86,9 @@ class ActionReceiver : BroadcastReceiver() {
         fun handle(context: Context, action: String, id: String, due: Instant?, now: Instant, copy: String? = null) {
             val zone = Repo.zone()
             // A change that cannot be saved (disk full) changes nothing; it must not crash the app.
-            try { act(context, action, id, due, now, zone, copy) } catch (_: java.io.IOException) { Engine.sync(context) }
+            try { act(context, action, id, due?.let(Codec::inRange), now, zone, copy) }
+            catch (_: java.io.IOException) { Engine.sync(context) }
+            catch (_: ArithmeticException) { Engine.sync(context) }
         }
 
         private fun act(context: Context, action: String, id: String, due: Instant?, now: Instant, zone: java.time.ZoneId, intentCopy: String? = null) {

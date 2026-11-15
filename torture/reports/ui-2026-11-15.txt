@@ -2,3 +2,4 @@ UI monkey seed 14002: 1500 events, slowest 205 ms, 21 taps, 0 relaunches
 UI monkey seed 14002: 1500 events, slowest 576 ms, 21 taps, 0 relaunches
 UI monkey seed 14002: 1500 events, slowest 195 ms, 21 taps, 0 relaunches
 UI monkey seed 14002: 1500 events, slowest 169 ms, 21 taps, 0 relaunches
+UI monkey seed 14002: 300 events, slowest 220 ms, 22 taps, 0 relaunches

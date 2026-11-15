@@ -104,7 +104,14 @@ object Backup {
     }
 
     /** Reads a backup from [input] (a zip or a data.json) and checks it completely. */
-    fun read(input: InputStream, now: Instant): Imported {
+    fun read(input: InputStream, now: Instant): Imported = try { readChecked(input, now) }
+        catch (e: ImportException) { throw e }
+        catch (_: java.util.zip.ZipException) { throw ImportException(ImportException.Reason.DAMAGED) }
+        catch (_: java.io.EOFException) { throw ImportException(ImportException.Reason.DAMAGED) }
+        catch (_: java.io.IOException) { throw ImportException(ImportException.Reason.DAMAGED) }
+        catch (_: IllegalArgumentException) { throw ImportException(ImportException.Reason.DAMAGED) }
+
+    private fun readChecked(input: InputStream, now: Instant): Imported {
         val bytes = readCapped(input)
         val isZip = bytes.size >= 4 && bytes[0] == 'P'.code.toByte() && bytes[1] == 'K'.code.toByte()
         var data: ByteArray? = null

@@ -51,13 +51,20 @@ class Store(private val dir: File, private val clock: () -> Instant = Instant::n
     private fun load(): AppState {
         dir.mkdirs()
         if (!file.exists()) {
-            // A crash between the copy to .bak and the rename leaves only .bak (and maybe .tmp).
+            // No data.json: a crash between deleting it and renaming .tmp (file systems that refuse to rename
+            // over a file), or during the first write ever. A .tmp that decodes was written and synced in
+            // full before data.json was touched, so it is the newest complete copy; then .bak.
+            read(tmp)?.let { s -> if (tmp.renameTo(file)) return s else return s }
             return read(bak) ?: AppState()
         }
         read(file)?.let { return it }
         if (newerFormat(file)) { newer = true; return AppState() }
         // Damaged: keep it untouched for inspection, use the previous good copy.
-        file.renameTo(File(dir, "data.json.damaged-${stamp()}"))
+        // Never over an earlier damaged copy (two in the same second keep both).
+        var damaged = File(dir, "data.json.damaged-${stamp()}")
+        var n = 2
+        while (damaged.exists()) damaged = File(dir, "data.json.damaged-${stamp()}-${n++}")
+        file.renameTo(damaged)
         recovered = true
         return read(bak) ?: AppState()
     }

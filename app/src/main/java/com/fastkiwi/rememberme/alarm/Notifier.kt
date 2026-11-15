@@ -375,5 +375,9 @@ object Notifier {
 
     fun cancelUndo(context: Context) = NotificationManagerCompat.from(context).cancel(UNDO_ID)
 
+    /** Ids of the reminders whose early notice is showing now. */
+    fun shownNotices(context: Context): Set<String> =
+        context.getSystemService(NotificationManager::class.java).activeNotifications.mapNotNull { it.tag?.takeIf { t -> t.startsWith(TAG_NOTICE) }?.removePrefix(TAG_NOTICE) }.toSet()
+
     fun cancelNotice(context: Context, id: String) = NotificationManagerCompat.from(context).cancel(TAG_NOTICE + id, 0)
 }
