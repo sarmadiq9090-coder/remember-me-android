@@ -259,4 +259,16 @@ class TasksTest {
         assertEquals("once fixed", text.title)
         assertNotNull(text.completedAt)
     }
+
+    /** An undo offered for a one-time task's «تم» never clears a later «تم» after a reopen. */
+    @Test fun anOldUndoOfAOneTimeTaskLeavesALaterCompletionAlone() {
+        val zone = java.time.ZoneId.of("Asia/Baghdad")
+        val t0 = Instant.parse("2026-11-15T09:00:00Z")
+        val (s0, task) = Tasks.save(AppState(), TaskInput(title = "x", dueAt = t0.plusSeconds(60)), t0, zone)
+        val (s1, first) = Tasks.complete(s0, task.id, t0.plusSeconds(120), zone)!!
+        val s2 = Tasks.reopen(s1, task.id, t0.plusSeconds(130))
+        val (s3, _) = Tasks.complete(s2, task.id, t0.plusSeconds(140), zone)!!
+        val s4 = Tasks.undoComplete(s3, first, t0.plusSeconds(150))
+        org.junit.Assert.assertEquals(t0.plusSeconds(140), s4.task(task.id)!!.completedAt)
+    }
 }

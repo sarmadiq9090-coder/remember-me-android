@@ -61,7 +61,8 @@ class TaskException(val reason: Reason) : Exception(reason.name) {
 }
 
 /** Result of completing: what [Tasks.undoComplete] needs. */
-data class Completion(val id: String, val copyId: String)
+/** [doneAt]: when a one-time task was completed; an undo only clears that completion, never a later one. */
+data class Completion(val id: String, val copyId: String, val doneAt: Instant? = null)
 
 /**
  * Task operations, ported from the Windows app's src/core/tasks.js. All are pure: they take a state
@@ -245,7 +246,7 @@ object Tasks {
             val moved = task.copy(dueAt = next, scheduleAt = next, rule = rule, snoozedAt = null, snoozeCount = 0, updatedAt = now, extra = untick(task.extra))
             return replace(state, moved).let { it.copy(tasks = it.tasks + copy) } to Completion(id, copy.id)
         }
-        return replace(state, task.copy(completedAt = now, updatedAt = now)) to Completion(id, id)
+        return replace(state, task.copy(completedAt = now, updatedAt = now)) to Completion(id, id, now)
     }
 
     /**
@@ -256,7 +257,9 @@ object Tasks {
      */
     fun undoComplete(state: AppState, c: Completion, now: Instant): AppState {
         val task = state.task(c.id) ?: return state
-        if (c.copyId == c.id) return if (task.completedAt != null) replace(state, task.copy(completedAt = null, updatedAt = now)) else state
+        // A one-time task: only the completion this undo was offered for (not a later one after a reopen).
+        if (c.copyId == c.id) return if (task.completedAt != null && (c.doneAt == null || task.completedAt == c.doneAt))
+            replace(state, task.copy(completedAt = null, updatedAt = now)) else state
         val copy = state.tasks.firstOrNull { it.id == c.copyId && it.sourceId == c.id && it.completedAt != null } ?: return state
         val doneAt = copy.completedAt ?: return state
         if (state.tasks.any { it.id != copy.id && it.sourceId == c.id && it.completedAt?.isAfter(doneAt) == true }) return state

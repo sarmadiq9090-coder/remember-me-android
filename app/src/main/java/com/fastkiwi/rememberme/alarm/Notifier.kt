@@ -361,7 +361,8 @@ object Notifier {
         if (!canPost(context)) return
         val l = L10n.context(context)
         val undo = PendingIntent.getBroadcast(context, 500, Intent(context, ActionReceiver::class.java).setAction(ActionReceiver.UNDO)
-            .putExtra(ActionReceiver.EXTRA_ID, c.id).putExtra(ActionReceiver.EXTRA_COPY, c.copyId), flags())
+            .putExtra(ActionReceiver.EXTRA_ID, c.id).putExtra(ActionReceiver.EXTRA_COPY, c.copyId)
+            .putExtra(ActionReceiver.EXTRA_DONE_AT, c.doneAt?.toEpochMilli() ?: 0L), flags())
         val b = NotificationCompat.Builder(l, CH_QUIET)
             .setSmallIcon(R.drawable.ic_check)
             .setContentTitle(l.getString(R.string.done_undo_title, L10n.isolate(l, title)))

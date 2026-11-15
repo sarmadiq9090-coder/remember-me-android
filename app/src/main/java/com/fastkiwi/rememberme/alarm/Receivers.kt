@@ -66,7 +66,8 @@ class ActionReceiver : BroadcastReceiver() {
         val app = context.applicationContext
         worker.execute {
             try {
-                handle(app, action, id, due, Instant.now(), intent.getStringExtra(EXTRA_COPY))
+                handle(app, action, id, due, Instant.now(), intent.getStringExtra(EXTRA_COPY),
+                    intent.getLongExtra(EXTRA_DONE_AT, 0L).takeIf { it > 0 }?.let(Instant::ofEpochMilli))
             } finally { pending.finish() }
         }
     }
@@ -78,20 +79,21 @@ class ActionReceiver : BroadcastReceiver() {
         const val TEST_DONE = "com.fastkiwi.rememberme.TEST_DONE"
         const val UNDO = "com.fastkiwi.rememberme.UNDO"
         const val EXTRA_COPY = "copy"
+        const val EXTRA_DONE_AT = "doneAt"
         const val EXTRA_ID = "id"
         const val EXTRA_DUE = "due"
         private val worker = Executors.newSingleThreadExecutor()
 
         /** The occurrence the user saw ([due]) must still be current, or the tap is ignored. */
-        fun handle(context: Context, action: String, id: String, due: Instant?, now: Instant, copy: String? = null) {
+        fun handle(context: Context, action: String, id: String, due: Instant?, now: Instant, copy: String? = null, doneAt: Instant? = null) {
             val zone = Repo.zone()
             // A change that cannot be saved (disk full) changes nothing; it must not crash the app.
-            try { act(context, action, id, due?.let(Codec::inRange), now, zone, copy) }
+            try { act(context, action, id, due?.let(Codec::inRange), now, zone, copy, doneAt) }
             catch (_: java.io.IOException) { Engine.sync(context) }
             catch (_: ArithmeticException) { Engine.sync(context) }
         }
 
-        private fun act(context: Context, action: String, id: String, due: Instant?, now: Instant, zone: java.time.ZoneId, intentCopy: String? = null) {
+        private fun act(context: Context, action: String, id: String, due: Instant?, now: Instant, zone: java.time.ZoneId, intentCopy: String? = null, doneAt: Instant? = null) {
             val log = AlertLog(context)
             val logKey = due?.let { log.keyOf(id, Codec.iso(it)) }.orEmpty()
             when (action) {
@@ -111,7 +113,7 @@ class ActionReceiver : BroadcastReceiver() {
                 }
                 UNDO -> {
                     val copy = intentCopy ?: id
-                    Repo.change(context) { s -> Tasks.undoComplete(s, com.fastkiwi.rememberme.core.Completion(id, copy), now) }
+                    Repo.change(context) { s -> Tasks.undoComplete(s, com.fastkiwi.rememberme.core.Completion(id, copy, doneAt), now) }
                     Notifier.cancelUndo(context)
                 }
                 SNOOZE -> {
