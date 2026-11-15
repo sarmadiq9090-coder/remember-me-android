@@ -99,11 +99,18 @@ object VoiceInput {
             code == Activity.RESULT_OK || code == Activity.RESULT_CANCELED -> {
                 // Back on a dialog that never worked: the next try uses another language. After a language has
                 // worked once, a cancel is just a cancel.
-                if (p.getString("voiceGood", null) == null) failed(context, tag)
-                Outcome.NoText
+                if (p.getString("voiceGood", null) != null) return Outcome.NoText
+                failed(context, tag)
+                // Every language came back empty and none ever worked: say plainly that it does not work here.
+                if (exhausted(context)) Outcome.Failed else Outcome.NoText
             }
             else -> { failed(context, tag); Outcome.Failed }
         }
+    }
+
+    private fun exhausted(context: Context): Boolean {
+        val failed = prefs(context).getStringSet("voiceFailed", emptySet()).orEmpty()
+        return candidates(L10n.current(context), phoneLocale()).all { key(it) in failed }
     }
 
     /** [tag] did not work: forget it as the working one and skip it next time. */

@@ -165,6 +165,24 @@ class VoiceUiTest {
         }
     }
 
+    @Test fun aDialogDeadInEveryLanguageEndsWithThePlainMessage() {
+        installRecognizer()
+        quickAdd().use { sc ->
+            // The owner's phone: Back on «غير متاحة» each time. ar, ar-SA, then the service's own language.
+            answer(sc, tapMic(sc), Activity.RESULT_CANCELED)
+            rule.onNodeWithText(noText).assertExists()
+            answer(sc, tapMic(sc), Activity.RESULT_CANCELED)
+            rule.onNodeWithText(noText).assertExists()
+            val last = tapMic(sc)
+            assertEquals(null, last.language())
+            answer(sc, last, Activity.RESULT_CANCELED)
+            rule.onNodeWithText(unavailable).assertExists()
+            field().assertIsFocused()
+            // The mic stays (a service exists); the next try starts the round again.
+            assertEquals("ar", tapMic(sc).language())
+        }
+    }
+
     @Test fun textArrivesAndTheWorkingLanguageIsKept() {
         installRecognizer()
         quickAdd().use { sc ->

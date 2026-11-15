@@ -143,6 +143,8 @@ Put these at the top for a persona, or anywhere to change them in the middle:
 | `full-screen-permission on` / `off` | Android's «full-screen notifications» permission (on by default). |
 | `lockscreen-notifications all\|hide-sensitive\|none` | Android's lock-screen setting (default `all` = show all content). |
 | `timezone <zone>` | Changes the phone's time zone, e.g. `timezone Europe/London` (default Asia/Baghdad). |
+| `speech none\|google\|google-dead` | The phone's speech service. `none` (default): no Google app, no speech service. `google`: Google's speech dialog works; when it is open, `say "<text>"` is what you say. `google-dead`: the dialog opens but says «ميزة "البحث الصوتي" غير متاحة» and never listens. Takes effect the next time a screen opens. |
+| `say "<text>"` | While Google's speech dialog is open: you say this text. `back` closes the dialog without text. |
 
 Personas — أمثلة على الشخصيات:
 

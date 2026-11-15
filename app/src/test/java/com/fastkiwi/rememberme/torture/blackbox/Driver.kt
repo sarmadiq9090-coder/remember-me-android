@@ -107,7 +107,7 @@ class AppTask(val affinity: String) {
 
 /** A screen that belongs to Android, not to the app (drawn by the driver). */
 class Overlay(val kind: Kind, val title: String, val lines: List<String>, val buttons: List<String>, val transparent: Boolean) {
-    enum class Kind { PERMISSION, BATTERY, OPEN_FILE, SAVE_FILE, SHARE, SETTINGS, OTHER }
+    enum class Kind { PERMISSION, BATTERY, OPEN_FILE, SAVE_FILE, SHARE, SETTINGS, SPEECH, OTHER }
     var requestCode: Int = -1
     var owner: Win? = null
     var permissions: Array<String> = emptyArray()
@@ -124,8 +124,9 @@ class Driver(val rule: ComposeTestRule, val session: File) {
         /** How much phone time an ordinary action takes at most (a person's pace). */
         const val STEP_MS = 2000L
         val SETTING_VERBS = setOf("start", "font-scale", "dark", "language", "ringer", "dnd", "deny-notifications", "allow-notifications",
-            "timezone", "lockscreen-notifications", "exact-alarms", "full-screen-permission", "on-error")
+            "timezone", "lockscreen-notifications", "exact-alarms", "full-screen-permission", "on-error", "speech")
         const val DOCS = "com.android.externalstorage.documents"
+        const val GOOGLE = "com.google.android.googlequicksearchbox"
     }
 
     val app: Application = ApplicationProvider.getApplicationContext()
@@ -139,6 +140,8 @@ class Driver(val rule: ComposeTestRule, val session: File) {
     var fontScale = 1f
     var locked = false
     var lockMode = "all"
+    /** The phone's speech service: none (no Google app), google (works), google-dead (the dialog says «غير متاحة»). */
+    var speechMode = "none"
     var dndMode = "off"
     var notifDenials = 0
     var stopOnError = false
@@ -616,6 +619,7 @@ class Driver(val rule: ComposeTestRule, val session: File) {
                     listOf((if (ar) "اسم الملف: " else "File name: ") + name, "type: ${i.type}"),
                     listOf(if (ar) "حفظ" else "Save"), transparent = false).also { it.suggestedName = name }
             }
+            android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH -> speechDialog(i) ?: otherScreen(i)
             else -> {
                 if (isOurs(i)) { startActivity(i); return }
                 otherScreen(i)
@@ -984,6 +988,8 @@ class Driver(val rule: ComposeTestRule, val session: File) {
                 android.provider.Settings.Secure.putInt(cr, "lock_screen_show_notifications", if (lockMode == "none") 0 else 1)
                 android.provider.Settings.Secure.putInt(cr, "lock_screen_allow_private_notifications", if (lockMode == "all") 1 else 0)
             }
+            "speech" -> speech(l.arg(0))
+            "say" -> say(l.arg(0))
             "on-error" -> stopOnError = when (l.arg(0)) { "stop" -> true; "continue" -> false; else -> throw ActionError("use on-error stop or on-error continue") }
             "reboot" -> reboot()
             "pick-file" -> pickFile(l.arg(0))
@@ -1138,6 +1144,53 @@ class Driver(val rule: ComposeTestRule, val session: File) {
         startActivity(send.setComponent(ComponentName(ai.packageName, ai.name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
+    // ---- the phone's speech service (Google's dialog) ----
+
+    private fun speech(mode: String) {
+        if (mode !in listOf("none", "google", "google-dead")) throw ActionError("use speech none, speech google or speech google-dead")
+        speechMode = mode
+        if (mode == "none") {
+            // A phone without the Google app: no speech dialog and no speech service. Takes effect on the next screen.
+            val pm = shadowOf(app.packageManager)
+            pm.removeResolveInfosForIntent(Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), GOOGLE)
+            pm.removeResolveInfosForIntent(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), GOOGLE)
+            return
+        }
+        val pm = shadowOf(app.packageManager)
+        val ai = android.content.pm.ApplicationInfo().apply { packageName = GOOGLE }
+        pm.removeResolveInfosForIntent(Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), GOOGLE)
+        pm.removeResolveInfosForIntent(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), GOOGLE)
+        pm.addResolveInfoForIntent(Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), android.content.pm.ResolveInfo().apply {
+            activityInfo = ActivityInfo().apply { packageName = GOOGLE; name = "$GOOGLE.VoiceSearchActivity"; applicationInfo = ai }
+        })
+        pm.addResolveInfoForIntent(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), android.content.pm.ResolveInfo().apply {
+            serviceInfo = android.content.pm.ServiceInfo().apply { packageName = GOOGLE; name = "$GOOGLE.RecognitionService"; applicationInfo = ai }
+        })
+    }
+
+    /** Google's speech dialog, as drawn by the driver; null when the phone has no speech service. */
+    private fun speechDialog(i: Intent): Overlay? {
+        if (speechMode == "none") return null
+        val tag = i.getStringExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE)
+        val lang = tag?.let { java.util.Locale.forLanguageTag(it).getDisplayName(java.util.Locale.forLanguageTag("ar")) } ?: "لغة الخدمة الافتراضية"
+        val toast = "تحوّل خدمات التحدث في Google المحتوى الصوتي إلى نص وتشارك النص مع هذا التطبيق."
+        return if (speechMode == "google-dead") Overlay(Overlay.Kind.SPEECH, "Google",
+            listOf("ميزة \"البحث الصوتي\" غير متاحة.", "($lang)", "رسالة صغيرة: $toast", "(say \"…\" does nothing here; the dialog is not listening)"),
+            listOf("إعادة المحاولة"), transparent = true)
+        else Overlay(Overlay.Kind.SPEECH, "Google",
+            listOf("تحدّث الآن", "($lang)", "رسالة صغيرة: $toast", "(use: say \"<what you say>\")"),
+            emptyList(), transparent = true)
+    }
+
+    private fun say(text: String) {
+        val t = frontTask(); val o = t?.overlay
+        if (t == null || o == null || o.kind != Overlay.Kind.SPEECH) throw ActionError("no speech dialog is open (nothing is listening)")
+        if (speechMode == "google-dead") { events += "You spoke, but Google's dialog is not listening («غير متاحة»)."; return }
+        val data = Intent().putStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS, arrayListOf(text))
+        closeOverlay(t, o, Activity.RESULT_OK, data)
+        events += "Google's dialog heard: «$text»"
+    }
+
     fun closeOverlay(t: AppTask, o: Overlay, result: Int, data: Intent?) {
         t.overlay = null
         syncLifecycle()
@@ -1163,6 +1216,8 @@ class Driver(val rule: ComposeTestRule, val session: File) {
             }
             Overlay.Kind.BATTERY -> closeOverlay(t, o, if (i == 0) Activity.RESULT_OK else Activity.RESULT_CANCELED, null)
             Overlay.Kind.SAVE_FILE -> saveFile(null)
+            // «إعادة المحاولة» on the dead dialog: it tries again and fails again; the dialog stays.
+            Overlay.Kind.SPEECH -> events += "Google's dialog tried again: still «غير متاحة»."
             else -> closeOverlay(t, o, Activity.RESULT_CANCELED, null)
         }
         return true
