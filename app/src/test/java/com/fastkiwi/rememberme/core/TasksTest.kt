@@ -63,6 +63,25 @@ class TasksTest {
         assertNull(s3.task(c.copyId))
     }
 
+    /** UI monkey seed 14003: «تم» twice, and the undo of the first one saved after the second. */
+    @Test fun anUndoSavedAfterALaterDoneOfTheSameRepeatChangesNothing() {
+        val d0 = at(zone, 2026, 11, 14, 9)
+        val (s, t) = new(input = TaskInput(title = "دواء الضغط", dueAt = d0, repeat = Repeat.DAILY))
+        val (s1, c1) = Tasks.complete(s, t.id, now, zone, d0, checked = true)!!
+        val d1 = s1.task(t.id)!!.dueAt
+        val (s2, c2) = Tasks.complete(s1, t.id, now.plusSeconds(2), zone, d1, checked = true)!!
+        // The older undo: the series stays on its next occurrence and both copies stay.
+        assertSame(s2, Tasks.undoComplete(s2, c1, now.plusSeconds(3)))
+        // The newest one still undoes exactly its own completion, and then the older one is the newest again.
+        val s3 = Tasks.undoComplete(s2, c2, now.plusSeconds(3))
+        assertEquals(d1, s3.task(t.id)!!.dueAt)
+        assertNull(s3.task(c2.copyId))
+        assertEquals(d0, s3.task(c1.copyId)!!.dueAt)
+        val s4 = Tasks.undoComplete(s3, c1, now.plusSeconds(4))
+        assertEquals(d0, s4.task(t.id)!!.dueAt)
+        assertEquals(listOf(t.id), s4.tasks.map { it.id })
+    }
+
     @Test fun completingAOneTimeTaskAndUndo() {
         val (s, t) = new(input = TaskInput(title = "o", dueAt = at(zone, 2026, 11, 14, 9)))
         val (s2, c) = Tasks.complete(s, t.id, now, zone)!!

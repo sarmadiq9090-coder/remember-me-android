@@ -243,11 +243,18 @@ object Tasks {
         return replace(state, task.copy(completedAt = now, updatedAt = now)) to Completion(id, id)
     }
 
-    /** Puts a just-completed task back as it was. */
+    /**
+     * Puts a just-completed task back as it was. An undo that arrives after the same repeat was completed again
+     * (a newer history copy exists: the undo of the first «تم» saved after a second «تم») changes nothing:
+     * moving the series back to the older occurrence would put it behind the newer copy, and the next «تم»
+     * would record that occurrence twice.
+     */
     fun undoComplete(state: AppState, c: Completion, now: Instant): AppState {
         val task = state.task(c.id) ?: return state
         if (c.copyId == c.id) return if (task.completedAt != null) replace(state, task.copy(completedAt = null, updatedAt = now)) else state
         val copy = state.tasks.firstOrNull { it.id == c.copyId && it.sourceId == c.id && it.completedAt != null } ?: return state
+        val doneAt = copy.completedAt ?: return state
+        if (state.tasks.any { it.id != copy.id && it.sourceId == c.id && it.completedAt?.isAfter(doneAt) == true }) return state
         val ext = AlertExt.of(task)
         val rule = if (ext.prayer != null || ext.hijri != null) task.rule.copy(from = copy.scheduleAt) else task.rule
         val back = task.copy(dueAt = copy.dueAt, scheduleAt = copy.scheduleAt, rule = rule, snoozedAt = copy.snoozedAt, snoozeCount = copy.snoozeCount, updatedAt = now, extra = copy.extra)
