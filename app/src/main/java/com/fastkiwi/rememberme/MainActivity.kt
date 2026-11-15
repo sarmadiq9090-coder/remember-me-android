@@ -254,6 +254,10 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val saved = savedInstanceState?.getStringArrayList(KEY_STACK)?.mapNotNull(Screen::of)
         if (!saved.isNullOrEmpty() && saved.first() == Screen.Home) stack = saved else handle(intent)
+        // Quick Add stays open across a rotation or process death (Google's speech dialog may be on top; 1.0.1).
+        savedInstanceState?.takeIf { it.containsKey(KEY_QUICK_ID) }?.let { b ->
+            quickAdd = com.fastkiwi.rememberme.ui.quick.QuickAddRequest(b.getString(KEY_QUICK_TEXT).orEmpty(), b.getLong(KEY_QUICK_ID))
+        }
         safety = Repo.store(this).safetyCopies()
         // [settings] begin
         flows.onRestored = { safety = Repo.store(this).safetyCopies() }
@@ -283,6 +287,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putStringArrayList(KEY_STACK, ArrayList(stack.map { it.code() }))
+        quickAdd?.let { outState.putLong(KEY_QUICK_ID, it.id); outState.putString(KEY_QUICK_TEXT, it.text) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -651,5 +656,7 @@ class MainActivity : AppCompatActivity() {
         const val ACTION_NEW = "com.fastkiwi.rememberme.NEW"
         const val EXTRA_OPEN = "open"
         private const val KEY_STACK = "stack"
+        private const val KEY_QUICK_ID = "quickAddId"
+        private const val KEY_QUICK_TEXT = "quickAddText"
     }
 }

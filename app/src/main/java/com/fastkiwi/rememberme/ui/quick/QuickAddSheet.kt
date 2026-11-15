@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -55,6 +56,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -85,8 +87,10 @@ import com.fastkiwi.rememberme.ui.categoryName
 import com.fastkiwi.rememberme.ui.priorityName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 
 /**
@@ -106,7 +110,10 @@ fun QuickAddHost(
     onTemplate: () -> Unit,
 ) {
     val context = LocalContext.current
-    val state = remember(request) { QuickAddState(request.text, Repo.zone(), weekStart) }
+    // The text survives a rotation or process death while Google's speech dialog covers the app (1.0.1).
+    var kept by rememberSaveable(request.id) { mutableStateOf(request.text) }
+    val state = remember(request) { QuickAddState(kept, Repo.zone(), weekStart) }
+    LaunchedEffect(state) { snapshotFlow { state.text }.collect { kept = it } }
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var saving by remember(request) { mutableStateOf(false) }
@@ -169,9 +176,10 @@ fun QuickAddSheet(
 ) {
     val context = LocalContext.current
     val focus = remember { FocusRequester() }
-    var disclose by remember { mutableStateOf(false) }
+    var disclose by rememberSaveable { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val windowInfo = LocalWindowInfo.current
     // 1.0.1: the mic only where the phone has a speech dialog and a speech service; never left at a dead dialog.
     val canVoice = remember { VoiceInput.available(context) }
     var voiceNote by remember { mutableStateOf<Int?>(null) }
@@ -196,13 +204,17 @@ fun QuickAddSheet(
             focusManager.clearFocus()
             voice.launch(VoiceInput.intent(context, tag))
         } catch (_: ActivityNotFoundException) {
-            VoiceInput.failed(context, tag)
+            voiceNote = R.string.qa_voice_missing
+            backToField = true
+        } catch (_: SecurityException) {
             voiceNote = R.string.qa_voice_missing
             backToField = true
         }
     }
     LaunchedEffect(backToField) {
         if (backToField) {
+            // Back from Google's dialog: wait until this window has the focus again, or the keyboard is ignored.
+            withTimeoutOrNull(1_000) { snapshotFlow { windowInfo.isWindowFocused }.first { it } }
             runCatching { focus.requestFocus() }
             keyboard?.show()
             backToField = false
@@ -280,7 +292,7 @@ fun QuickAddSheet(
         icon = { Icon(Ms.Mic, null) },
         title = { Text(stringResource(R.string.qa_voice_title)) },
         text = { Text(stringResource(R.string.qa_voice_body)) },
-        dismissButton = { TextButton(onClick = { disclose = false }) { Text(stringResource(R.string.cancel)) } },
+        dismissButton = { TextButton(onClick = { disclose = false; backToField = true }) { Text(stringResource(R.string.cancel)) } },
         confirmButton = {
             TextButton(onClick = { disclose = false; QuickPrefs.setVoiceDisclosed(context); listen() }) { Text(stringResource(R.string.continue_)) }
         },

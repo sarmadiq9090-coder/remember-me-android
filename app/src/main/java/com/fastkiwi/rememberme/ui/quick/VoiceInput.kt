@@ -1,9 +1,11 @@
 package com.fastkiwi.rememberme.ui.quick
 
 import android.app.Activity
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
+import android.os.Build
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.core.content.edit
@@ -60,7 +62,13 @@ object VoiceInput {
 
     private val FALLBACK = mapOf("ar" to "ar-SA", "en" to "en-US")
 
-    private fun phoneLocale(): Locale = Resources.getSystem().configuration.locales.let { if (it.isEmpty) Locale.getDefault() else it[0] }
+    /** The phone's own language (Android 13+ keeps the per-app language apart; ask for the system's). */
+    private fun phoneLocale(context: Context): Locale {
+        if (Build.VERSION.SDK_INT >= 33) runCatching {
+            context.getSystemService(LocaleManager::class.java)?.systemLocales?.takeIf { !it.isEmpty }?.let { return it[0] }
+        }
+        return Resources.getSystem().configuration.locales.let { if (it.isEmpty) Locale.getDefault() else it[0] }
+    }
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences("quick", Context.MODE_PRIVATE)
 
@@ -68,7 +76,7 @@ object VoiceInput {
 
     /** The language for the next try on this phone. */
     fun language(context: Context): String? {
-        val list = candidates(L10n.current(context), phoneLocale())
+        val list = candidates(L10n.current(context), phoneLocale(context))
         val p = prefs(context)
         val good = list.indexOfFirst { key(it) == p.getString("voiceGood", null) }
         if (good >= 0) return list[good]
@@ -95,11 +103,10 @@ object VoiceInput {
         val p = prefs(context)
         return when {
             text != null -> { p.edit { putString("voiceGood", key(tag)); remove("voiceFailed") }; Outcome.Text(text) }
-            code == RecognizerIntent.RESULT_NO_MATCH -> Outcome.NoText
-            code == Activity.RESULT_OK || code == Activity.RESULT_CANCELED -> {
-                // Back on a dialog that never worked: the next try uses another language. After a language has
-                // worked once, a cancel is just a cancel.
-                if (p.getString("voiceGood", null) != null) return Outcome.NoText
+            code == Activity.RESULT_OK || code == Activity.RESULT_CANCELED || code == RecognizerIntent.RESULT_NO_MATCH -> {
+                // Back on a dialog that never worked (or one that heard nothing): the next try uses another
+                // language. Only in the language that has worked here, a cancel is just a cancel.
+                if (p.getString("voiceGood", null) == key(tag)) return Outcome.NoText
                 failed(context, tag)
                 // Every language came back empty and none ever worked: say plainly that it does not work here.
                 if (exhausted(context)) Outcome.Failed else Outcome.NoText
@@ -110,7 +117,7 @@ object VoiceInput {
 
     private fun exhausted(context: Context): Boolean {
         val failed = prefs(context).getStringSet("voiceFailed", emptySet()).orEmpty()
-        return candidates(L10n.current(context), phoneLocale()).all { key(it) in failed }
+        return candidates(L10n.current(context), phoneLocale(context)).all { key(it) in failed }
     }
 
     /** [tag] did not work: forget it as the working one and skip it next time. */
