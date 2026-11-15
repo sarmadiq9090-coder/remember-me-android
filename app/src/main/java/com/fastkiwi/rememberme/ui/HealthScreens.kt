@@ -147,6 +147,7 @@ private fun rowText(context: Context, item: HealthItem, h: Health, s: ScheduleSt
             HealthStatus.READY -> s.lastBoot?.let { context.getString(R.string.chk_boot_seen, L10n.dueText(context, Instant.ofEpochMilli(it.at), now)) }
             else -> r(R.string.h_boot_unknown)
         }
+        "autobackup" -> r(R.string.h_autobackup) to r(R.string.banner_autobackup_failed)
         "lock" -> r(R.string.h_lock) to when (st) {
             HealthStatus.READY -> r(R.string.h_lock_shows)
             HealthStatus.OFF -> r(R.string.h_lock_hides)

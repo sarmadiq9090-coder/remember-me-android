@@ -380,6 +380,7 @@ class MainActivity : AppCompatActivity() {
             "hibernation" -> SystemScreens.open(this, SystemScreens.hibernation(this))
             "dnd" -> SystemScreens.open(this, SystemScreens.dnd())
             "maker" -> Makers.current()?.let { Makers.open(this, it) }
+            "settings" -> push(Screen.Settings)
             "battery_list" -> SystemScreens.open(this, SystemScreens.batteryList())
             "app" -> SystemScreens.open(this, SystemScreens.appDetails(this))
         }

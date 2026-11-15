@@ -117,6 +117,8 @@ object HealthModel {
             blocked == false || s.lastBoot != null -> item("boot", g, HealthStatus.READY, "maker")
             else -> item("boot", g, HealthStatus.UNKNOWN, "maker", HealthSource.MAKER)
         })
+        // F-087: the weekly automatic copy failed last time.
+        if (h.autoBackupFailed) add(item("autobackup", g, HealthStatus.RESTRICTED, "settings"))
         add(item("lock", g, when (h.lockScreenHidesAll) {
             false -> HealthStatus.READY
             true -> HealthStatus.OFF

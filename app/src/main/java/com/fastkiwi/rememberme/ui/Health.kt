@@ -54,6 +54,8 @@ data class Health(
     val lockScreenHidesAll: Boolean? = null,
     /** When this check ran (epoch ms), for «آخر فحص». */
     val checkedAt: Long = 0,
+    /** F-087: the last weekly automatic copy failed (folder gone, no space). */
+    val autoBackupFailed: Boolean = false,
 ) {
     /** Without these, reminders are not shown at all or arrive late: the red banner. */
     val essentialOk get() = notifications && channel && exact && !backgroundRestricted
@@ -111,6 +113,7 @@ data class Health(
                 fgsFailures = log?.count { it.at > week && it.event == AlertLog.Event.FALLBACK && it.code in FGS_CODES } ?: 0,
                 lockScreenHidesAll = lockScreenHidesAll(context),
                 checkedAt = System.currentTimeMillis(),
+                autoBackupFailed = runCatching { com.fastkiwi.rememberme.data.AutoBackup.failed(context) }.getOrDefault(false),
             )
         }
 

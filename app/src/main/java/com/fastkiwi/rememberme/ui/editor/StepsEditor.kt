@@ -184,6 +184,8 @@ private fun StepRow(
                 keyboardActions = KeyboardActions(onNext = { onAdd(i) }),
                 singleLine = true,
                 modifier = Modifier.weight(1f).padding(horizontal = Dimens.s).focusRequester(requester)
+                    // The field has its name for TalkBack too (black-box U3): «خطوة جديدة» or the step's text.
+                    .semantics { contentDescription = label }
                     .onFocusChanged {
                         // Leaving the field ends the edit (a blank step stays open to type).
                         if (it.isFocused) hadFocus = true
