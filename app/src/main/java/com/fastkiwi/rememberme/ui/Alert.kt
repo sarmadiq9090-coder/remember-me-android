@@ -364,7 +364,9 @@ fun SnoozePicker(now: Instant, zone: ZoneId, onPick: (Instant) -> Unit, onCancel
     val context = LocalContext.current
     var day by rememberSaveable { mutableStateOf<String?>(null) }
     if (day == null) {
-        val today = now.atZone(zone).toLocalDate()
+        // The time below defaults to the next whole hour: after 23:00 that is tomorrow, so the day is too.
+        val local = now.atZone(zone)
+        val today = if (local.hour >= 23) local.toLocalDate().plusDays(1) else local.toLocalDate()
         val state = rememberDatePickerState(initialSelectedDateMillis = today.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
         DatePickerDialog(
             onDismissRequest = onCancel,

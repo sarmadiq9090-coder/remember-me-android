@@ -445,7 +445,7 @@ class MainActivity : AppCompatActivity() {
                     onComplete = { t, showUndo ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             var done: Completion? = null
-                            runCatching { Repo.change(ctx) { s -> Tasks.complete(s, t.id, Instant.now(), zone)?.also { done = it.second }?.first ?: s } }
+                            runCatching { Repo.change(ctx) { s -> Tasks.complete(s, t.id, Instant.now(), zone, t.dueAt, checked = true)?.also { done = it.second }?.first ?: s } }
                             done?.let { c -> withContext(Dispatchers.Main) { showUndo { act { s -> Tasks.undoComplete(s, c, Instant.now()) } } } }
                         }
                     },
