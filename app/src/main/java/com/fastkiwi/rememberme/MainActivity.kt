@@ -267,7 +267,8 @@ class MainActivity : AppCompatActivity() {
         // [settings] begin
         flows.onRestored = { safety = Repo.store(this).safetyCopies() }
         if (savedInstanceState == null) flows.checkWhatsNew()
-        if (savedInstanceState == null) updates.onAppOpened()
+        // Also after a restore: the 7-day rule decides; leftovers are cleaned only when nothing is in progress.
+        updates.onAppOpened()
         // [settings] end
         val prefs = Repo.prefs(this)
         prefs.firstRun
@@ -382,10 +383,7 @@ class MainActivity : AppCompatActivity() {
      * 1.0.5 (D-081, as Kiwi Scan's D-080): updates from GitHub. The automatic check runs when the app is opened, at
      * most once every 7 days, after the one-time notice; «تحقق من التحديثات» in «حول ذكرني» any time.
      */
-    val updates by lazy {
-        com.fastkiwi.rememberme.update.UpdateController(this, com.fastkiwi.rememberme.update.UpdatePrefs(this), lifecycleScope,
-            onAvailable = { r -> Toast.makeText(this, getString(R.string.update_available_msg, r.version.toString()), Toast.LENGTH_LONG).show() })
-    }
+    val updates get() = com.fastkiwi.rememberme.update.UpdateHub.controller(this)
 
     fun push(s: Screen) { stack = stack + s }
     private fun pop() { if (stack.size > 1) stack = stack.dropLast(1) else finish() }

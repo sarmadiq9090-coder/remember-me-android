@@ -21,13 +21,15 @@ sealed interface DownloadResult {
     data class Failed(val error: UpdateError) : DownloadResult
 }
 
+/** What the archive check found (bug hunt H5: a same-key, not-newer build is not a "wrong key"). */
+enum class ApkVerdict { OK, WRONG_SIGNER, NOT_NEWER }
+
 /**
- * Checks the archive's signing certificates and package against the installed app
+ * Checks the archive's package, signing certificates and versionCode against the installed app
  * ([AndroidApkVerifier] in the app, a fake in tests).
  */
 fun interface ApkVerifier {
-    /** True only when the archive is this app (same package), signed with the installed app's certificate(s). */
-    fun sameSignerAndPackage(apk: File): Boolean
+    fun verify(apk: File): ApkVerdict
 }
 
 /**
@@ -90,12 +92,19 @@ class Updater(
             part.delete(); return DownloadResult.Failed(UpdateError.STORAGE)
         } catch (e: RuntimeException) {
             part.delete(); return DownloadResult.Failed(UpdateError.NETWORK)
+        } catch (e: InterruptedException) {
+            // Cancelled (runInterruptible): stop and leave nothing behind.
+            part.delete(); Thread.currentThread().interrupt(); return DownloadResult.Failed(UpdateError.NETWORK)
         }
+        if (Thread.currentThread().isInterrupted) { part.delete(); return DownloadResult.Failed(UpdateError.NETWORK) }
         if (!got.equals(expected, ignoreCase = true)) { part.delete(); return DownloadResult.Failed(UpdateError.SHA_MISMATCH) }
         val apk = File(workDir, release.apkName)
         if (!part.renameTo(apk)) { part.delete(); return DownloadResult.Failed(UpdateError.STORAGE) }
-        val sameSigner = runCatching { verifier.sameSignerAndPackage(apk) }.getOrDefault(false)
-        if (!sameSigner) { apk.delete(); return DownloadResult.Failed(UpdateError.SIGNATURE_MISMATCH) }
+        when (runCatching { verifier.verify(apk) }.getOrDefault(ApkVerdict.WRONG_SIGNER)) {
+            ApkVerdict.OK -> Unit
+            ApkVerdict.NOT_NEWER -> { apk.delete(); return DownloadResult.Failed(UpdateError.NOT_NEWER) }
+            ApkVerdict.WRONG_SIGNER -> { apk.delete(); return DownloadResult.Failed(UpdateError.SIGNATURE_MISMATCH) }
+        }
         return DownloadResult.Verified(apk, release)
     }
 

@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -72,21 +73,38 @@ class UpdateController(
             if (_state.value == UpdateState.Idle) return scope.launch(Dispatchers.IO) { updater.clean() }.also { job = it }
             return null
         }
+        autoRunning = true
         return scope.launch {
+            try {
             if (_state.value == UpdateState.Idle) withContext(Dispatchers.IO) { updater.clean() }
             val r = withContext(Dispatchers.IO) { updater.check() }
             // Offline: nothing was asked; try again at the next start. Otherwise wait 7 days.
             if (!(r is CheckResult.Failed && r.error == UpdateError.OFFLINE)) settings.lastUpdateCheck = now()
-            if (r is CheckResult.Available) {
+            if (manualWaiting) {
+                // «تحقق من التحديثات» was tapped while this ran: it gets this answer.
+                manualWaiting = false
+                _state.value = when (r) {
+                    CheckResult.UpToDate -> UpdateState.UpToDate
+                    is CheckResult.Available -> UpdateState.Available(r.release)
+                    is CheckResult.Failed -> UpdateState.Failed(r.error)
+                }
+            } else if (r is CheckResult.Available) {
                 _state.value = UpdateState.Available(r.release)
                 onAvailable(r.release)
+            }
+            } finally {
+                autoRunning = false
             }
         }.also { job = it }
     }
 
     /** «تحقق من التحديثات»: any time. */
     fun checkNow(): Job? {
-        if (job?.isActive == true) return null
+        if (job?.isActive == true) {
+            // The automatic check is running: show «جارٍ التحقق» and give its answer when it ends (bug hunt H3).
+            if (autoRunning) { manualWaiting = true; _state.value = UpdateState.Checking }
+            return null
+        }
         _state.value = UpdateState.Checking
         return scope.launch {
             val r = withContext(Dispatchers.IO) { updater.check() }
@@ -103,7 +121,7 @@ class UpdateController(
         if (job?.isActive == true) return null
         _state.value = UpdateState.Downloading(release, 0, release.apkSize)
         return scope.launch {
-            val r = withContext(Dispatchers.IO) {
+            val r = runInterruptible(Dispatchers.IO) {
                 updater.download(release, settings.updateWifiOnly) { done, total ->
                     scope.launch(Dispatchers.Main) { if (_state.value is UpdateState.Downloading) _state.value = UpdateState.Downloading(release, done, total) }
                 }
@@ -120,12 +138,17 @@ class UpdateController(
 
     /** Opens Android's install confirmation for a verified file (again, if the user backed out). */
     fun install(apk: File, release: Release) {
+        // A confirmation is already waiting (the person had left the app): open it, never a second session (H4).
+        if (UpdateInstallEvents.pending != null) { openPendingConfirm(); return }
+        if (UpdateInstallEvents.inFlight && UpdateInstallEvents.lastInstall?.first == apk) return
         lastInstall = apk to release
         UpdateInstallEvents.failed = false
         if (!apk.exists()) { _state.value = UpdateState.Failed(UpdateError.STORAGE, release); return }
         // The installer could not even start (a session could not be created or written): the file is kept and the
         // message says the update was not installed, so the next tap tries the installer again.
-        _state.value = if (installer(apk)) UpdateState.Ready(release, apk) else UpdateState.Failed(UpdateError.INSTALL, release)
+        val started = installer(apk)
+        UpdateInstallEvents.inFlight = started
+        _state.value = if (started) UpdateState.Ready(release, apk) else UpdateState.Failed(UpdateError.INSTALL, release)
     }
 
     /**
@@ -142,7 +165,13 @@ class UpdateController(
         return downloadAndInstall(release)
     }
 
-    private var lastInstall: Pair<File, Release>? = null
+    /** Shared by every controller of this process (H1): a recreated MainActivity still knows what was installed. */
+    private var lastInstall: Pair<File, Release>?
+        get() = UpdateInstallEvents.lastInstall
+        set(v) { UpdateInstallEvents.lastInstall = v }
+
+    @Volatile private var manualWaiting = false
+    private var autoRunning = false
 
     private val _confirmPending = mutableStateOf(UpdateInstallEvents.pending != null)
     /** Android's confirmation screen is waiting because the user had left the app: the banner «التحديث جاهز للتثبيت». */

@@ -73,7 +73,7 @@ class UpdaterTest {
     private fun client(timeoutMs: Int = 5_000) = UpdateClient("RememberMe/2.0.0", "$base/repos/x/releases/latest", setOf("127.0.0.1"), requireHttps = false, timeoutMs = timeoutMs)
 
     private fun updater(current: String = "2.0.0", net: NetworkState = NetworkState.WIFI, sameSigner: Boolean = true, signerCalls: MutableList<File>? = null) =
-        Updater(client(), current, { f -> signerCalls?.add(f); sameSigner }, work) { net }
+        Updater(client(), current, { f -> signerCalls?.add(f); if (sameSigner) ApkVerdict.OK else ApkVerdict.WRONG_SIGNER }, work) { net }
 
     private fun available(u: Updater): Release = (u.check() as? CheckResult.Available)?.release ?: error("no update offered")
 
@@ -203,7 +203,7 @@ class UpdaterTest {
     @Test
     fun aConnectionThatDiesMidResponseIsANetworkErrorNeverACrash() {
         val r = available(updater())
-        fun slow() = Updater(client(timeoutMs = 400), "2.0.0", { true }, work) { NetworkState.WIFI }
+        fun slow() = Updater(client(timeoutMs = 400), "2.0.0", { ApkVerdict.OK }, work) { NetworkState.WIFI }
         stallPath = "/repos/x/releases/latest"
         assertEquals(CheckResult.Failed(UpdateError.NETWORK), slow().check())
         stallPath = "/dl/SHA256SUMS.txt"
@@ -224,7 +224,7 @@ class UpdaterTest {
     @Test
     fun wifiLostDuringTheDownloadStopsItWhenWifiOnly() {
         var net = NetworkState.WIFI
-        val u = Updater(client(), "2.0.0", { true }, work) { net }
+        val u = Updater(client(), "2.0.0", { ApkVerdict.OK }, work) { net }
         val r = available(u)
         val result = u.download(r, wifiOnly = true) { done, _ -> if (done > 100_000) net = NetworkState.MOBILE }
         assertEquals(DownloadResult.Failed(UpdateError.WIFI_REQUIRED), result)
@@ -237,12 +237,13 @@ class UpdaterTest {
     @Test
     fun archiveMustBeTheSameAppSameSignerAndAHigherVersionCode() {
         val k = setOf("26e5ed00")
-        assertTrue(AndroidApkVerifier.acceptable("com.fastkiwi.rememberme", "com.fastkiwi.rememberme", k, k, 6, 5))
-        assertFalse("same version", AndroidApkVerifier.acceptable("com.fastkiwi.rememberme", "com.fastkiwi.rememberme", k, k, 5, 5))
-        assertFalse("downgrade", AndroidApkVerifier.acceptable("com.fastkiwi.rememberme", "com.fastkiwi.rememberme", k, k, 4, 5))
-        assertFalse("other package", AndroidApkVerifier.acceptable("com.evil", "com.fastkiwi.rememberme", k, k, 6, 5))
-        assertFalse("other key", AndroidApkVerifier.acceptable("com.fastkiwi.rememberme", "com.fastkiwi.rememberme", setOf("aa"), k, 6, 5))
-        assertFalse("unsigned", AndroidApkVerifier.acceptable("com.fastkiwi.rememberme", "com.fastkiwi.rememberme", emptySet(), emptySet(), 6, 5))
+        val p = "com.fastkiwi.rememberme"
+        assertEquals(ApkVerdict.OK, AndroidApkVerifier.acceptable(p, p, k, k, 6, 5))
+        assertEquals("same version", ApkVerdict.NOT_NEWER, AndroidApkVerifier.acceptable(p, p, k, k, 5, 5))
+        assertEquals("downgrade", ApkVerdict.NOT_NEWER, AndroidApkVerifier.acceptable(p, p, k, k, 4, 5))
+        assertEquals("other package", ApkVerdict.WRONG_SIGNER, AndroidApkVerifier.acceptable("com.evil", p, k, k, 6, 5))
+        assertEquals("other key", ApkVerdict.WRONG_SIGNER, AndroidApkVerifier.acceptable(p, p, setOf("aa"), k, 6, 5))
+        assertEquals("unsigned", ApkVerdict.WRONG_SIGNER, AndroidApkVerifier.acceptable(p, p, emptySet(), emptySet(), 6, 5))
     }
 
     // ------------------------------------------------------------------ 7-day limit
@@ -262,7 +263,7 @@ class UpdaterTest {
         var now = 1_000 * day
         var net = NetworkState.WIFI
         var offered: Release? = null
-        val c = UpdateController(app, settings, CoroutineScope(Dispatchers.Unconfined), Updater(client(), "2.0.0", { true }, work) { net }, { now }, { offered = it })
+        val c = UpdateController(app, settings, CoroutineScope(Dispatchers.Unconfined), Updater(client(), "2.0.0", { ApkVerdict.OK }, work) { net }, { now }, { offered = it })
         fun open() = runBlocking { c.onAppOpened()?.join() }
         fun checks() = requests.count { it == "/repos/x/releases/latest" }
         open()

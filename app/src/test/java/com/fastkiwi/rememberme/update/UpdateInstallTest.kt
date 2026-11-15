@@ -46,6 +46,8 @@ class UpdateInstallTest {
         UpdateInstallEvents.pending = null
         UpdateInstallEvents.failed = false
         UpdateInstallEvents.foreground = false
+        UpdateInstallEvents.lastInstall = null
+        UpdateInstallEvents.inFlight = false
     }
 
     @After
@@ -78,7 +80,9 @@ class UpdateInstallTest {
         c.retryInstall(release)
         assertEquals(2, calls)
         assertTrue(c.state.value !is UpdateState.Failed)
-        // A failure that happens when the installer cannot even start is the same message, file kept.
+        // That session ends (the person backed out), then a failure when the installer cannot even start is the same
+        // message, file kept. (While a session is still in flight a tap opens no second one: UpdateHuntTest H4.)
+        report(PackageInstaller.STATUS_FAILURE)
         c.installer = { false }
         c.retryInstall(release)
         assertEquals(UpdateState.Failed(UpdateError.INSTALL, release), c.state.value)

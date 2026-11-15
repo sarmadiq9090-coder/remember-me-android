@@ -19,11 +19,11 @@ import java.security.MessageDigest
  * check refuses it before the user is asked anything.
  */
 class AndroidApkVerifier(private val ctx: Context) : ApkVerifier {
-    override fun sameSignerAndPackage(apk: File): Boolean {
+    override fun verify(apk: File): ApkVerdict {
         val pm = ctx.packageManager
-        val archive = archiveInfo(pm, apk.path) ?: return false
-        if (archive.packageName != ctx.packageName) return false
-        val installed = installedInfo(pm) ?: return false
+        val archive = archiveInfo(pm, apk.path) ?: return ApkVerdict.WRONG_SIGNER
+        if (archive.packageName != ctx.packageName) return ApkVerdict.WRONG_SIGNER
+        val installed = installedInfo(pm) ?: return ApkVerdict.WRONG_SIGNER
         return acceptable(archive.packageName, ctx.packageName, certs(archive), certs(installed),
             androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(archive),
             androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(installed))
@@ -35,8 +35,11 @@ class AndroidApkVerifier(private val ctx: Context) : ApkVerifier {
          * versionCode: a release whose tag says newer but whose APK is the same or an older build is refused
          * here (before Android's own downgrade refusal) instead of being offered again and again.
          */
-        fun acceptable(archivePackage: String?, appPackage: String, archiveCerts: Set<String>, installedCerts: Set<String>, archiveVersionCode: Long, installedVersionCode: Long): Boolean =
-            archivePackage == appPackage && archiveCerts.isNotEmpty() && archiveCerts == installedCerts && archiveVersionCode > installedVersionCode
+        fun acceptable(archivePackage: String?, appPackage: String, archiveCerts: Set<String>, installedCerts: Set<String>, archiveVersionCode: Long, installedVersionCode: Long): ApkVerdict = when {
+            archivePackage != appPackage || archiveCerts.isEmpty() || archiveCerts != installedCerts -> ApkVerdict.WRONG_SIGNER
+            archiveVersionCode <= installedVersionCode -> ApkVerdict.NOT_NEWER
+            else -> ApkVerdict.OK
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -117,6 +120,12 @@ object UpdateInstallEvents {
 
     /** The installer said the install failed (PackageInstaller status other than success or "needs the user"). */
     @Volatile var failed = false
+
+    /** The last verified file handed to the installer (bug hunt H1: kept when MainActivity is recreated). */
+    @Volatile var lastInstall: Pair<File, Release>? = null
+
+    /** A PackageInstaller session is waiting for its status (bug hunt H4: no second session on a second tap). */
+    @Volatile var inFlight = false
 }
 
 /** Receives the install status; on «needs the user» it opens Android's own confirmation screen. */
@@ -140,12 +149,14 @@ class UpdateInstallReceiver : BroadcastReceiver() {
             PackageInstaller.STATUS_SUCCESS -> {
                 UpdateInstallEvents.pending = null
                 UpdateInstallEvents.failed = false
+                UpdateInstallEvents.inFlight = false
                 File(ctx.cacheDir, "updates").listFiles()?.forEach { it.delete() }
             }
             else -> {
                 // Failed (or aborted by the user): the verified file stays so «try again» does not download it again.
                 UpdateInstallEvents.pending = null
                 UpdateInstallEvents.failed = true
+                UpdateInstallEvents.inFlight = false
             }
         }
         UpdateInstallEvents.listener?.invoke() // a broadcast receiver runs on the main thread
