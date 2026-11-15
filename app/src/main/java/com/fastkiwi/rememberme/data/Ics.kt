@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
  * iCalendar export (RFC 5545), so any calendar app can open the reminders (D-016).
  *
  * A timed reminder is a VEVENT: DTSTART in local time with an IANA TZID and a matching VTIMEZONE, an
- * RRULE for its repeat, and VALARMs at the time and for the early notice. A reminder without a time is
+ * RRULE for its repeat, and VALARMs at the time and for each early alert. A reminder without a time is
  * a VTODO. Completed and deleted reminders are left out. The repeat rules map exactly, including the
  * Windows app's month-end rule (the 31st becomes the month's last day): BYMONTHDAY=28,29,30,31;BYSETPOS=-1.
  */
@@ -79,7 +79,8 @@ object Ics {
             lines += "DTSTART;TZID=${zone.id}:" + LOCAL.format(start.atZone(zone).toLocalDateTime())
             rrule(t, zone)?.let { lines += "RRULE:$it" }
             lines += alarm("PT0S", t.title)
-            if (t.remindBefore > 0) lines += alarm("-PT${t.remindBefore}M", t.title)
+            // Every early alert (F-046): remindBefore and the Android-only list, one VALARM each.
+            for (m in com.fastkiwi.rememberme.core.Tasks.noticeMinutes(t)) lines += alarm("-PT${m}M", t.title)
         }
         lines += "END:$kind"
         return lines

@@ -1,5 +1,8 @@
 package com.fastkiwi.rememberme.data
 
+import com.fastkiwi.rememberme.core.AlertExt
+import com.fastkiwi.rememberme.core.withExt
+
 import com.fastkiwi.rememberme.core.AppState
 import com.fastkiwi.rememberme.core.Priority
 import com.fastkiwi.rememberme.core.Repeat
@@ -109,5 +112,20 @@ class IcsTest {
         assertTrue(ny.contains("RRULE:FREQ=YEARLY;BYMONTH=11;BYMONTHDAY=1,2,3,4,5,6,7;BYDAY=SU"))
         val baghdad = Ics.vtimezone(ZoneId.of("Asia/Baghdad"), now)
         assertEquals(listOf("BEGIN:VTIMEZONE", "TZID:Asia/Baghdad", "BEGIN:STANDARD", "DTSTART:20251113T100000", "TZOFFSETFROM:+0300", "TZOFFSETTO:+0300", "END:STANDARD", "END:VTIMEZONE"), baghdad)
+    }
+
+    /** F-046 + F-085: every early alert is exported as its own VALARM and comes back as the same alerts. */
+    @Test fun earlyAlertsRoundTripThroughACalendarFile() {
+        val zone = java.time.ZoneId.of("Asia/Baghdad")
+        val now = java.time.Instant.parse("2026-11-15T07:00:00Z")
+        var s = com.fastkiwi.rememberme.core.AppState()
+        s = com.fastkiwi.rememberme.core.Tasks.save(s, com.fastkiwi.rememberme.core.TaskInput(title = "موعد طبي",
+            dueAt = now.plusSeconds(3 * 86_400), remindBefore = 60), now, zone).first
+        s = s.copy(tasks = s.tasks.map { it.withExt(AlertExt(alerts = listOf(1440, 60, 15))) })
+        val text = Ics.export(s, zone, now)
+        org.junit.Assert.assertEquals(3, Regex("BEGIN:VALARM").findAll(text).count() - 1) // plus the one at the time
+        val back = IcsImport.read(text, zone, now)
+        val saved = IcsImport.save(com.fastkiwi.rememberme.core.AppState(), back.inputs, now, zone).first.tasks.single()
+        org.junit.Assert.assertEquals(listOf(1440, 60, 15), com.fastkiwi.rememberme.core.Tasks.noticeMinutes(saved))
     }
 }

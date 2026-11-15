@@ -620,7 +620,7 @@ on; locked + hidden details → «لديك تذكير». No permission.
 - **F-082/F-083/A18:** as ROADMAP 0.2.0 items 8–9, plus restore-summary lines for missing tones and
   prayer reminders on a phone without prayer settings.
 - **F-085 `.ics` import:** RFC 5545 subset (VEVENT/VTODO, DTSTART/DUE with TZID or UTC, RRULE mapped to the
-  app's repeats, one VALARM → `remindBefore`); everything else listed in a report, never dropped
+  app's repeats, up to 3 VALARMs → early alerts (F-046; the nearest in `remindBefore`), and export writes one VALARM per early alert); everything else listed in a report, never dropped
   silently; caps 5 MB and 5,000 components; fuzzed. Round-trip: every exported `.ics` re-imports to the
   same occurrences (ical4j check in tests).
 - **F-086 encryption:** container `RMBK1` (as built, 2026-11-15): a 62-byte binary header (magic, format
