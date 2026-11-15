@@ -133,11 +133,7 @@ class IcsPropertyTortureTest {
                 } ?: continue
                 if (t.dueAt == null) continue
                 val wantNext = wantNextOf(t)
-                if (back.dueAt != wantNext) {
-                    val note = r.warnings.filterIsInstance<com.fastkiwi.rememberme.data.IcsNote.StartsLater>().firstOrNull { oneLine(it.item.title.orEmpty()) == oneLine(t.title).take(oneLine(it.item.title.orEmpty()).length) }
-                    failures += "[import-next] ${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}" +
-                        (note?.let { "; the import says: ${it.english()}" } ?: "")
-                }
+                if (back.dueAt != wantNext) failures += "[import-next] ${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}; warnings ${r.warnings.take(2).map { it.english() }}"
                 if (back.remindBefore != t.remindBefore) failures += "[import-alarm] remindBefore ${t.remindBefore} imported as ${back.remindBefore}"
             }
         }

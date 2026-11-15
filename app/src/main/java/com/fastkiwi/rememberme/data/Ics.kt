@@ -34,6 +34,10 @@ import java.time.zone.ZoneRules
  * weekday, which the app still rings at that time): DTSTART is the series' next occurrence (by the app's own
  * [nextOccurrence]) and the current one is an RDATE, because RFC 5545 leaves a DTSTART outside its RRULE
  * undefined and calendars disagree on it.
+ *
+ * An every-N-hours repeat has its DTSTART in UTC: the app counts elapsed hours, and RFC 5545 computes RRULE
+ * instances in DTSTART's own time, so a local DTSTART would make readers count wall-clock hours across a DST change
+ * (some do, some do not); in UTC every reader gets the app's times.
  */
 object Ics {
     private val UTC = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC)
@@ -136,7 +140,10 @@ object Ics {
             // hour) is written in UTC instead.
             fun time(name: String, at: Instant, local: LocalDateTime) =
                 if (localToInstant(local, zone) == at) "$name;TZID=${zone.id}:" + LOCAL.format(local) else "$name:" + UTC.format(at)
-            if (rule == null || regular(t, start, zone)) {
+            if (t.repeat == Repeat.HOURS && rule != null) {
+                lines += "DTSTART:" + UTC.format(start)
+                lines += "RRULE:$rule"
+            } else if (rule == null || regular(t, start, zone)) {
                 lines += time("DTSTART", start, wall(t, start, zone))
                 rule?.let { lines += "RRULE:$it" }
             } else {

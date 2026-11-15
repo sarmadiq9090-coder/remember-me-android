@@ -5,7 +5,6 @@ import com.fastkiwi.rememberme.core.Category
 import com.fastkiwi.rememberme.core.EARLY_MINUTES
 import com.fastkiwi.rememberme.core.Priority
 import com.fastkiwi.rememberme.core.Repeat
-import com.fastkiwi.rememberme.core.RepeatRule
 import com.fastkiwi.rememberme.core.Task
 import com.fastkiwi.rememberme.core.TaskException
 import com.fastkiwi.rememberme.core.TaskInput
@@ -62,7 +61,9 @@ data class IcsImportResult(
  * EXRULE, BYHOUR, BYWEEKNO, BYDAY with a number, FREQ=MINUTELY/SECONDLY, several RRULEs, ...) is not guessed:
  * the event is imported once, without the repeat, and a warning names the event and the rule parts. A repeat
  * keeps its series start as dueAt (the anchor of the day of month, 29 February, the every-N phase), even when it
- * has passed: [save] moves it on to its next occurrence, as the Windows app's importTasks does. A one-time
+ * has passed: [save] moves it on to its next occurrence, as the Windows app's importTasks does. A month-end start
+ * clamped to a short month (28 February with BYMONTHDAY=28,...,31;BYSETPOS=-1 or BYMONTHDAY=-1) is kept, anchored
+ * on its real day. An every-N-hours series counts elapsed hours, so it gets no clock warning. A one-time
  * event whose time has passed is skipped with a reason, also as on Windows.
  *
  * Alarms: VALARM triggers before the start (relative, or absolute DATE-TIME) become early alerts when they are
@@ -77,6 +78,12 @@ data class IcsImportResult(
  * without a VCALENDAR throws [ImportException] NOT_ICS. Nothing else is thrown, whatever the input.
  */
 object IcsImport {
+    /**
+     * The series anchor of an input whose start is a clamped month end ([read]'s monthAnchor), for [save]:
+     * [TaskInput] has no field for it. Weak keys, so a result that is dropped takes its entries with it.
+     */
+    private val anchors: MutableMap<TaskInput, Instant> = java.util.Collections.synchronizedMap(java.util.WeakHashMap())
+
     const val MAX_BYTES = 20L * 1024 * 1024
     const val MAX_ITEMS = 5_000
     private const val MAX_COMPONENTS = 50_000
@@ -116,6 +123,14 @@ object IcsImport {
                 Tasks.save(s, input.copy(id = null, updatedAt = null, timeEdited = null), now, zone)
             } catch (_: TaskException) {
                 continue
+            }
+            // A clamped month-end start keeps the real day (31, 29 February) as its series anchor.
+            anchors[input]?.let { from ->
+                if (task.repeat == Repeat.MONTHLY || task.repeat == Repeat.YEARLY) {
+                    val anchored = task.copy(rule = task.rule.copy(from = from))
+                    next = next.copy(tasks = next.tasks.map { if (it.id == anchored.id) anchored else it })
+                    task = anchored
+                }
             }
             val start = task.scheduleAt
             if (task.repeat != Repeat.NONE && start != null && !start.isAfter(now)) {
@@ -568,6 +583,7 @@ object IcsImport {
 
             // Repeat
             var repeat = Repeat.NONE
+            var anchorFrom: Instant? = null
             var days = emptyList<Int>()
             var everyDays = 2
             var everyHours = 1
@@ -609,9 +625,10 @@ object IcsImport {
                     // BYMONTHDAY=-1 means day 31 for a month; a yearly series' month may be shorter (February: 29).
                     val anchor = if (repeat == Repeat.YEARLY) minOf(map.anchorDay, local.month.maxLength()) else map.anchorDay
                     if ((repeat == Repeat.MONTHLY || repeat == Repeat.YEARLY) && anchor > local.dayOfMonth) {
-                        dueAt = anchoredStart(label, dueAt, local, rules, repeat, anchor)
+                        anchorFrom = monthAnchor(local, rules, repeat, anchor)
                     }
-                    if (rules != deviceRules && clockDiffers(rules, maxOf(dueAt, now))) {
+                    // An every-N-hours series counts elapsed hours, whatever the zone's clock does (Ics.export writes it in UTC).
+                    if (repeat != Repeat.HOURS && rules != deviceRules && clockDiffers(rules, maxOf(dueAt, now))) {
                         warnings += IcsNote.ClockDiffers(label, clip(zoneName), zone.id)
                     }
                 }
@@ -638,11 +655,13 @@ object IcsImport {
                 early = found.take(MAX_ALARMS)
                 if (found.size > MAX_ALARMS) warnings += IcsNote.TooManyAlarms(label, early, found.drop(MAX_ALARMS))
             }
-            inputs += TaskInput(
+            val input = TaskInput(
                 title = title, body = body, priority = priority, category = category, dueAt = dueAt,
                 repeat = repeat, days = days, everyDays = everyDays, everyHours = everyHours,
                 remindBefore = early.firstOrNull() ?: 0, alerts = early.takeIf { it.size >= 2 },
             )
+            anchorFrom?.let { anchors[input] = it }
+            inputs += input
         }
 
         /** Minutes before the start (0 = at the start), or the [IcsAlarm] this app cannot keep. */
@@ -688,30 +707,18 @@ object IcsImport {
 
         /**
          * A month-end or 29 February series whose current occurrence is clamped (DTSTART 28 February with
-         * BYMONTHDAY=28,29,30,31;BYSETPOS=-1): the app's series must start on a date that has the real day.
-         * The latest such date before the start is used when it adds no occurrence that has not passed;
-         * otherwise the first later occurrence on that day, naming the occurrences left out.
+         * BYMONTHDAY=28,29,30,31;BYSETPOS=-1, or BYMONTHDAY=-1 on a short month's last day): DTSTART is itself an
+         * occurrence, so it stays the reminder's time, and the series is anchored on the latest earlier date that
+         * has the real [day] (the 31st, 29 February), at the same time, as the app's own series is after the 31st
+         * passed through a short month. Null when there is none in the last 12 months (8 years for a yearly one).
          */
-        fun anchoredStart(label: IcsItem, start: Instant, local: LocalDateTime, r: ZoneRules, repeat: Repeat, day: Int): Instant {
+        fun monthAnchor(local: LocalDateTime, r: ZoneRules, repeat: Repeat, day: Int): Instant? {
             val ym = YearMonth.from(local)
-            var a: LocalDateTime? = null
             for (k in 1L..(if (repeat == Repeat.MONTHLY) 12L else 8L)) {
                 val m = if (repeat == Repeat.MONTHLY) ym.minusMonths(k) else ym.minusYears(k)
-                if (m.lengthOfMonth() >= day) { a = m.atDay(day).atTime(local.toLocalTime()); break }
+                if (m.lengthOfMonth() >= day) return toInstant(m.atDay(day).atTime(local.toLocalTime()), r)
             }
-            if (a == null) return start
-            val anchor = toInstant(a, r)
-            val rule = RepeatRule(from = anchor)
-            if (!anchor.isAfter(now) && !nextOccurrence(anchor, repeat, now, rule, zone).isBefore(start)) return anchor
-            var cur = anchor
-            repeat(200) {
-                cur = nextOccurrence(cur, repeat, cur, rule, zone)
-                if (!cur.isBefore(start) && cur.atZone(zone).dayOfMonth == day) {
-                    if (cur != start) warnings += IcsNote.StartsLater(label, day, wall(cur).toLocalDate(), wall(start).toLocalDate())
-                    return cur
-                }
-            }
-            return start
+            return null
         }
 
         /** The rules for a TZID: the file's VTIMEZONE (or the IANA zone when they agree), the IANA id, a Windows name, or this phone's zone. */

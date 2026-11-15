@@ -156,7 +156,10 @@ sealed class IcsNote {
     class RuleNotKept(item: IcsItem, val parts: List<IcsRulePart>) : About(item) {
         override fun reason() = "its repeat rule is not supported (${parts.joinToString(", ") { it.english() }}); it is imported as a one-time reminder."
     }
-    /** A month-end or 29 February series that starts on [start], the first date with its real day [day]; [left] is not imported. */
+    /**
+     * A month-end or 29 February series that starts on [start], the first date with its real day [day]; [left] is not
+     * imported. No longer produced: a clamped start is itself an occurrence and is kept (IcsImport.monthAnchor).
+     */
     class StartsLater(item: IcsItem, val day: Int, val start: LocalDate, val left: LocalDate) : About(item) {
         override fun reason() = "it keeps day $day of the month, so it starts on $start; the occurrence on $left is not imported."
     }

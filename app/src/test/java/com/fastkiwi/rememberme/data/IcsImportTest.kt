@@ -128,14 +128,59 @@ class IcsImportTest {
         }
     }
 
-    @Test fun aFutureClampedStartBeginsOnItsRealDayAndSaysWhatItLeavesOut() {
-        val text = ics(*event("Rent", "DTSTART;TZID=Asia/Baghdad:20270228T090000", "RRULE:FREQ=MONTHLY;BYMONTHDAY=28,29,30,31;BYSETPOS=-1"))
-        val (r, tasks) = imported(text, at = Instant.parse("2027-01-15T07:00:00Z"))
-        val t = tasks.single()
-        assertEquals(Repeat.MONTHLY, t.repeat)
-        assertEquals(at(baghdad, 2027, 3, 31, 9), t.dueAt)
-        assertEquals(at(baghdad, 2027, 4, 30, 9), nextOccurrence(t.dueAt!!, t.repeat, t.dueAt!!, t.rule, baghdad))
-        assertTrue(r.w.toString(), r.w.single().let { it.contains("\"Rent\"") && it.contains("2027-02-28") })
+    /**
+     * A clamped month-end start that has not come yet (DTSTART 28 February with the month-end rule, or BYMONTHDAY=-1,
+     * or a yearly 29 February in a common year) is itself an occurrence: it stays the reminder's time, and the series
+     * keeps its real day after it. Nothing is left out, so there is no warning.
+     */
+    @Test fun aFutureClampedStartKeepsItsTimeAndItsRealDay() {
+        val at = Instant.parse("2027-01-15T07:00:00Z")
+        val cases = listOf(
+            "RRULE:FREQ=MONTHLY;BYMONTHDAY=28,29,30,31;BYSETPOS=-1" to listOf("2027-02-28", "2027-03-31", "2027-04-30", "2027-05-31"),
+            "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1" to listOf("2027-02-28", "2027-03-31", "2027-04-30", "2027-05-31"),
+            "RRULE:FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=28,29;BYSETPOS=-1" to listOf("2027-02-28", "2028-02-29", "2029-02-28", "2030-02-28"),
+        )
+        for ((rule, want) in cases) {
+            val (r, tasks) = imported(ics(*event("Rent", "DTSTART;TZID=Asia/Baghdad:20270228T090000", rule)), at = at)
+            assertEquals(rule, emptyList<String>(), r.s + r.w)
+            val t = tasks.single()
+            assertEquals(rule, at(baghdad, 2027, 2, 28, 9), t.dueAt)
+            assertEquals(rule, want, occurrences(t, baghdad, 3).map { it.atZone(baghdad).toLocalDate().toString() })
+            assertTrue(rule, occurrences(t, baghdad, 3).all { it.atZone(baghdad).toLocalTime() == java.time.LocalTime.of(9, 0) })
+        }
+    }
+
+    /** Our own export of a clamped month-end series exported before its anchor day has come back the same (torture). */
+    @Test fun anEarlyExportOfAClampedSeriesComesBackTheSame() {
+        val due = at(baghdad, 2027, 1, 31, 9)
+        val (s0, t0) = Tasks.save(AppState(), TaskInput(title = "rent", dueAt = due, repeat = Repeat.MONTHLY), due.minusSeconds(40L * 86_400), baghdad)
+        val (s, _) = Tasks.complete(s0, t0.id, due.plusSeconds(60), baghdad)!! // done early: now Feb 28
+        val t = s.task(t0.id)!!
+        val exportedAt = Instant.parse("2027-01-15T07:00:00Z") // before 31 January
+        val (r, tasks) = imported(Ics.export(s, baghdad, exportedAt), at = exportedAt)
+        assertEquals(emptyList<String>(), r.s + r.w)
+        val back = tasks.single()
+        assertEquals(t.scheduleAt, back.dueAt)
+        assertEquals(occurrences(t, baghdad), occurrences(back, baghdad))
+    }
+
+    /**
+     * An every-N-hours repeat is exported with a UTC DTSTART (elapsed hours, exact for every reader) and comes back
+     * with the same occurrences across a DST change, without a clock warning.
+     */
+    @Test fun anHourlySeriesIsExportedInUtcAndComesBackTheSame() {
+        val berlin = ZoneId.of("Europe/Berlin")
+        val due = at(berlin, 2029, 3, 24, 23, 0)
+        val (s, t) = Tasks.save(AppState(), TaskInput(title = "pill", dueAt = due, repeat = Repeat.HOURS, everyHours = 22), due.minusSeconds(3600), berlin)
+        val text = Ics.export(s, berlin, due.minusSeconds(3600))
+        assertTrue(text, text.contains("DTSTART:20290324T220000Z\r\nRRULE:FREQ=HOURLY;INTERVAL=22\r\n"))
+        for (phone in listOf(berlin, baghdad)) {
+            val (r, tasks) = imported(text, zone = phone, at = due.minusSeconds(3600))
+            assertEquals(emptyList<String>(), r.s + r.w)
+            val back = tasks.single()
+            assertEquals(Repeat.HOURS, back.repeat)
+            assertEquals(occurrences(t, berlin, 30), occurrences(back, phone, 30))
+        }
     }
 
     @Test fun aPastRepeatResumesAtItsNextOccurrenceAndAPastOneTimeEventIsSkipped() {
