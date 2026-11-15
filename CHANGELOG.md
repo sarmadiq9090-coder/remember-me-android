@@ -8,7 +8,21 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [1.0.5] - 2026-11-15
 
-The owner: «الشاشه الكاملة للتنبيهات المهمة فقط».
+The owner: «الشاشه الكاملة للتنبيهات المهمة فقط» and «اضف زر التحديث و ابلغ عن مقترح او مشكله مثل سكان كيوي» (D-081).
+
+### Added
+
+- Updates from GitHub (D-081, Kiwi Scan's design and code): «تحقق من التحديثات» in «حول ذكرني», and an automatic
+  check at most once every 7 days when the app is opened (Settings «التحديثات»: «التحقق التلقائي من التحديثات» and
+  «التنزيل عبر Wi-Fi فقط», both on). Source: this repository's latest release, `RememberMe-<version>.apk` with
+  `SHA256SUMS.txt`. Before installing: newer (SemVer and versionCode), SHA-256 equal, the same signing
+  certificate; then PackageInstaller with Android's own confirmation. A one-time notice says what the connection is
+  for. New permissions: INTERNET, ACCESS_NETWORK_STATE, REQUEST_INSTALL_PACKAGES; network_security_config allows
+  GitHub hosts over HTTPS only. Kiwi Scan's hard cases are kept: a connection lost while reading, Wi-Fi only for
+  the whole download, a clock set ahead, leftover files cleaned, a clear message when the install fails, and
+  «التحديث جاهز للتثبيت» when the person comes back.
+- «أبلغنا عن مشكلة أو اقتراح» (Settings and About), as in Kiwi Scan: the person's mail app or a GitHub issue form
+  opens with the text; device information only when ticked; never a reminder.
 
 ### Changed
 

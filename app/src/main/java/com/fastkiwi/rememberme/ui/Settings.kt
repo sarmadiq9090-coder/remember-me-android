@@ -108,6 +108,8 @@ class SettingsCallbacks(
     val onAlertLog: () -> Unit = {},
     val onTrash: () -> Unit = {},
     val onAbout: () -> Unit = {},
+    /** 1.0.5: «أبلغنا عن مشكلة أو اقتراح». */
+    val onFeedback: () -> Unit = {},
     val onBack: () -> Unit = {},
 )
 
@@ -155,6 +157,9 @@ fun SettingsScreen(
     val v = remember(bump, tick, flows?.version) { PhoneValues.read(context) }
     fun changed(engine: Boolean = true) { bump++; if (engine) cb.onPhoneChanged() }
     val prefs = com.fastkiwi.rememberme.Repo.prefs(context)
+    val updatePrefs = remember { com.fastkiwi.rememberme.update.UpdatePrefs(context) }
+    var updAuto by remember { mutableStateOf(updatePrefs.autoUpdateCheck) }
+    var updWifi by remember { mutableStateOf(updatePrefs.updateWifiOnly) }
     val sp = remember { SettingsPrefs(context) }
     var dialog by rememberSaveable { mutableStateOf<String?>(null) }
     var sub by rememberSaveable { mutableStateOf<String?>(null) }
@@ -250,6 +255,9 @@ fun SettingsScreen(
         "ics_import" to stringResource(R.string.set_ics_import_hint),
         "ics_export" to stringResource(R.string.export_ics_hint),
         "about" to stringResource(R.string.version_text, BuildConfig.VERSION_NAME),
+        "feedback" to stringResource(R.string.feedback_settings_hint),
+        "update_auto" to stringResource(R.string.update_auto_hint),
+        "update_wifi" to stringResource(R.string.update_wifi_only_hint),
     )
     val hidden = buildSet {
         if (m.language != "ar") add("months")
@@ -281,6 +289,7 @@ fun SettingsScreen(
             key == "trash" -> cb.onTrash()
             key == "delete_all" -> flows?.deleteAll()
             key == "about" -> cb.onAbout()
+            key == "feedback" -> cb.onFeedback()
         }
     }
 
@@ -294,7 +303,7 @@ fun SettingsScreen(
         "autocomplete" to Ms.Checklist, "export" to Ms.Download, "auto_backup" to Ms.Backup, "encrypt" to Ms.Lock, "backup_tones" to Ms.LibraryMusic,
         "restore" to Ms.SettingsBackupRestore, "safety" to Ms.History, "ics_import" to Ms.Upload, "ics_export" to Ms.Event,
         "compat" to Ms.ReceiptLong, "alert_log" to Ms.Notes, "trash" to Ms.Delete, "delete_all" to Ms.Delete, "privacy" to Ms.VerifiedUser,
-        "licences" to Ms.Info, "about" to Ms.Info, "health" to Ms.HealthAndSafety,
+        "licences" to Ms.Info, "about" to Ms.Info, "feedback" to Ms.Feedback, "update_auto" to Ms.SystemUpdate, "update_wifi" to Ms.Download, "health" to Ms.HealthAndSafety,
     )
 
     LaunchedEffect(highlight) {
@@ -440,10 +449,17 @@ fun SettingsScreen(
                 }
                 if (flows != null) add { row("delete_all", stringResource(R.string.set_delete_all), error = true) }
             })
+            // 1.0.5 (D-081): the two update settings, both on by default.
+            SectionHeader(stringResource(R.string.updates_title))
+            Group(listOf(
+                { switch("update_auto", stringResource(R.string.update_auto), updAuto) { updAuto = it; updatePrefs.autoUpdateCheck = it } },
+                { switch("update_wifi", stringResource(R.string.update_wifi_only), updWifi) { updWifi = it; updatePrefs.updateWifiOnly = it } },
+            ))
             SectionHeader(stringResource(R.string.section_about))
             Group(listOf(
                 { row("privacy", stringResource(R.string.set_privacy)) },
                 { row("licences", stringResource(R.string.licences)) },
+                { row("feedback", stringResource(R.string.feedback_title)) },
                 { row("about", stringResource(R.string.about)) },
             ))
         }
@@ -568,7 +584,11 @@ fun TrashScreen(state: AppState, now: Instant, onRestore: (Task) -> Unit, onPurg
 }
 
 @Composable
-fun AboutScreen(onBack: () -> Unit) {
+fun AboutScreen(
+    onBack: () -> Unit,
+    updates: com.fastkiwi.rememberme.update.UpdateController? = null,
+    onFeedback: () -> Unit = {},
+) {
     Page(stringResource(R.string.about), onBack) {
         Column(Modifier.fillMaxWidth().padding(Dimens.xl), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
             BrandMark(72.dp)
@@ -591,6 +611,9 @@ fun AboutScreen(onBack: () -> Unit) {
                 }
             }
         }
+        // 1.0.5 (D-081): «تحقق من التحديثات», then «أبلغنا عن مشكلة أو اقتراح».
+        updates?.let { com.fastkiwi.rememberme.ui.settings.AboutUpdates(it) }
+        Group(listOf({ SettingsRow(Ms.Feedback, stringResource(R.string.feedback_title), stringResource(R.string.feedback_settings_hint), onFeedback) }))
         SectionHeader(stringResource(R.string.licences))
         Group(listOf(
             { SettingsRow(null, stringResource(R.string.licence_font), stringResource(R.string.licence_ofl)) },

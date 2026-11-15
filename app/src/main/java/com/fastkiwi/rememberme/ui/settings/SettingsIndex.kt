@@ -64,6 +64,9 @@ object SettingsIndex {
         SettingEntry("privacy", R.string.set_privacy, R.string.section_about, R.string.set_syn_privacy),
         SettingEntry("licences", R.string.licences, R.string.section_about),
         SettingEntry("about", R.string.about, R.string.section_about, R.string.set_syn_about),
+        SettingEntry("update_auto", R.string.update_auto, R.string.updates_title, R.string.set_syn_updates),
+        SettingEntry("update_wifi", R.string.update_wifi_only, R.string.updates_title, R.string.set_syn_updates),
+        SettingEntry("feedback", R.string.feedback_title, R.string.section_about, R.string.set_syn_feedback),
         // صحة التذكيرات (open the Health screen)
         SettingEntry("h_notifications", R.string.chk_notifications, R.string.health_title, R.string.set_syn_h_notifications),
         SettingEntry("h_exact", R.string.chk_exact, R.string.health_title, R.string.set_syn_h_exact),

@@ -75,6 +75,10 @@ class QcGapsTest {
             "android.permission.VIBRATE",
             "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
             "android.permission.FOREGROUND_SERVICE",
+            // 1.0.5 (D-081): updates from GitHub (the owner's order, as Kiwi Scan's D-080).
+            "android.permission.INTERNET",
+            "android.permission.ACCESS_NETWORK_STATE",
+            "android.permission.REQUEST_INSTALL_PACKAGES",
         ).filterNot { it == "android.permission.SCHEDULE_EXACT_ALARM" && android.os.Build.VERSION.SDK_INT > 32 }.toSet()  // maxSdkVersion 32
         assertEquals(expected, requested)
     }

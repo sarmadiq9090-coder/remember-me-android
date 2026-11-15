@@ -37,8 +37,11 @@ guide is [docs/GUIDE-ar.md](docs/GUIDE-ar.md) / [docs/GUIDE-en.md](docs/GUIDE-en
 - **Trust**: «صحة التذكيرات» (every check, its source, one fix; unknown never shown as ready), the alert test,
   the alert log, the compatibility report.
 - **Data**: the Windows app's `data.json` (both directions tested), encrypted backups, a weekly automatic
-  copy, calendar import and export, delete all, a privacy page. No internet permission, no analytics, no
-  account; one added permission in 1.0.0 (FOREGROUND_SERVICE, the tone service).
+  copy, calendar import and export, delete all, a privacy page. No analytics, no account; one added
+  permission in 1.0.0 (FOREGROUND_SERVICE, the tone service). Since 1.0.5 (D-081) the internet is used only to
+  check for and download updates from GitHub (verified: newer, SHA-256, same signing key; Android asks before
+  installing), never for reminders or data about the person; it can be turned off. «أبلغنا عن مشكلة أو اقتراح»
+  opens the person's own mail app or browser.
 
 ## Layout
 

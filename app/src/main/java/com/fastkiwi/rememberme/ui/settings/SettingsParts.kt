@@ -329,6 +329,10 @@ object PrivacyText {
         Triple("android.permission.VIBRATE", R.string.set_perm_vibrate, R.string.set_perm_vibrate_why),
         Triple("android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", R.string.set_perm_battery, R.string.set_perm_battery_why),
         Triple("android.permission.FOREGROUND_SERVICE", R.string.set_perm_fgs, R.string.set_perm_fgs_why),
+        // 1.0.5 (D-081): updates from GitHub only.
+        Triple("android.permission.INTERNET", R.string.set_perm_internet, R.string.set_perm_internet_why),
+        Triple("android.permission.ACCESS_NETWORK_STATE", R.string.set_perm_network, R.string.set_perm_network_why),
+        Triple("android.permission.REQUEST_INSTALL_PACKAGES", R.string.set_perm_install, R.string.set_perm_install_why),
     )
 }
 

@@ -1,7 +1,8 @@
 # Remember Me for Android 1.0.0: user guide
 
 Remember Me reminds you of appointments and tasks on time. All your data stays on your phone: no account, no
-internet, no statistics.
+statistics. It goes online only to check for and download updates from GitHub, and sends no reminder or data
+about you (Settings → Updates to turn it off).
 
 ## 1. First start
 - The app asks for notifications, then opens Reminder health. Allow everything marked "Needed" so every
@@ -86,7 +87,7 @@ internet, no statistics.
 ## 11. More features
 - **Voice input**: the microphone in Quick Add. **Privacy note:** voice input goes through your phone's speech
   service (usually Google's), which may work over the internet; we ask it to work offline, on the phone itself,
-  when it can. Remember Me itself has no microphone or internet permission. A note says so on first use and in
+  when it can. Remember Me itself has no microphone permission and sends neither your voice nor your reminders anywhere. A note says so on first use and in
   About. Without a speech service the microphone is hidden. If the service fails or you close it, a message shows
   and the cursor returns to the field with the keyboard: use the keyboard's microphone. Before opening Google's dialog
   the app asks the service which languages it supports and picks from them: the phone's, then Arabic (Saudi
@@ -102,3 +103,13 @@ internet, no statistics.
 - **What's new**: shown once after updating to 1.0.0; from it you can turn every important reminder back to a
   normal one.
 - **Privacy**: Settings → About → Privacy: every permission the app asks for, and why.
+
+## 12. Updates and reports (1.0.5)
+- **Updates**: Settings → About Remember Me → Check for updates. It also checks by itself at most once every 7 days
+  when the app is opened. An update is installed only after checking that it is newer, that its SHA-256 matches the
+  published one and that it is signed with Remember Me's own key, and then only when you confirm on Android's
+  screen. Settings → Updates: "Check for updates automatically" and "Download over Wi-Fi only" (both on). If you
+  leave the app during the download, "Update ready to install" shows when you come back.
+- **Report a problem or suggestion** (Settings or About): write what happened, then "Send by e-mail" or "On
+  GitHub". Your mail app or browser opens with the text, and you send it. "Attach device information" is optional
+  (version, Android, phone, language only); no reminder is ever attached.

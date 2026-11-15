@@ -1,0 +1,25 @@
+name: "مشكلة / Problem"
+description: "أبلغ عن خطأ في ذكرني — Report a bug in Remember Me"
+title: "[Remember Me] مشكلة: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **لا تكتب تذكيراتك أو بيانات شخصية هنا؛ هذه الصفحة عامة.**
+        **Do not post your reminders or personal data here; this page is public.**
+  - type: textarea
+    id: description
+    attributes:
+      label: "ماذا حدث؟ وما الذي توقعته؟ — What happened, and what did you expect?"
+      description: "خطوات إعادة المشكلة إن أمكن — Steps to reproduce, if you can."
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: "معلومات الجهاز (اختياري) — Device information (optional)"
+      description: "إصدار التطبيق، أندرويد، طراز الهاتف، اللغة — App version, Android, phone model, language."
+      render: text
+    validations:
+      required: false

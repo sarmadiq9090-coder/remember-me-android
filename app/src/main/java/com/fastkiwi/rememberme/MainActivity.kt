@@ -74,6 +74,8 @@ sealed class Screen {
     data object Background : Screen()
     data object Trash : Screen()
     data object About : Screen()
+    /** 1.0.5: «أبلغنا عن مشكلة أو اقتراح». */
+    data object Feedback : Screen()
     data object AlarmTest : Screen()
     // [quick] begin
     data object Templates : Screen()
@@ -99,6 +101,7 @@ sealed class Screen {
         Background -> "background"
         Trash -> "trash"
         About -> "about"
+        Feedback -> "feedback"
         AlarmTest -> "alarmtest"
         // [quick] begin
         Templates -> "templates"
@@ -124,6 +127,7 @@ sealed class Screen {
             code == "background" -> Background
             code == "trash" -> Trash
             code == "about" -> About
+            code == "feedback" -> Feedback
             code == "alarmtest" -> AlarmTest
             // [quick] begin
             code == "templates" -> Templates
@@ -263,6 +267,7 @@ class MainActivity : AppCompatActivity() {
         // [settings] begin
         flows.onRestored = { safety = Repo.store(this).safetyCopies() }
         if (savedInstanceState == null) flows.checkWhatsNew()
+        if (savedInstanceState == null) updates.onAppOpened()
         // [settings] end
         val prefs = Repo.prefs(this)
         prefs.firstRun
@@ -277,6 +282,9 @@ class MainActivity : AppCompatActivity() {
             val reduced = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
             AppTheme(Repo.theme(state)) {
                 androidx.compose.runtime.CompositionLocalProvider(com.fastkiwi.rememberme.ui.LocalReducedMotion provides reduced) { Root(state) }
+                // 1.0.5 (D-081): the one-time notice before the first automatic update check, and «التحديث جاهز للتثبيت».
+                com.fastkiwi.rememberme.ui.settings.UpdateNoticeDialog(updates) { push(Screen.Settings) }
+                com.fastkiwi.rememberme.ui.settings.UpdateConfirmDialog(updates)
             }
             LaunchedEffect(Unit) {
                 // The lists show "late by" and move items between tabs as time passes.
@@ -294,6 +302,18 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handle(intent)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Android's install confirmation may be opened directly only while the app is in front.
+        com.fastkiwi.rememberme.update.UpdateInstallEvents.foreground = true
+        updates.refreshInstallStatus()
+    }
+
+    override fun onStop() {
+        com.fastkiwi.rememberme.update.UpdateInstallEvents.foreground = false
+        super.onStop()
     }
 
     override fun onResume() {
@@ -357,6 +377,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toast(id: Int) = Toast.makeText(this, id, Toast.LENGTH_LONG).show()
+
+    /**
+     * 1.0.5 (D-081, as Kiwi Scan's D-080): updates from GitHub. The automatic check runs when the app is opened, at
+     * most once every 7 days, after the one-time notice; «تحقق من التحديثات» in «حول ذكرني» any time.
+     */
+    val updates by lazy {
+        com.fastkiwi.rememberme.update.UpdateController(this, com.fastkiwi.rememberme.update.UpdatePrefs(this), lifecycleScope,
+            onAvailable = { r -> Toast.makeText(this, getString(R.string.update_available_msg, r.version.toString()), Toast.LENGTH_LONG).show() })
+    }
 
     fun push(s: Screen) { stack = stack + s }
     private fun pop() { if (stack.size > 1) stack = stack.dropLast(1) else finish() }
@@ -580,6 +609,7 @@ class MainActivity : AppCompatActivity() {
                     onAlertLog = { push(Screen.AlertLog) },
                     onTrash = { push(Screen.Trash) },
                     onAbout = { push(Screen.About) },
+                    onFeedback = { push(Screen.Feedback) },
                     onBack = { pop() },
                 ),
             )
@@ -647,7 +677,8 @@ class MainActivity : AppCompatActivity() {
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },
                 onEmpty = { act { s -> Tasks.purgeTrash(s, Instant.now(), all = true) } },
                 onBack = { pop() })
-            Screen.About -> AboutScreen { pop() }
+            Screen.About -> AboutScreen(onBack = { pop() }, updates = updates, onFeedback = { push(Screen.Feedback) })
+            Screen.Feedback -> com.fastkiwi.rememberme.ui.settings.FeedbackScreen { pop() }
             // [quick] begin
             Screen.Templates -> com.fastkiwi.rememberme.ui.quick.TemplatesRoute(
                 onPick = { fill -> editPrefill = fill; stack = stack.dropLast(1) + Screen.Edit(null) },

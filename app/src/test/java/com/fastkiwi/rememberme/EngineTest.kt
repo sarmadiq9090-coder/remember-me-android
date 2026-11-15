@@ -211,9 +211,10 @@ class EngineTest {
         assertTrue(L10n.date(L10n.context(app), at).contains("نوفمبر"))
     }
 
-    @Test fun noInternetPermissionAndReceiversAreLockedDown() {
+    @Test fun internetOnlyForUpdatesAndReceiversAreLockedDown() {
         val info = app.packageManager.getPackageInfo(app.packageName, android.content.pm.PackageManager.GET_PERMISSIONS or android.content.pm.PackageManager.GET_RECEIVERS)
-        assertFalse((info.requestedPermissions ?: emptyArray()).contains(Manifest.permission.INTERNET))
+        // 1.0.5 (D-081): the internet permission exists for the GitHub update check only (UpdateClient).
+        assertTrue((info.requestedPermissions ?: emptyArray()).contains(Manifest.permission.INTERNET))
         // Exported: only the system-broadcast receiver, and AndroidX's profile installer, which needs the DUMP permission.
         val exported = info.receivers!!.filter { it.exported && it.permission != "android.permission.DUMP" }.map { it.name }
         // Plus the direct-boot receiver (F-026), which handles LOCKED_BOOT_COMPLETED only.

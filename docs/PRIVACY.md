@@ -1,10 +1,12 @@
-# Privacy — Remember Me for Android 1.0.0
+# Privacy — Remember Me for Android 1.0.5
 
 *F-089. The same content is in the app: Settings › حول › الخصوصية. A unit test (`PrivacyDocTest`) checks that every
 permission in `AndroidManifest.xml` has a line here and in the app.*
 
-All your data stays on your phone. Remember Me has **no internet permission**: it sends nothing anywhere and
-receives nothing, and it collects no statistics. There are no ads and no accounts.
+All your data stays on your phone. **Remember Me connects to the internet only to check for and download updates
+from GitHub. It sends no reminder and no data about you. You can turn this off in Settings.** (1.0.5, the owner's
+decision D-081; until 1.0.4 the app had no internet permission at all.) It collects no statistics. There are no
+ads and no accounts.
 
 ## Every permission and why
 
@@ -17,11 +19,16 @@ receives nothing, and it collects no statistics. There are no ads and no account
 | `RECEIVE_BOOT_COMPLETED` | To set your reminders' alarms again after the phone restarts. |
 | `VIBRATE` | So the phone vibrates with a reminder if you want. |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | So Android can ask you to allow unrestricted battery use and reminders are not delayed. Nothing happens without your yes. |
-| `FOREGROUND_SERVICE` | To play the reminder's chosen tone in a short service (type `shortService`) that stops by itself after the ring length (2 minutes at most), or at once on «تم», «أجّل», a swipe of the notification or a volume key. Nothing keeps running in the background afterwards; no internet. |
+| `FOREGROUND_SERVICE` | To play the reminder's chosen tone in a short service (type `shortService`) that stops by itself after the ring length (2 minutes at most), or at once on «تم», «أجّل», a swipe of the notification or a volume key. Nothing keeps running in the background afterwards. |
+| `INTERNET` | Only to check for and download Remember Me's own updates from GitHub (`api.github.com` and GitHub's download hosts, HTTPS only; `res/xml/network_security_config.xml`): at most once every 7 days when the app is opened, or when you tap «تحقق من التحديثات». No reminder, no data about you, no identifier is sent; the request carries a generic `RememberMe/<version>` user agent. GitHub sees your IP address, as with any website. You can turn the automatic check off. |
+| `ACCESS_NETWORK_STATE` | To tell Wi-Fi from mobile data, so an update downloads over Wi-Fi only if you chose «Wi-Fi فقط» (on by default). |
+| `REQUEST_INSTALL_PACKAGES` | So Android's own installer asks you to install a verified update (newer, SHA-256 equal to the published `SHA256SUMS.txt`, signed with the same key). Nothing is installed without your tap. |
 
 ## What we never do
 
-- No internet: the app sends and receives nothing.
+- Nothing about you or your reminders goes online. The only connection is to GitHub, for the app's own updates.
+- «أبلغنا عن مشكلة أو اقتراح» sends nothing by itself: it opens your mail app or browser with the text you wrote, and
+  device information (app version, Android, model, language) only if you tick the box. Never a reminder.
 - No location: you choose the prayer city from a list, or type coordinates.
 - No access to your files, except the one file or folder you pick yourself (a backup, a tone, a calendar file, the
   weekly backup folder).
