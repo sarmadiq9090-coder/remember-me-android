@@ -10,7 +10,8 @@ out=dist/RememberMe-$version.apk
 mkdir -p dist
 # Refuse anything not signed with the release key.
 apksigner.bat verify "$apk" > /dev/null
-apksigner.bat verify --print-certs "$apk" | grep -q "CN=FastKiwi" || { echo "not signed with the release key"; exit 1; }
+# The release certificate of every Remember Me build since 0.1.0 (an update needs the same one).
+apksigner.bat verify --print-certs "$apk" | grep -q "SHA-256 digest: 8d3b91dcacced148d11a51fb1333a509581ed2ce04ff362f2882c7cda6ae6e26" || { echo "not signed with the release key"; exit 1; }
 cp "$apk" "$out"
 size=$(stat -c %s "$out")
 sha=$(sha256sum "$out" | cut -d' ' -f1)

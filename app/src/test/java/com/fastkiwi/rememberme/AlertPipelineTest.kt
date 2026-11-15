@@ -41,7 +41,7 @@ import java.util.TimeZone
 
 /** The 1.0.0 alert pipeline: ringing service, channels, pin, notices, undo, summary, before-unlock (F-014…F-032, F-046, F-052). */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [26, 33, 36])
+@Config(sdk = [26, 29, 31, 33, 34, 36])
 class AlertPipelineTest {
     private val app: Application = ApplicationProvider.getApplicationContext()
     private val zone = ZoneId.of("Asia/Baghdad")

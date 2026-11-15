@@ -391,7 +391,8 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbar) },
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
-            if (!searching && !selecting) {
+            // In the calendar views the banners would sit above their own header (QC G-16): the list shows them.
+            if (!searching && !selecting && !inCalendar) {
                 // Data from a newer version is kept untouched; say so before anything else (D-079 A18).
                 if (newerData) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_newer), stringResource(R.string.fix), true, onHealth)
                 // Notifications off: say plainly that nothing will show, and fix it in one tap (black-box U2).

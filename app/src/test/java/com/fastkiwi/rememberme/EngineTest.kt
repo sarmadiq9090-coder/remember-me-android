@@ -41,7 +41,7 @@ import java.util.TimeZone
  * re-arming after a reboot, and a time-zone change.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
+@Config(sdk = [26, 29, 31, 33, 34, 36])
 class EngineTest {
     private val app: Application = ApplicationProvider.getApplicationContext()
     private val zone = ZoneId.of("Asia/Baghdad")
@@ -83,6 +83,8 @@ class EngineTest {
     }
 
     @Test fun fallsBackToAnInexactAlarmWithoutThePermission() {
+        // Below Android 12 there is no exact-alarm permission to lose.
+        org.junit.Assume.assumeTrue(android.os.Build.VERSION.SDK_INT >= 31)
         ShadowAlarmManager.setCanScheduleExactAlarms(false)
         save(TaskInput(title = "later", dueAt = Instant.now().plusSeconds(3600)))
         Engine.sync(app)
