@@ -69,7 +69,7 @@ class RingService : Service() {
         if (pendingStop != 0 && pendingStop == newId) { pendingStop = 0; finish("stopped before start"); return START_NOT_STICKY }
         if (intent.getBooleanExtra(EXTRA_PLAY, true)) {
             val sources: Array<String> = intent.getStringArrayExtra(EXTRA_SOURCES)?.filterNotNull()?.toTypedArray() ?: emptyArray()
-            if (!play(sources, alarm)) fallback("play")
+            play(sources, alarm)
         }
         if (intent.getBooleanExtra(EXTRA_VIBRATE, false)) vibrate(alarm, intent.getStringExtra(EXTRA_PATTERN) ?: "normal")
         intent.getStringExtra(EXTRA_SPEAK)?.takeIf { it.isNotBlank() }?.let { speak(it, alarm, intent.getStringExtra(EXTRA_LANG) ?: "ar") }
@@ -78,28 +78,57 @@ class RingService : Service() {
         return START_NOT_STICKY
     }
 
-    /** Tries each source in order; true when one started. */
-    private fun play(sources: Array<String>, alarm: Boolean): Boolean {
+    /** Prepare timeouts, kept apart from the ring timeout; [generation] invalidates a stopped attempt. */
+    private val prepHandler = Handler(Looper.getMainLooper())
+    private var generation = 0
+    private var preparing: MediaPlayer? = null
+
+    /**
+     * Tries each source in order, prepared off the main thread (F-017): an error, or no "prepared" within
+     * [PREPARE_MS], moves on to the next source; when none plays, the notification goes on the fallback
+     * channel with the phone's own sound, so a reminder is never silent by accident.
+     */
+    private fun play(sources: Array<String>, alarm: Boolean) {
         val attrs = AudioAttributes.Builder()
             .setUsage(if (alarm) AudioAttributes.USAGE_ALARM else AudioAttributes.USAGE_NOTIFICATION_EVENT)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
-        for ((i, src) in sources.withIndex()) {
+        val gen = ++generation
+        fun attempt(i: Int) {
+            if (gen != generation) return
+            if (i >= sources.size) { fallback("play"); return }
+            val src = sources[i]
             val mp = MediaPlayer()
+            preparing = mp
+            var settled = false
+            fun next(code: String) {
+                if (settled || gen != generation) return
+                settled = true
+                AlertLog(this).add(AlertLog.Event.PLAY_FAILED, key, code = code)
+                runCatching { mp.release() }
+                if (preparing === mp) preparing = null
+                attempt(i + 1)
+            }
             try {
                 mp.setAudioAttributes(attrs)
                 if (src.startsWith("/")) mp.setDataSource(src) else mp.setDataSource(this, Uri.parse(src))
                 mp.isLooping = alarm
-                mp.prepare()
-                mp.start()
-                player = mp
-                AlertLog(this).add(if (i == 0) AlertLog.Event.PLAY_STARTED else AlertLog.Event.FALLBACK, key, code = "source$i")
-                return true
+                mp.setOnPreparedListener {
+                    if (settled || gen != generation) { runCatching { it.release() }; return@setOnPreparedListener }
+                    settled = true
+                    prepHandler.removeCallbacksAndMessages(null)
+                    preparing = null
+                    runCatching { it.start() }.onFailure { e -> settled = false; next(e.javaClass.simpleName); return@setOnPreparedListener }
+                    player = it
+                    AlertLog(this).add(if (i == 0) AlertLog.Event.PLAY_STARTED else AlertLog.Event.FALLBACK, key, code = "source$i")
+                }
+                mp.setOnErrorListener { _, what, _ -> next("error$what"); true }
+                prepHandler.postDelayed({ next("timeout") }, PREPARE_MS)
+                mp.prepareAsync()
             } catch (e: Exception) {
-                AlertLog(this).add(AlertLog.Event.PLAY_FAILED, key, code = e.javaClass.simpleName)
-                runCatching { mp.release() }
+                next(e.javaClass.simpleName)
             }
         }
-        return false
+        attempt(0)
     }
 
     private fun vibrate(alarm: Boolean, pattern: String) {
@@ -149,6 +178,10 @@ class RingService : Service() {
 
     private fun stopPlayback() {
         handler.removeCallbacksAndMessages(null)
+        generation++
+        prepHandler.removeCallbacksAndMessages(null)
+        preparing?.let { runCatching { it.release() } }
+        preparing = null
         player?.let { runCatching { it.stop() }; runCatching { it.release() } }
         player = null
         val v: Vibrator? = if (Build.VERSION.SDK_INT >= 31) getSystemService(VibratorManager::class.java)?.defaultVibrator
@@ -185,6 +218,8 @@ class RingService : Service() {
         const val EXTRA_SPEAK = "speak"
         const val EXTRA_LANG = "lang"
         const val MAX_SECONDS = 120
+        /** A tone source that is not ready in this time is skipped (F-017). */
+        const val PREPARE_MS = 3_000L
 
         /** The notification id that is ringing now, or 0. */
         @Volatile var ringingId = 0
