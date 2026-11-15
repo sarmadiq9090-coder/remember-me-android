@@ -407,7 +407,7 @@ fun HomeScreen(
                     if (selecting) selected = if (t.id in selected) selected - t.id else selected + t.id
                     else open(t)
                 },
-                onComplete = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, t.title), undo) } },
+                onComplete = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, L10n.isolate(context, t.title)), undo) } },
                 onReopen = onReopen,
                 onTrash = { t -> onTrash(t); showSnack(trashedText) { onUndoTrash(t) } },
                 onSnooze = { t -> snoozeIds = setOf(t.id) },
@@ -500,7 +500,7 @@ fun HomeScreen(
             ReminderDetail(
                 task = detailId?.let { id -> state.tasks.firstOrNull { it.id == id && it.deletedAt == null } },
                 now = now,
-                onDone = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, t.title), undo) } },
+                onDone = { t -> onComplete(t) { undo -> showSnack(res.getString(R.string.done_undo_msg, L10n.isolate(context, t.title)), undo) } },
                 onSnooze = { t -> snoozeIds = setOf(t.id) },
                 onEdit = onOpen,
                 onTrash = { t -> onTrash(t); detailId = null; showSnack(trashedText) { onUndoTrash(t) } },
@@ -577,7 +577,7 @@ fun HomeScreen(
             val ids = selected
             val lists = filters.filter { it.kind == "tag" && it.value.isNotBlank() }
             val options = Category.entries.map { "cat:" + it.code to res.getString(R.string.home_move_category, res.getString(categoryRes(it))) } +
-                lists.map { "tag:" + it.value to res.getString(R.string.home_move_list, it.name.ifBlank { it.value }) }
+                lists.map { "tag:" + it.value to res.getString(R.string.home_move_list, L10n.isolate(context, it.name.ifBlank { it.value })) }
             ChoiceDialog(
                 title = stringResource(R.string.bulk_move_title), options = options, selected = "",
                 onSelect = { code ->
@@ -682,15 +682,15 @@ fun ReminderRow(t: Task, now: Instant, section: Tab?, a: RowActions, selected: B
     val timeColor = when { overdue -> MaterialTheme.colorScheme.error; done -> muted; else -> MaterialTheme.colorScheme.onSurface }
     // The label after the time: how late, or which day, or nothing for today.
     val label = L10n.rowLabel(context, t, now, section == Tab.TODAY)
-    val doneLabel = stringResource(R.string.mark_done_named, t.title)
-    val selectLabel = stringResource(R.string.home_select_named, t.title)
+    val doneLabel = stringResource(R.string.mark_done_named, L10n.isolate(context, t.title))
+    val selectLabel = stringResource(R.string.home_select_named, L10n.isolate(context, t.title))
     val doneAction = stringResource(R.string.done)
     val snoozeAction = stringResource(R.string.snooze_title)
     val selectAction = stringResource(R.string.select)
     val snoozedWord = stringResource(R.string.state_snoozed)
     val alarmWord = stringResource(R.string.home_style_alarm)
     val summary = L10n.join(context, listOf(
-        t.title,
+        L10n.isolate(context, t.title),
         if (done) label else t.dueAt?.let { L10n.dueText(context, it, now) } ?: res.getString(R.string.no_time),
         if (overdue) label else if (isSnoozed) snoozedWord else null,
         L10n.repeatText(context, t),

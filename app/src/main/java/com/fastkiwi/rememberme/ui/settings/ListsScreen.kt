@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.AppState
 import com.fastkiwi.rememberme.core.Category
@@ -54,6 +55,7 @@ import com.fastkiwi.rememberme.core.Organize
 import com.fastkiwi.rememberme.core.SavedFilter
 import com.fastkiwi.rememberme.ui.ConfirmDialog
 import com.fastkiwi.rememberme.ui.Dimens
+import com.fastkiwi.rememberme.ui.L10n
 import com.fastkiwi.rememberme.ui.GroupItem
 import com.fastkiwi.rememberme.ui.Ms
 import com.fastkiwi.rememberme.ui.SectionHeader
@@ -172,7 +174,7 @@ fun ListsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(Modifier.weight(1f)) {
-                            CountRow(if (reorder) Ms.DragIndicator else Ms.ListIcon, filterName(f), stringResource(R.string.set_list_tag, f.value), count,
+                            CountRow(if (reorder) Ms.DragIndicator else Ms.ListIcon, filterName(f), stringResource(R.string.set_list_tag, L10n.isolate(LocalContext.current, f.value)), count,
                                 if (reorder) null else ({ onFilter(f) }))
                         }
                         if (reorder) {

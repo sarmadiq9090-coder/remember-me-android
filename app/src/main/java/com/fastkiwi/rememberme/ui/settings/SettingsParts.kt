@@ -210,7 +210,7 @@ fun SettingsSearchResults(modifier: Modifier, query: String, hits: List<Settings
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = Dimens.xl), verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
         if (query.isBlank()) return@Column
         if (hits.isEmpty()) {
-            Text(stringResource(R.string.set_no_results, query.trim()), style = MaterialTheme.typography.bodyLarge,
+            Text(stringResource(R.string.set_no_results, L10n.isolate(LocalContext.current, query.trim())), style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.fillMaxWidth().padding(Dimens.xl).semantics { liveRegion = LiveRegionMode.Polite })
             return@Column
         }

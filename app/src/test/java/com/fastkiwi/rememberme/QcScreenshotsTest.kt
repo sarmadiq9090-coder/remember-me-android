@@ -27,6 +27,22 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.semantics.SemanticsActions
+import com.fastkiwi.rememberme.core.Organize
+import com.fastkiwi.rememberme.core.withSteps
+import com.fastkiwi.rememberme.core.steps
+import com.fastkiwi.rememberme.data.AlertLog
+import com.fastkiwi.rememberme.data.Backup
+import com.fastkiwi.rememberme.data.History
+import com.fastkiwi.rememberme.ui.settings.SettingsFlows
+import java.io.ByteArrayOutputStream
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,8 +59,8 @@ import java.time.ZoneId
 import java.util.TimeZone
 
 /**
- * The QC pass (DESIGN-SPEC, STANDARDS.md): every screen in Arabic and English, light and dark, and Arabic
- * at 200 % text, written to screenshots/qc/. Sample data only. Each tour also checks that the screen's
+ * The QC pass (DESIGN-SPEC, STANDARDS.md): every screen, sheet and dialog state in Arabic and English, light and
+ * dark, at 200 % text (Arabic light and dark, English), and the tablet layout, written to screenshots/qc/. Sample data only. Each tour also checks that the screen's
  * primary action is on screen.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -68,6 +84,8 @@ class QcScreenshotsTest {
         ShadowAlarmManager.setCanScheduleExactAlarms(false)
         Repo.prefs(app).onboarded = true
         Repo.prefs(app).notifAsked = true
+        History.file(app).delete()
+        AlertLog(app).clear()
     }
 
     @After fun settle() {
@@ -95,9 +113,43 @@ class QcScreenshotsTest {
             val (s2, done) = Tasks.save(s, TaskInput(title = t("حجز موعد الطبيب", "Book the doctor"), dueAt = now.minusSeconds(26 * 3600)), now.minusSeconds(30 * 3600), zone)
             s = Tasks.complete(s2, done.id, now.minusSeconds(25 * 3600), zone)!!.first
             val (s3, gone) = Tasks.save(s, TaskInput(title = t("شراء بطاقة شحن", "Buy a top-up card")), now, zone)
-            Tasks.trash(s3, gone.id, now.minusSeconds(3600))
+            s = Tasks.trash(s3, gone.id, now.minusSeconds(3600))
+            // A reminder with steps (G-05: the steps section of the editor).
+            val (s4, trip) = Tasks.save(s, TaskInput(title = t("السفر إلى أربيل", "Trip to Erbil"), dueAt = on(5, 7)), now.minusSeconds(7200), zone)
+            s4.copy(tasks = s4.tasks.map { if (it.id == trip.id) it.withSteps(listOf(
+                Organize.Step("a", t("جواز السفر", "Passport"), true), Organize.Step("b", t("تذاكر الطيران", "Plane tickets"), false),
+                Organize.Step("c", t("شاحن الهاتف", "Phone charger"), false))) else it })
         }
+        // G-05: the change history and the alert log with events (no reminder content in the log).
+        val s0 = Repo.state(app)
+        val rentId = s0.tasks.first { it.repeat == Repeat.MONTHLY }.id
+        Repo.prefs(app).historyOn = true
+        History.observe(app, s0, s0.copy(tasks = s0.tasks.map {
+            if (it.id == rentId) it.copy(dueAt = it.dueAt!!.plusSeconds(3600), updatedAt = now.minusSeconds(600)) else it }), now.minusSeconds(600))
+        val log = AlertLog(app)
+        val key = log.keyOf(rentId, "2026-11-15T09:00:00Z")
+        for (e in listOf(AlertLog.Event.FIRED, AlertLog.Event.POSTED, AlertLog.Event.FULL_SCREEN, AlertLog.Event.PLAY_STARTED, AlertLog.Event.SNOOZE))
+            log.add(e, key, style = "normal")
+        log.add(AlertLog.Event.LATE, log.keyOf("x", "y"), lateMs = 22 * 60_000L, style = "alarm")
     }
+
+    /** Runs the TalkBack custom action [label] of the first row whose description contains [title]. */
+    private fun rowAction(title: String, label: String) {
+        val node = rule.onAllNodes(hasContentDescription(title, substring = true) and SemanticsMatcher.keyIsDefined(SemanticsActions.CustomActions))
+            .fetchSemanticsNodes().first()
+        rule.runOnIdle { node.config[SemanticsActions.CustomActions].first { it.label == label }.action() }
+        rule.waitForIdle()
+    }
+
+    /** A sheet (its own window) once it has opened and settled. */
+    private fun sheetShot(name: String) {
+        rule.waitForIdle()
+        rule.mainClock.advanceTimeBy(800)
+        rule.waitForIdle()
+        shotRoots(name)
+    }
+
+    private fun click(text: String) = rule.onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
 
     private fun shot(name: String) {
         rule.waitForIdle()
@@ -139,11 +191,35 @@ class QcScreenshotsTest {
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             rule.onNodeWithText(if (en) "New reminder" else "تذكير جديد", useUnmergedTree = true).assertIsDisplayed()
             shot("$prefix-01-home")
+            // G-05: the snooze sheet from a row (its own window).
+            rowAction(if (en) "Call the electrician" else "الاتصال بالكهربائي", if (en) "Snooze" else "أجّل")
+            sheetShot("$prefix-22-snooze-sheet")
             go(Screen.Edit(null)); shot("$prefix-02-new")
             rule.onNodeWithText(if (en) "Save" else "حفظ").assertIsDisplayed()
             val rent = Repo.state(app).tasks.first { it.repeat == Repeat.MONTHLY }
             go(Screen.Edit(rent.id)); shot("$prefix-03-edit")
+            // G-05: the editor's options open, the tone and alert-type sheets, the steps, the prayer-time sheet.
+            click(if (en) "Alert options" else "خيارات التنبيه"); shot("$prefix-24-edit-options")
+            click(if (en) "Tone" else "النغمة"); sheetShot("$prefix-25-tone-sheet")
+            go(Screen.Settings); go(Screen.Edit(rent.id))
+            click(if (en) "Alert options" else "خيارات التنبيه")
+            click(if (en) "Alert type" else "نوع التنبيه"); sheetShot("$prefix-26-alert-style-sheet")
+            go(Screen.Settings)
+            val trip = Repo.state(app).tasks.first { it.steps.isNotEmpty() }
+            go(Screen.Edit(trip.id))
+            rule.onNodeWithText(if (en) "Add a step" else "أضف خطوة").performScrollTo(); shot("$prefix-27-steps")
+            Repo.prefs(app).prayerCity = "Baghdad"; Repo.prefs(app).prayerMethod = "UMM_AL_QURA"
+            go(Screen.Settings); go(Screen.Edit(null))
+            rule.onNode(hasContentDescription(if (en) "Time, " else "الوقت، ", substring = true) and hasClickAction()).performClick()
+            rule.waitForIdle(); rule.onNodeWithText(if (en) "By prayer" else "حسب الصلاة").performClick()
+            sheetShot("$prefix-28-prayer-sheet")
+            Repo.prefs(app).prayerCity = ""; Repo.prefs(app).prayerMethod = ""
             go(Screen.Settings); shot("$prefix-05-settings")
+            // G-05: Settings search with results (a focused field never idles: drawn directly).
+            rule.onNodeWithContentDescription(if (en) "Search" else "بحث").performClick()
+            rule.onNode(hasSetTextAction()).performTextInput(if (en) "vibration" else "الاهتزاز")
+            rule.mainClock.advanceTimeBy(500); shotRoots("$prefix-29-settings-search")
+            go(Screen.Trash); go(Screen.Settings)
             go(Screen.Background); shot("$prefix-06-background")
             go(Screen.Trash); shot("$prefix-07-trash")
             go(Screen.About); shot("$prefix-08-about")
@@ -157,6 +233,11 @@ class QcScreenshotsTest {
             Repo.prefs(app).historyOn = true
             go(Screen.History(rent.id)); shot("$prefix-15-history")
             go(Screen.Home)
+            // G-05: bulk selection (the TalkBack «تحديد» action is the long press).
+            rowAction(if (en) "Blood pressure pill" else "دواء الضغط", if (en) "Select" else "تحديد")
+            rowAction(if (en) "Call the electrician" else "الاتصال بالكهربائي", if (en) "Select" else "تحديد")
+            shot("$prefix-21-bulk-selection")
+            go(Screen.Settings); go(Screen.Home)
             @Suppress("UNCHECKED_CAST")
             (scenario as ActivityScenario<MainActivity>).onActivity { it.todayRequest = System.currentTimeMillis() }
             rule.waitForIdle(); shot("$prefix-16-day")
@@ -173,6 +254,31 @@ class QcScreenshotsTest {
             rule.mainClock.advanceTimeBy(300)
             shotRoots("$prefix-20-quickadd")
         }
+        // G-05: Quick Add asking which time is meant.
+        ActivityScenario.launch<MainActivity>(com.fastkiwi.rememberme.ui.quick.QuickEntry.quickAddIntent(app,
+            if (en) "call Ahmed Thursday 9" else "اتصل بأحمد الخميس 9")).also { scenario = it }.use {
+            rule.mainClock.advanceTimeBy(300)
+            shotRoots("$prefix-30-quickadd-ask")
+        }
+        // G-05: the restore summary (a backup with one reminder over the sample data).
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            val now = Instant.now()
+            val other = Tasks.save(AppState(), TaskInput(title = if (en) "From the copy" else "من النسخة", dueAt = now.plusSeconds(600)), now, zone).first
+            val bytes = ByteArrayOutputStream().also { Backup.export(other, it, now) }.toByteArray()
+            sc.onActivity { it.push(Screen.Settings); it.flows.readRestore(bytes) }
+            var ready = false
+            rule.waitUntil(10_000) { sc.onActivity { ready = it.flows.dialog is SettingsFlows.Dialog.Restore }; ready }
+            rule.waitForIdle(); shotRoots("$prefix-31-restore-summary")
+        }
+        // G-05: «ما الجديد» after an update from before 1.0.0 (a pre-update copy from versionCode 2).
+        val safety = File(Repo.store(app).file.parentFile, "safety").apply { mkdirs() }
+        val copy = File(safety, "before-update-v2-20261115-070000-000.json").apply { writeText("{}") }
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use { sc ->
+            var shown = false
+            rule.waitUntil(10_000) { sc.onActivity { shown = it.flows.dialog == SettingsFlows.Dialog.WhatsNew }; shown }
+            rule.waitForIdle(); shotRoots("$prefix-32-whats-new")
+        }
+        copy.delete()
         val due = Tasks.due(Repo.state(app), Instant.now()).first()
         val intent = Intent(app, AlertActivity::class.java).putExtra(AlertActivity.EXTRA_ID, due.id)
         ActivityScenario.launch<AlertActivity>(intent).also { scenario = it }.use {
@@ -196,4 +302,31 @@ class QcScreenshotsTest {
         RuntimeEnvironment.setFontScale(2f)
         try { tour("ar-200", false) } finally { RuntimeEnvironment.setFontScale(1f) }
     }
+
+    // G-05: 200 % in English and in Arabic dark too.
+    @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi")
+    fun englishLargeText() {
+        RuntimeEnvironment.setFontScale(2f)
+        try { tour("en-200", true) } finally { RuntimeEnvironment.setFontScale(1f) }
+    }
+
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi")
+    fun arabicDarkLargeText() {
+        RuntimeEnvironment.setFontScale(2f)
+        try { tour("ar-dark-200", false) } finally { RuntimeEnvironment.setFontScale(1f) }
+    }
+
+    /** G-05: the tablet layout (840 dp and wider): the list and the chosen reminder's details side by side. */
+    private fun tablet(prefix: String, en: Boolean) {
+        if (en) Repo.prefs(app).language = "en"
+        sample(en)
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
+            shot("$prefix-01-list")
+            rule.onAllNodes(hasContentDescription(if (en) "Team meeting" else "اجتماع الفريق", substring = true) and hasClickAction())[0].performClick()
+            shot("$prefix-02-two-pane")
+        }
+    }
+
+    @Test @Config(qualifiers = "ar-w1280dp-h800dp-notnight-hdpi") fun arabicTablet() = tablet("ar-tablet", false)
+    @Test @Config(qualifiers = "en-w1280dp-h800dp-night-hdpi") fun englishTabletDark() = tablet("en-tablet-dark", true)
 }

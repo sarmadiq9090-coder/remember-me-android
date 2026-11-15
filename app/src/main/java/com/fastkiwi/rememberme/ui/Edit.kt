@@ -254,7 +254,9 @@ fun EditScreen(
             steps = steps.filter { it.text.isNotBlank() }, autoComplete = cfg.autoCompleteSteps,
         )
     }
-    fun save() { error = onSave(input()) }
+    val haptic = rememberConfirmHaptic()
+    // F-104: the confirm haptic once the reminder is saved (not when the save is refused).
+    fun save() { error = onSave(input()); if (error == null) haptic() }
     fun close() { if (changed) dialog = "discard" else onBack() }
     BackHandler(enabled = changed) { dialog = "discard" }
     // A new day: a prayer time is computed again for it.

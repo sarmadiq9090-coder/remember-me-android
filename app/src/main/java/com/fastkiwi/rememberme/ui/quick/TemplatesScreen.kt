@@ -102,7 +102,7 @@ fun TemplatesScreen(
     renaming?.let { t -> RenameDialog(t.name.orEmpty(), onSave = { onRename(t, it) }, onDismiss = { renaming = null }) }
     deleting?.let { t ->
         ConfirmDialog(
-            title = stringResource(R.string.tpl_delete_title, t.name.orEmpty()), text = stringResource(R.string.tpl_delete_body),
+            title = stringResource(R.string.tpl_delete_title, L10n.isolate(LocalContext.current, t.name.orEmpty())), text = stringResource(R.string.tpl_delete_body),
             confirm = stringResource(R.string.delete), onConfirm = { onDelete(t) }, onDismiss = { deleting = null }, destructive = true,
         )
     }
@@ -116,7 +116,7 @@ private fun TemplateRow(t: Template, index: Int, count: Int, onClick: () -> Unit
     var menu by remember { mutableStateOf(false) }
     GroupItem(index, count) {
         Box {
-            val actions = stringResource(R.string.tpl_actions, name)
+            val actions = stringResource(R.string.tpl_actions, L10n.isolate(context, name))
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 72.dp)
                     .combinedClickable(

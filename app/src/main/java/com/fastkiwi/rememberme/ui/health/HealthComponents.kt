@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -159,12 +160,22 @@ fun KeyValueRow(text: String, index: Int, count: Int) {
 @Composable
 fun NumberedStep(n: Int, text: String) {
     Row(Modifier.fillMaxWidth().heightIn(min = Dimens.touch).padding(horizontal = Dimens.xl, vertical = Dimens.xs), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(28.dp).background(MaterialTheme.colorScheme.secondaryContainer, CircleShape), contentAlignment = Alignment.Center) {
-            Text(n.toString(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center)
+        // G-03: the disc is at least 28 dp and grows with the number (a circle, never clipping it at 200 %).
+        Box(Modifier.testTag("numbered-step-disc").background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).squareAtLeast(28.dp),
+            contentAlignment = Alignment.Center) {
+            Text(n.toString(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center,
+                maxLines = 1, softWrap = false, modifier = Modifier.padding(horizontal = 4.dp))
         }
         Spacer(Modifier.width(Dimens.l))
         Text(text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
     }
+}
+
+/** A square of the content's larger side, at least [min]; the content is centred. */
+private fun Modifier.squareAtLeast(min: androidx.compose.ui.unit.Dp) = this.layout { m, c ->
+    val p = m.measure(c.copy(minWidth = 0, minHeight = 0))
+    val d = maxOf(p.width, p.height, min.roundToPx())
+    layout(d, d) { p.place((d - p.width) / 2, (d - p.height) / 2) }
 }
 
 /** A test tag for a Health row, so tests can check its source and its one action. */

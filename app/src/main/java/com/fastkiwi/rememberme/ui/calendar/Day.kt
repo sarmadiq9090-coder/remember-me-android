@@ -29,7 +29,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -82,10 +84,13 @@ internal fun DayTimeline(
         // The reminders without a time stay in view above the scrolling timeline.
         if (untimed.isNotEmpty()) UntimedStrip(untimed, onOpen)
         Column(Modifier.fillMaxSize().verticalScroll(scroll)) {
+            // G-03: the hour column is as wide as its widest label, so «12 ص» never wraps or loses «ص» at 200 %.
+            val labelWidth = hourLabelWidth(fmt)
+            val today = date == fmt.today
             Box(Modifier.fillMaxWidth().padding(bottom = Dimens.fabClearance)) {
-                HourGrid(fmt) { onNewOnDay(date) }
-                Blocks(timed, fmt, onOpen)
-                if (date == fmt.today) NowLine(fmt)
+                HourGrid(fmt, labelWidth) { onNewOnDay(date) }
+                Blocks(timed, fmt, onOpen, labelWidth, today)
+                if (today) NowLine(fmt, labelWidth)
             }
         }
     }
@@ -111,9 +116,19 @@ private fun UntimedStrip(items: List<Occurrence>, onOpen: (Task) -> Unit) {
     }
 }
 
+/** The hour column: [Dimens.hourLabel], or wider when the widest hour label needs it (large text). */
+@Composable
+private fun hourLabelWidth(fmt: CalFormat): Dp {
+    val measurer = rememberTextMeasurer()
+    val style = MaterialTheme.typography.labelMedium
+    val density = LocalDensity.current
+    val widest = (0..23).maxOf { measurer.measure(fmt.hour(it), style, softWrap = false, maxLines = 1).size.width }
+    return maxOf(Dimens.hourLabel, with(density) { widest.toDp() } + Dimens.xs * 2 + 1.dp)
+}
+
 /** 24 hour rows: the label column at the start, an outlineVariant line; a tap adds a reminder on this day. */
 @Composable
-private fun HourGrid(fmt: CalFormat, onNew: () -> Unit) {
+private fun HourGrid(fmt: CalFormat, labelWidth: Dp, onNew: () -> Unit) {
     val newLabel = stringResource(R.string.new_reminder)
     Column(Modifier.fillMaxWidth()) {
         for (h in 0..23) {
@@ -122,7 +137,8 @@ private fun HourGrid(fmt: CalFormat, onNew: () -> Unit) {
             ) {
                 Text(
                     fmt.hour(h), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.width(Dimens.hourLabel).padding(horizontal = Dimens.xs).offset(y = (-8).dp),
+                    maxLines = 1, softWrap = false,
+                    modifier = Modifier.width(labelWidth).padding(horizontal = Dimens.xs).offset(y = (-8).dp),
                 )
                 HorizontalDivider(Modifier.weight(1f).padding(end = Dimens.l), color = MaterialTheme.colorScheme.outlineVariant)
             }
@@ -130,26 +146,53 @@ private fun HourGrid(fmt: CalFormat, onNew: () -> Unit) {
     }
 }
 
-/** Blocks at their time (1 dp per minute); a block that would overlap the one before moves just below it. */
+/**
+ * Blocks at their time (1 dp per minute); a block that would overlap the one before moves just below it. On
+ * today the «الآن 4:20 م» label is laid out with them: just above the now-line when there is room, else just
+ * below it, and the blocks after it move down, so the label never covers a title (G-03, large text).
+ */
 @Composable
-private fun Blocks(items: List<Occurrence>, fmt: CalFormat, onOpen: (Task) -> Unit) {
-    val density = LocalDensity.current
+private fun Blocks(items: List<Occurrence>, fmt: CalFormat, onOpen: (Task) -> Unit, labelWidth: Dp, showNow: Boolean) {
     val tops = items.map { o -> o.at!!.atZone(fmt.zone).toLocalTime().let { it.hour * 60 + it.minute }.dp }
+    val nowAt = fmt.now.atZone(fmt.zone).toLocalTime().let { it.hour * 60 + it.minute }.dp
     Layout(
-        content = { for (o in items) Block(o, fmt, onOpen) },
-        modifier = Modifier.fillMaxWidth().padding(start = Dimens.hourLabel, end = Dimens.l),
+        content = {
+            for (o in items) Block(o, fmt, onOpen)
+            if (showNow) Text(
+                stringResource(R.string.cal_now_at, fmt.time(fmt.now)),
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth().testTag("cal-now-label"),
+            )
+        },
+        modifier = Modifier.fillMaxWidth().padding(start = labelWidth, end = Dimens.l),
     ) { measurables, constraints ->
         val loose = constraints.copy(minHeight = 0)
-        val placeables = measurables.map { it.measure(loose) }
-        val gap = with(density) { 2.dp.roundToPx() }
+        val all = measurables.map { it.measure(loose) }
+        val label = if (showNow) all.last() else null
+        val placeables = if (showNow) all.dropLast(1) else all
+        val gap = 2.dp.roundToPx()
+        val nowY = nowAt.roundToPx()
         var bottom = Int.MIN_VALUE
+        var labelY: Int? = null
+        fun placeLabel(p: Placeable): Int {
+            val above = nowY - gap - p.height
+            val y = if (above >= bottom + gap) above else maxOf(nowY + 8.dp.roundToPx(), bottom + gap)
+            bottom = maxOf(bottom, y + p.height)
+            return y
+        }
         val ys = placeables.mapIndexed { i, p ->
-            val y = maxOf(with(density) { tops[i].roundToPx() }, bottom + gap)
+            val top = tops[i].roundToPx()
+            if (label != null && labelY == null && top >= nowY) labelY = placeLabel(label)
+            val y = maxOf(top, bottom + gap)
             bottom = y + p.height
             y
         }
-        val height = maxOf(constraints.minHeight, with(density) { (Dimens.hourHeight * 24).roundToPx() }, if (placeables.isEmpty()) 0 else bottom)
-        layout(constraints.maxWidth, height) { placeables.forEachIndexed { i, p -> p.place(0, ys[i]) } }
+        if (label != null && labelY == null) labelY = placeLabel(label)
+        val height = maxOf(constraints.minHeight, (Dimens.hourHeight * 24).roundToPx(), if (all.isEmpty()) 0 else bottom)
+        layout(constraints.maxWidth, height) {
+            placeables.forEachIndexed { i, p -> p.place(0, ys[i]) }
+            label?.place(0, labelY ?: 0)
+        }
     }
 }
 
@@ -162,36 +205,34 @@ private fun Block(o: Occurrence, fmt: CalFormat, onOpen: (Task) -> Unit) {
         onClick = { onOpen(o.task) }, color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.touch),
     ) {
-        Row(
-            Modifier.padding(horizontal = Dimens.m, vertical = Dimens.xs).semantics(mergeDescendants = true) { },
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s),
-        ) {
-            if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(18.dp))
-            else if (o.snoozed) Icon(Ms.Snooze, null, tint = muted, modifier = Modifier.size(18.dp))
-            Text(fmt.timeText(o.at!!), style = MaterialTheme.typography.bodyLarge, color = if (overdue) error else MaterialTheme.colorScheme.onSurface)
-            Text(o.task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
-            else if (o.snoozed) Text(stringResource(R.string.cal_snoozed), style = MaterialTheme.typography.bodySmall, color = muted)
+        // G-03: at large text the title gets its own line under the time, so it is not cut to a few letters.
+        val big = LocalDensity.current.fontScale >= 1.5f
+        val title: @Composable (Modifier) -> Unit = { m ->
+            Text(o.task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = m)
+        }
+        Column(Modifier.padding(horizontal = Dimens.m, vertical = Dimens.xs).semantics(mergeDescendants = true) { }) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
+                if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(18.dp))
+                else if (o.snoozed) Icon(Ms.Snooze, null, tint = muted, modifier = Modifier.size(18.dp))
+                Text(fmt.timeText(o.at!!), style = MaterialTheme.typography.bodyLarge, color = if (overdue) error else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1, softWrap = false)
+                if (!big) title(Modifier.weight(1f))
+                if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
+                else if (o.snoozed) Text(stringResource(R.string.cal_snoozed), style = MaterialTheme.typography.bodySmall, color = muted)
+            }
+            if (big) title(Modifier)
         }
     }
 }
 
-/** The now-line in primary with «الآن 4:20 م» just above its end (the label grows upwards with large text). */
+/** The now-line in primary (its «الآن 4:20 م» label is laid out with the blocks, see [Blocks]). */
 @Composable
-private fun NowLine(fmt: CalFormat) {
+private fun NowLine(fmt: CalFormat, labelWidth: Dp) {
     val local = fmt.now.atZone(fmt.zone).toLocalTime()
     val y: Dp = (local.hour * 60 + local.minute).dp
     val primary = MaterialTheme.colorScheme.primary
-    Text(
-        stringResource(R.string.cal_now_at, fmt.time(fmt.now)),
-        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = primary, textAlign = TextAlign.End,
-        modifier = Modifier.fillMaxWidth().padding(start = Dimens.hourLabel, end = Dimens.l).layout { m, c ->
-            val p = m.measure(c)
-            layout(p.width, 0) { p.place(0, (y - 2.dp).roundToPx() - p.height) }
-        },
-    )
     Row(
-        Modifier.fillMaxWidth().offset(y = y - 6.dp).padding(start = Dimens.hourLabel - 6.dp, end = Dimens.l),
+        Modifier.fillMaxWidth().offset(y = y - 6.dp).padding(start = labelWidth - 6.dp, end = Dimens.l),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(12.dp).background(primary, CircleShape))

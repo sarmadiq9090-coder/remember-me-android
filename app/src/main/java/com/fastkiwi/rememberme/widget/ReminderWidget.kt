@@ -172,10 +172,10 @@ class ReminderWidget : AppWidgetProvider() {
             r.setTextColor(R.id.w_time, c.getColor(if (row.late) R.color.widget_error else R.color.widget_on_surface))
             r.setTextViewText(R.id.w_text, t.title)
             r.setViewVisibility(R.id.w_warn, if (row.late) View.VISIBLE else View.GONE)
-            r.setContentDescription(R.id.w_row, L10n.join(c, listOf(t.title, L10n.dueText(c, due, now, zone), label.takeIf { row.late })))
+            r.setContentDescription(R.id.w_row, L10n.join(c, listOf(L10n.isolate(c, t.title), L10n.dueText(c, due, now, zone), label.takeIf { row.late })))
             if (row.canComplete) {
                 r.setViewVisibility(R.id.w_done, View.VISIBLE)
-                r.setContentDescription(R.id.w_done, c.getString(R.string.widget_done_cd, t.title))
+                r.setContentDescription(R.id.w_done, c.getString(R.string.widget_done_cd, L10n.isolate(c, t.title)))
                 val tap = Intent(context, ReminderWidget::class.java).setAction(DONE)
                     .setData(("rememberme://widget/done/" + Uri.encode(t.id) + "/" + due.toEpochMilli()).toUri())
                     .putExtra(EXTRA_ID, t.id).putExtra(EXTRA_DUE, Codec.iso(due))
@@ -189,7 +189,7 @@ class ReminderWidget : AppWidgetProvider() {
 
         private fun doneRow(context: Context, c: Context, recent: Recent, flags: Int): RemoteViews {
             val r = RemoteViews(context.packageName, R.layout.widget_row_done)
-            r.setTextViewText(R.id.w_text, c.getString(R.string.widget_done_state, recent.title))
+            r.setTextViewText(R.id.w_text, c.getString(R.string.widget_done_state, L10n.isolate(c, recent.title)))
             r.setTextViewText(R.id.w_undo, c.getString(R.string.undo))
             val tap = Intent(context, ReminderWidget::class.java).setAction(UNDO)
                 .setData(("rememberme://widget/undo/" + Uri.encode(recent.id)).toUri()).putExtra(EXTRA_ID, recent.id)
