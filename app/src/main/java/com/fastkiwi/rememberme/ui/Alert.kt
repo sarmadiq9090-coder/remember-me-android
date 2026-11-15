@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -198,7 +197,7 @@ private fun SnoozeGrid(presets: List<DockChoice>, onPreset: (Int) -> Unit, onPic
 /**
  * The reminder screen (DESIGN-SPEC §5.8): the hero (style disc and tag, the time in displayLarge, on time
  * or late, «وصل متأخرًا …» when the alert itself came late (F-025), the title, repeat and priority, the note,
- * the steps) scrolls; the dock never does. At font scale ≥ 1.5 the title moves to the top of the hero, so it is
+ * the steps) scrolls; the dock never does. At font scale ≥ 1.5 the title and the late line lead the hero and the snooze grid moves into it, so they are
  * readable without scrolling however tall the dock is. Pointer taps are ignored for [guardMs] after a reminder appears.
  * It stays until every due reminder is dealt with. [hidden]: lock-screen privacy, the title is not shown.
  */
@@ -244,14 +243,28 @@ fun AlertScreen(
     val hint = if (task.snoozeCount >= 3) stringResource(R.string.snooze_hint3) else null
     val haptic = rememberConfirmHaptic()
     Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }.then(rememberTapGuard(task.id, guardMs))) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             val bigText = LocalDensity.current.fontScale >= 1.5f
-            // On a short window at large text the grid moves into the hero, so «تم» always fits and the hero
-            // keeps room for the title (black-box U1-2: at 200 % the title was cut to 7 dp under the dock).
-            val gridInDock = !(bigText && maxHeight < 800.dp)
+            // At large text the grid moves into the hero (QC G-04): «تم» and «أجّل» stay in the dock, and the hero keeps
+            // room for the title and the late line (black-box U1-2 and its re-test: at 200 % the title was cut under the
+            // dock, then the late line was pushed off-screen on a 915 dp phone).
+            val gridInDock = !bigText
+            // On time, or how late (with the warning icon: the time's red is never the only sign).
+            val lateLine: @Composable () -> Unit = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (late) Icon(Ms.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp).padding(end = Dimens.xs))
+                    Text(
+                        if (late) L10n.lateLine(context, due, now) else stringResource(R.string.due_now),
+                        style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
+                        color = if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             val titleText: @Composable () -> Unit = {
                 Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
                     modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite })
+                // At large text the late line follows the title, so both are read without scrolling (black-box re-test).
+                if (bigText) lateLine()
                 if (ringing) Text(stringResource(R.string.volume_silence_hint), style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
             }
@@ -283,14 +296,7 @@ fun AlertScreen(
                     }
                     if (alarm) StateTag(TagKind.ALARM, stringResource(R.string.home_style_alarm), emphasis = true)
                     TimeText(due, MaterialTheme.typography.displayLarge, if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, ampmSize = 28)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (late) Icon(Ms.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp).padding(end = Dimens.xs))
-                        Text(
-                            if (late) L10n.lateLine(context, due, now) else stringResource(R.string.due_now),
-                            style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
-                            color = if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    if (!bigText) lateLine()
                     // F-025: the alert itself arrived more than 5 minutes after its time.
                     if (arrivedLateMs != null && arrivedLateMs >= com.fastkiwi.rememberme.alarm.Notifier.LATE_NOTE_MS) {
                         val text = L10n.join(context, listOf(

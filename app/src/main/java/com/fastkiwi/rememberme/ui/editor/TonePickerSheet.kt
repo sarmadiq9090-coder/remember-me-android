@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -179,10 +180,22 @@ fun TonePickerSheet(
         shape = SheetShape, containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         // The tones scroll; «إلغاء» · «تم» stay pinned under them (black-box U2-5: at 200 % they were off-screen).
+        val stacked = LocalDensity.current.fontScale >= 1.5f
+        // The honest note on what the phone does with the sound. At large text it comes first, under the title, so
+        // it is read without scrolling (black-box re-test: at 200 % it sat under the pinned buttons, 1 dp tall).
+        val note: @Composable () -> Unit = {
+            Row(Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.m).testTag("tone-note"), verticalAlignment = Alignment.Top) {
+                Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(Dimens.s))
+                Text(stringResource(if (style == AlertPolicy.Style.ALARM) R.string.tone_note_alarm else R.string.tone_note),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+            }
+        }
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = Dimens.l)) {
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
                 Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = Dimens.xl).semantics { heading() })
                 subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.xs)) }
+                if (stacked) note()
                 Spacer(Modifier.size(Dimens.s))
                 Column(Modifier.selectableGroup()) {
                     ToneRow(Ms.MusicNote, stringResource(R.string.tone_default), defaultLabel ?: defaultTone?.let { toneLabel(it) } ?: stringResource(R.string.tone_phone_default),
@@ -212,14 +225,8 @@ fun TonePickerSheet(
                         playing == "file", file?.let { f -> { play("file", f) } }, error = fileError)
                     ToneRow(Ms.Vibration, stringResource(R.string.tone_silent), null, selected?.kind == "silent", { preview.stop(); playing = null; selected = ToneRef.SILENT }, false, null)
                 }
-                Row(Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.m), verticalAlignment = Alignment.Top) {
-                    Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(Dimens.s))
-                    Text(stringResource(if (style == AlertPolicy.Style.ALARM) R.string.tone_note_alarm else R.string.tone_note),
-                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                if (!stacked) note()
             }
-            val stacked = LocalDensity.current.fontScale >= 1.5f
             Column(Modifier.padding(horizontal = Dimens.l)) {
                 ButtonPair(
                     stacked,

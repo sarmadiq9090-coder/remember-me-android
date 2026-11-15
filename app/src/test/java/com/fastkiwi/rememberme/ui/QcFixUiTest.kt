@@ -201,6 +201,8 @@ class QcFixUiTest {
         for (title in listOf("دواء الضغط", "اجتماع الفريق")) {
             val block = rule.onNode(hasText(title, substring = true)).fetchSemanticsNode().boundsInRoot
             assertFalse("now label $label overlaps «$title» $block", label.overlaps(block))
+            val l = layoutOf(title)
+            assertFalse("«$title» whole in its block at 200 %", l.isLineEllipsized(l.lineCount - 1))
         }
     }
 
@@ -317,5 +319,64 @@ class QcFixUiTest {
     @Test fun g07_theManifestOptsIntoPredictiveBack() {
         val manifest = File("src/main/AndroidManifest.xml").readText()
         assertTrue(Regex("<application[^>]*android:enableOnBackInvokedCallback=\"true\"").containsMatchIn(manifest))
+    }
+
+    // ---- Black-box re-test (BLACKBOX-REPORT.md §5): three large-text items ----
+
+    /** The visible (clipped) bounds of the first node with [text], in the unmerged tree. */
+    private fun seen(text: String, substring: Boolean = false): Rect =
+        rule.onAllNodes(hasText(text, substring = substring), useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
+
+    @Test fun bb_atDoubleTextTheLateLineIsReadWithTheTitle() {
+        val t = Task(
+            id = "t1", title = "اتصل بأمي", body = "", dueAt = now.minusSeconds(90), scheduleAt = now.minusSeconds(90),
+            repeat = com.fastkiwi.rememberme.core.Repeat.DAILY, priority = com.fastkiwi.rememberme.core.Priority.HIGH, snoozeCount = 3,
+            createdAt = now.minusSeconds(7200), updatedAt = now.minusSeconds(7200),
+        )
+        show(2f) {
+            AlertScreen(task = t, position = 1, count = 2, presets = SnoozePreset.DEFAULTS, now = now,
+                onDone = {}, onSkip = {}, onSnooze = {}, onEdit = {}, onLater = {}, ringing = true, guardMs = 0)
+        }
+        val title = seen("اتصل بأمي")
+        val late = rule.onNodeWithText("متأخر", substring = true, useUnmergedTree = true)
+        val lateBox = late.fetchSemanticsNode().boundsInRoot
+        val lateFull = layoutOf(late.fetchSemanticsNode().config[SemanticsProperties.Text].first().text)
+        val dockTop = seen("أجّلته 3 مرات. اختر وقتًا أنسب؟").top
+        assertTrue("late line $lateBox under the title $title", lateBox.top >= title.bottom - 1)
+        assertTrue("late line $lateBox wholly above the dock ($dockTop)", lateBox.bottom <= dockTop + 1)
+        assertEquals("late line not clipped", lateFull.size.height.toFloat(), lateBox.height, 2f)
+    }
+
+    @Test fun bb_atDoubleTextTheToneNoteIsReadableAboveThePinnedButtons() {
+        show(2f) {
+            com.fastkiwi.rememberme.ui.editor.TonePickerSheet(current = null, style = AlertPolicy.Style.ALARM, onPick = {}, onDismiss = {})
+        }
+        rule.waitForIdle()
+        val note = rule.onNodeWithTag("tone-note", useUnmergedTree = true).fetchSemanticsNode()
+        val done = rule.onNode(hasText("تم") and hasClickAction()).fetchSemanticsNode().boundsInRoot
+        val shown = note.boundsInRoot
+        assertTrue("the note $shown is not squeezed (${note.size})", shown.height >= note.size.height - 2)
+        assertTrue("the note $shown is above «تم» $done", shown.bottom <= done.top + 1)
+    }
+
+    @Test fun bb_atDoubleTextTheAlertTestQuestionComesIntoViewAndIsAnnounced() {
+        val t0 = now.toEpochMilli() - 60_000
+        val fired = com.fastkiwi.rememberme.alarm.TestAlarm.Record(startedAt = t0, plannedAt = t0 + 10_000, api = "CLOCK", firedAt = t0 + 11_000,
+            posted = true, fullScreenAllowed = false, quiet = AlertPolicy.Quiet.RINGER_SILENT.name, vibrate = false, playback = null)
+        val ready = Health(notifications = true, channel = true, exact = true, fullScreen = true, battery = true, dnd = false)
+        val results = com.fastkiwi.rememberme.ui.health.TestResults.of(fired, ready, now.toEpochMilli())
+        show(2f) {
+            com.fastkiwi.rememberme.ui.health.AlarmTestScreen(fired, results, now.toEpochMilli(), onStart = { _, _ -> }, onAnswer = { _, _ -> },
+                onFix = {}, onCancel = {}, onDone = {}, onBack = {})
+        }
+        rule.mainClock.advanceTimeBy(500)
+        rule.waitForIdle()
+        val q = rule.onNodeWithText("هل سمعت الصوت؟", useUnmergedTree = true).fetchSemanticsNode()
+        val retest = rule.onNode(hasText("أعد الاختبار") and hasClickAction()).fetchSemanticsNode().boundsInRoot
+        val shown = q.boundsInRoot
+        assertTrue("the question $shown is in view (${q.size})", shown.height >= q.size.height - 2 && shown.bottom <= retest.top + 1)
+        val no = rule.onAllNodes(hasText("لا") and hasClickAction()).fetchSemanticsNodes().first().boundsInRoot
+        assertTrue("its answers $no are in view too", no.height >= 47 * app.resources.displayMetrics.density && no.bottom <= retest.top + 1)
+        assertEquals(androidx.compose.ui.semantics.LiveRegionMode.Polite, q.config.getOrNull(SemanticsProperties.LiveRegion))
     }
 }

@@ -36,6 +36,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -241,6 +246,8 @@ private fun partIcon(part: Part): ImageVector = when (part) {
 fun TestResultRow(
     part: Part, shown: TestShown, title: String, lines: List<String>, question: String?, onAnswer: ((Boolean) -> Unit)?,
     fix: HealthAction?, onFix: (String) -> Unit, index: Int, count: Int,
+    /** This row's question is the first one waiting: scroll it into view when it appears. */
+    bringQuestion: Boolean = false,
 ) {
     val fail = shown == TestShown.FAIL
     val fg = if (fail) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface
@@ -272,11 +279,18 @@ fun TestResultRow(
                 }
                 lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = sub) }
                 if (question != null && onAnswer != null) {
-                    Text(question, style = MaterialTheme.typography.titleMedium, color = fg, modifier = Modifier.padding(top = Dimens.xs))
-                    // Two equal answers, «لا» first (start), «نعم» last.
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.m)) {
-                        OutlinedButton(onClick = { onAnswer(false) }, modifier = Modifier.weight(1f).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_no)) }
-                        OutlinedButton(onClick = { onAnswer(true) }, modifier = Modifier.weight(1f).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_yes)) }
+                    // The question and its answers are brought into view when they appear (at 200 % they were below
+                    // the fold) and the question is announced (black-box re-test, P2 task 9).
+                    val ask = remember { BringIntoViewRequester() }
+                    if (bringQuestion) LaunchedEffect(question) { delay(100); ask.bringIntoView() }
+                    Column(Modifier.bringIntoViewRequester(ask), verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+                        Text(question, style = MaterialTheme.typography.titleMedium, color = fg,
+                            modifier = Modifier.padding(top = Dimens.xs).semantics { liveRegion = LiveRegionMode.Polite })
+                        // Two equal answers, «لا» first (start), «نعم» last.
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.m)) {
+                            OutlinedButton(onClick = { onAnswer(false) }, modifier = Modifier.weight(1f).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_no)) }
+                            OutlinedButton(onClick = { onAnswer(true) }, modifier = Modifier.weight(1f).heightIn(min = Dimens.touch)) { Text(stringResource(R.string.answer_yes)) }
+                        }
                     }
                 }
                 if (fix != null) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Dimens.xs)) {
@@ -352,12 +366,14 @@ fun AlarmTestScreen(
                 Text(stringResource(R.string.test_parts), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(start = Dimens.xxl, end = Dimens.xxl, top = Dimens.l, bottom = Dimens.xs).semantics { heading() })
                 val parts = Part.entries.filter { it in results }
+                val views = parts.map { part -> partView(context, part, results.getValue(part), record, health) }
+                val firstAsk = parts.indices.firstOrNull { i -> views[i].question != null && (parts[i] == Part.SOUND || parts[i] == Part.VIBRATION) }
                 parts.forEachIndexed { i, part ->
                     val r = results.getValue(part)
-                    val v = partView(context, part, r, record, health)
+                    val v = views[i]
                     TestResultRow(part, TestResults.shown(part, r), v.title, v.lines, v.question,
                         if (part == Part.SOUND || part == Part.VIBRATION) { yes -> onAnswer(part, yes) } else null,
-                        v.fix, onFix, i, parts.size)
+                        v.fix, onFix, i, parts.size, bringQuestion = i == firstAsk)
                 }
                 Text(stringResource(R.string.test_writes_nothing), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = Dimens.xxl, vertical = Dimens.m))
