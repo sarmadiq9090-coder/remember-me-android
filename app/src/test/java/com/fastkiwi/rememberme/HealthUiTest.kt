@@ -171,6 +171,20 @@ class HealthUiTest {
         fullScreenAllowed = false, quiet = AlertPolicy.Quiet.RINGER_SILENT.name, vibrate = false, playback = null)
     private val ready = Health(notifications = true, channel = true, exact = true, fullScreen = true, battery = true, dnd = false)
 
+    /** «منبّه مهم»: the full-screen part, with Android's refusal said honestly and its fix. */
+    @Test fun anImportantAlarmTestHasTheFullScreenPartAndItsFix() {
+        val fixes = mutableListOf<String>()
+        val rec = fired.copy(style = AlertPolicy.Style.ALARM.name)
+        show {
+            AlarmTestScreen(rec, TestResults.of(rec, ready, now.toEpochMilli()), now.toEpochMilli(), onStart = { _, _ -> }, onAnswer = { _, _ -> },
+                onFix = { fixes += it }, onCancel = {}, onDone = {}, onBack = {})
+        }
+        rule.onNodeWithText("الشاشة الكاملة", useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("أندرويد لم يسمح بعرضها فوق شاشة القفل", useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("اسمح").performScrollTo().performClick()
+        assertEquals(listOf("fullscreen"), fixes)
+    }
+
     @Test fun alertTestResultsShowTheSixPartsAndAskHonestly() {
         val answers = mutableListOf<Pair<TestAlarm.Part, Boolean>>()
         val fixes = mutableListOf<String>()
@@ -180,22 +194,21 @@ class HealthUiTest {
                 onFix = { fixes += it }, onCancel = {}, onDone = {}, onBack = {})
         }
         rule.onNodeWithText("انتهى الاختبار", useUnmergedTree = true).assertExists()
-        rule.onNodeWithText("الأجزاء الستة").assertExists()
-        for (p in listOf("المنبّه في وقته", "الإشعار", "الصوت", "الاهتزاز", "الشاشة الكاملة", "الأزرار")) rule.onNodeWithText(p, useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("أجزاء الاختبار").assertExists()
+        for (p in listOf("المنبّه في وقته", "الإشعار", "الصوت", "الاهتزاز", "الأزرار")) rule.onNodeWithText(p, useUnmergedTree = true).assertExists()
+        // 1.0.5: a normal reminder never opens the full screen, so its test has no such part.
+        rule.onNodeWithText("الشاشة الكاملة", useUnmergedTree = true).assertDoesNotExist()
         rule.onNodeWithText("هل سمعت الصوت؟", useUnmergedTree = true).assertExists()
         rule.onNodeWithText("الاختبار لا يحفظ أي تذكير.").assertExists()
         // Honest texts: the silent phone, the measured lateness in seconds, the full screen Android refused.
         rule.onNodeWithText("الهاتف صامت: التذكير العادي سيهتز فقط.", useUnmergedTree = true).assertExists()
         rule.onNodeWithText("وصل بعد 10 ثوانٍ، متأخرًا ثانية واحدة", useUnmergedTree = true).assertExists()
-        rule.onNodeWithText("أندرويد لم يسمح بعرضها فوق شاشة القفل", useUnmergedTree = true).assertExists()
-        // Never a single success: the summary counts what failed and what waits.
-        rule.onNodeWithText("2 نجحا، 1 لم ينجح، 3 تنتظر جوابك", useUnmergedTree = true).assertExists()
+        // Never a single success: the summary counts what waits.
+        rule.onNodeWithText("2 نجحا، 3 تنتظر جوابك", useUnmergedTree = true).assertExists()
         rule.onNodeWithText("اختبرتَ: تذكير عادي، بعد 10 ثوانٍ", useUnmergedTree = true).assertExists()
         // Answers and the fix.
         rule.onAllNodesWithText("نعم")[0].performScrollTo().performClick()
         assertEquals(TestAlarm.Part.SOUND to true, answers.single())
-        rule.onNodeWithText("اسمح").performScrollTo().performClick()
-        assertEquals(listOf("fullscreen"), fixes)
         rule.onNodeWithText("أعد الاختبار").assertExists()
         rule.onNodeWithText("تم").assertExists()
         assertTouchTargets()

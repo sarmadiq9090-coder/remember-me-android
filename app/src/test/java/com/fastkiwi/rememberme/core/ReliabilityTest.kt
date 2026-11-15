@@ -47,7 +47,8 @@ class ReliabilityTest {
 
     @Test fun theAlarmTestNeverReportsSuccessForAPartItCouldNotSee() {
         val t0 = 1_000_000L
-        val started = TestAlarm.Record(startedAt = t0, plannedAt = t0 + 10_000, api = "EXACT")
+        // «منبّه مهم»: all six parts (1.0.5: a normal reminder's test has no full-screen part).
+        val started = TestAlarm.Record(startedAt = t0, plannedAt = t0 + 10_000, api = "EXACT", style = AlertPolicy.Style.ALARM.name)
         // Before the alarm: waiting, nothing reported as working.
         val waiting = TestAlarm.evaluate(started, t0 + 5_000, channelHigh = true, channelSound = true, channelVibrates = true, dnd = false)
         assertTrue(waiting.values.all { it == TestAlarm.Result.WAITING })

@@ -439,8 +439,8 @@ fun EditScreen(
             // 8. Alert options, folded
             Spacer(Modifier.height(Dimens.l))
             val styleName = stringResource(if (effStyle == "alarm") R.string.style_alarm else R.string.style_normal)
-            val fsValue = stringResource(when (ext.fullScreen) { "on" -> R.string.fs_show; "off" -> R.string.fs_notify_only; else -> R.string.fs_follow })
-            val fsSummary = if (ext.fullScreen == null) stringResource(R.string.fs_summary_follow) else fsValue
+            val fsValue = stringResource(if (ext.fullScreen == "off") R.string.fs_notify_only else R.string.fs_follow)
+            val fsSummary = if (ext.fullScreen != "off") stringResource(R.string.fs_summary_follow) else fsValue
             val toneName = toneLabel(ext.tone)
             val lock = ext.lock()
             val lockValue = stringResource(when (lock) { "show" -> R.string.lock_show; "hide" -> R.string.lock_hide; else -> R.string.fs_follow })
@@ -449,7 +449,7 @@ fun EditScreen(
             val pinOn = ext.pin?.let { it == "on" } ?: cfg.pinDefault
             val speakOn = ext.speak ?: cfg.speakDefault
             val styleHint = if (effStyle == "alarm") stringResource(R.string.style_alarm_hint) else null
-            val fsHint = if (ext.fullScreen == null) fullScreenModeName(cfg.fullScreenMode) else null
+            val fsHint = if (ext.fullScreen != "off") fullScreenModeName(cfg.fullScreenMode) else null
             CollapsibleGroup(
                 Ms.Settings, stringResource(R.string.alert_options), L10n.join(context, listOf(styleName, toneName, fsSummary)), optionsOpen, { optionsOpen = !optionsOpen },
                 listOf(

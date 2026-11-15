@@ -136,7 +136,7 @@ class HealthModelTest {
     // ---- Alert test (F-009, F-027) ----
 
     private val t0 = 1_000_000L
-    private val started = TestAlarm.Record(startedAt = t0, plannedAt = t0 + 10_000, api = "CLOCK")
+    private val started = TestAlarm.Record(startedAt = t0, plannedAt = t0 + 10_000, api = "CLOCK", style = AlertPolicy.Style.ALARM.name)
     private val fired = started.copy(firedAt = t0 + 11_000, posted = true, fullScreenAllowed = true, quiet = "NONE", vibrate = true)
     private fun eval(r: TestAlarm.Record, at: Long = t0 + 20_000, high: Boolean = true, sound: Boolean = true, vib: Boolean = true, dnd: Boolean = false) =
         TestAlarm.evaluate(r, at, high, sound, vib, dnd)
@@ -182,6 +182,13 @@ class HealthModelTest {
         assertEquals(Result.FAILED, eval(started, t0 + 500_000)[Part.BUTTONS])
         // No test: nothing.
         assertTrue(eval(TestAlarm.Record()).isEmpty())
+    }
+
+    /** 1.0.5: a normal reminder never opens the full screen, so its test has no «الشاشة الكاملة» part. */
+    @Test fun aNormalTestHasNoFullScreenPart() {
+        val normal = eval(fired.copy(style = AlertPolicy.Style.NORMAL.name))
+        assertFalse(Part.SCREEN in normal.keys)
+        assertTrue(Part.BUTTONS in normal.keys)
     }
 
     /** Never a single "success" while any part failed, waits for an answer or is unknown. */
@@ -231,12 +238,12 @@ class HealthModelTest {
 
     @Test fun dndBlocksTheTestByStyle() {
         val h = health().copy(dndState = AlertPolicy.Dnd.PRIORITY_ALARMS_ALLOWED)
-        assertTrue(TestResults.dndBlocks(started, h))
+        assertTrue(TestResults.dndBlocks(started.copy(style = AlertPolicy.Style.NORMAL.name), h))
         assertFalse(TestResults.dndBlocks(started.copy(style = AlertPolicy.Style.ALARM.name), h))
         assertTrue(TestResults.dndBlocks(started.copy(style = AlertPolicy.Style.ALARM.name), h.copy(dndState = AlertPolicy.Dnd.NONE)))
         // What was recorded when it fired wins over the phone's state now.
-        assertFalse(TestResults.dndBlocks(started.copy(quiet = "NONE"), h))
-        assertTrue(TestResults.dndBlocks(started.copy(quiet = "DND"), health()))
+        assertFalse(TestResults.dndBlocks(started.copy(style = AlertPolicy.Style.NORMAL.name, quiet = "NONE"), h))
+        assertTrue(TestResults.dndBlocks(started.copy(style = AlertPolicy.Style.NORMAL.name, quiet = "DND"), health()))
         assertNotEquals(TestResults.of(fired.copy(sound = true), health(), t0 + 20_000)[Part.SOUND], Result.FAILED)
     }
 }

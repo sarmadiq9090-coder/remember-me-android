@@ -12,7 +12,14 @@ object AlertPolicy {
     enum class Ringer { NORMAL, VIBRATE, SILENT }
     /** Do Not Disturb as far as the app can read it: OFF, PRIORITY (with alarms allowed or not), ALARMS only, NONE (total silence). */
     enum class Dnd { OFF, PRIORITY_ALARMS_ALLOWED, PRIORITY_ALARMS_BLOCKED, PRIORITY_UNKNOWN, ALARMS_ONLY, NONE }
-    enum class FullScreenMode { ALWAYS, IMPORTANT, OFF }
+    /**
+     * 1.0.5, the owner: «الشاشه الكاملة للتنبيهات المهمة فقط». IMPORTANT (the default) or OFF; there is no mode for
+     * every reminder any more (1.0.4's ALWAYS reads as IMPORTANT).
+     */
+    enum class FullScreenMode { IMPORTANT, OFF }
+
+    /** Important: «منبّه مهم», or importance «مهم». Only these open the full screen over the lock screen. */
+    fun important(t: Task, style: Style) = style == Style.ALARM || t.priority == Priority.HIGH
 
     /** Why a tone is not played (shown in Health and the alert test). */
     enum class Quiet { NONE, SILENT_TONE, SOUND_OFF, RINGER_SILENT, RINGER_VIBRATE, DND, CHANNEL_MUTED }
@@ -72,15 +79,9 @@ object AlertPolicy {
             Style.NORMAL -> ringer != Ringer.SILENT
             Style.ALARM -> true
         }
-        val full = when (ext.fullScreen) {
-            "on" -> true
-            "off" -> false
-            else -> when (fullScreenMode) {
-                FullScreenMode.ALWAYS -> true
-                FullScreenMode.IMPORTANT -> style == Style.ALARM || t.priority == Priority.HIGH
-                FullScreenMode.OFF -> false
-            }
-        }
+        // Only an important reminder, unless the setting is off or this reminder says «إشعار فقط». A reminder's
+        // own "on" (from 1.0.4) no longer lifts a normal one.
+        val full = fullScreenMode == FullScreenMode.IMPORTANT && important(t, style) && ext.fullScreen != "off"
         val pinned = when (ext.pin) { "on" -> true; "off" -> false; else -> pinDefault }
         return Decision(style, quiet == Quiet.NONE, vibrate, quiet, full, pinned)
     }

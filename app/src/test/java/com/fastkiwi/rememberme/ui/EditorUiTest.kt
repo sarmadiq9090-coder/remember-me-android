@@ -173,7 +173,7 @@ class EditorUiTest {
         rule.onNode(hasText("خيارات التنبيه") and hasClickAction()).performScrollTo().performClick()
         rule.onNodeWithText("نوع التنبيه").performScrollTo().performClick()
         rule.onNodeWithText("طريقة التنبيه").assertExists()
-        rule.onNodeWithText("حسب الإعداد العام (دائمًا)").assertExists()
+        rule.onNodeWithText("حسب الإعداد العام (للتنبيهات المهمة فقط)").assertExists()
         rule.onNodeWithText("السماح في «عدم الإزعاج»").performClick()
         assertEquals(1, dnd)
         rule.onNodeWithText("منبّه مهم").performClick()
@@ -189,11 +189,13 @@ class EditorUiTest {
     @Test fun alertStyleSheetCardsAreRadioButtons() {
         var result: Pair<String, String?>? = null
         rule.setContent { AppTheme("light") { AlertStyleSheet("alarm", null, "important", { s, f -> result = s to f }, {}, {}) } }
-        rule.onNodeWithText("حسب الإعداد العام (للتذكيرات المهمة فقط)").assertExists()
+        rule.onNodeWithText("حسب الإعداد العام (للتنبيهات المهمة فقط)").assertExists()
+        // 1.0.5: no «اعرض الشاشة الكاملة» (the full screen is for important reminders only).
+        rule.onNodeWithText("اعرض الشاشة الكاملة").assertDoesNotExist()
         rule.onNodeWithText("تذكير عادي").performClick()
-        rule.onNodeWithText("اعرض الشاشة الكاملة").performClick()
+        rule.onNodeWithText("إشعار فقط").performClick()
         rule.onNodeWithText("تم").performClick()
-        assertEquals("normal" to "on", result)
+        assertEquals("normal" to "off", result)
     }
 
     @Test fun stepsWithProgressReorderAndTheAutoCompleteSwitch() {

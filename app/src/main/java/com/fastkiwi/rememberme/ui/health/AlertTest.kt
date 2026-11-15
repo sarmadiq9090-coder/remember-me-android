@@ -77,8 +77,8 @@ object TestResults {
 
     fun counts(results: Map<Part, Result>): Map<TestShown, Int> = results.entries.groupingBy { shown(it.key, it.value) }.eachCount()
 
-    /** True only when every one of the six parts passed. */
-    fun allPassed(results: Map<Part, Result>) = results.size == Part.entries.size && results.all { shown(it.key, it.value) == TestShown.PASS }
+    /** True only when every part passed (1.0.5: a normal reminder's test has no full-screen part). */
+    fun allPassed(results: Map<Part, Result>) = results.keys.containsAll(Part.entries - Part.SCREEN) && results.all { shown(it.key, it.value) == TestShown.PASS }
 
     /** The test is waiting for its alarm (nothing to show yet). */
     fun running(rec: TestAlarm.Record, results: Map<Part, Result>) = rec.startedAt > 0 && results.isNotEmpty() && results.values.all { it == Result.WAITING }

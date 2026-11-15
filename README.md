@@ -17,10 +17,11 @@ open source (Apache-2.0), with no account, ads or analytics. Not on Google Play.
 ## بالعربية
 
 ### ما هو
-- **تنبيهات لا تضيع:** إشعار ثابت فيه «تم» و«أجّل 10 دقائق» و«أجّل حتى…» و«تراجع»، وشاشة تذكير كاملة، و«تذكير عادي» أو «منبّه مهم» (بصوت المنبّه، ويرن في الوضع الصامت، ولا يتجاوز «عدم الإزعاج» إلا إن سمحت إعداداتك بالمنبّهات)، ونغمة لكل تذكير، وحتى 3 تنبيهات مبكرة.
+- **تنبيهات لا تضيع:** إشعار ثابت فيه «تم» و«أجّل 10 دقائق» و«أجّل حتى…» و«تراجع»، وشاشة تذكير كاملة فوق القفل للتنبيهات المهمة فقط (منذ 1.0.5؛ التذكير العادي إشعار منبثق بصوته)، و«تذكير عادي» أو «منبّه مهم» (بصوت المنبّه، ويرن في الوضع الصامت، ولا يتجاوز «عدم الإزعاج» إلا إن سمحت إعداداتك بالمنبّهات)، ونغمة لكل تذكير، وحتى 3 تنبيهات مبكرة.
 - **إضافة سريعة:** اكتب «اجتماع غداً الساعة 5» فيفهم التاريخ والوقت، مع معاينة قبل الحفظ. قوالب، وإدخال صوتي، ومشاركة من تطبيقات أخرى، وزر في الإعدادات السريعة، وأداة على الشاشة الرئيسية، ومواعيد نسبةً إلى أوقات الصلاة، وتواريخ هجرية.
 - **التنظيم:** قائمة واحدة (متأخر، اليوم، القادم، تم) مع السحب والتحديد المتعدد والبحث والقوائم والوسوم، وعرض الأجندة واليوم والأسبوع والشهر، وخطوات لكل تذكير.
 - **الثقة:** «صحة التذكيرات» تفحص كل ما قد يؤخر التنبيه على هاتفك وتقترح إصلاحًا واحدًا لكل مشكلة، مع «اختبر التنبيه الآن».
+- **أبلغنا عن مشكلة أو اقتراح (منذ 1.0.5):** في الإعدادات و«حول ذكرني». يفتح بريدك أو نموذج GitHub والنص جاهز، وأنت من يرسل؛ معلومات الجهاز اختيارية، ولا يُرفق أي تذكير.
 - **بياناتك:** ملف `data.json` نفسه الذي يستعمله ذكرني لويندوز (النقل بين الهاتف والحاسوب في الاتجاهين)، ونسخ احتياطي مشفّر، ونسخة أسبوعية تلقائية، واستيراد التقويم وتصديره.
 
 ### المتطلبات والأذونات
@@ -72,7 +73,8 @@ open source (Apache-2.0), with no account, ads or analytics. Not on Google Play.
 
 ### What it does
 - **Alerts that are not lost:** a pinned notification with Done, Snooze 10 minutes, Snooze until… and Undo; a
-  full-screen reminder screen; "normal reminder" or "important alarm" (alarm volume, rings in silent mode, never
+  full-screen reminder screen over the lock screen for important alerts only (since 1.0.5; a normal reminder is a
+  pop-up notification with its sound); "normal reminder" or "important alarm" (alarm volume, rings in silent mode, never
   through Do Not Disturb unless your DND settings allow alarms); a tone per reminder; up to 3 early alerts.
 - **Quick Add:** type "meeting tomorrow at 5" and the date and time are understood, with a preview before saving.
   Templates, voice input, share from other apps, a Quick Settings tile, a home-screen widget, times relative to
@@ -81,6 +83,8 @@ open source (Apache-2.0), with no account, ads or analytics. Not on Google Play.
   agenda, day, week and month views; steps per reminder.
 - **Trust:** "Reminder health" checks everything on your phone that could delay an alert and offers one fix per
   problem, with "Test the alert now".
+- **Report a problem or suggestion (since 1.0.5):** in Settings and About. It opens your mail app or a GitHub issue
+  form with the text ready, and you send it; device information is optional, and no reminder is ever attached.
 - **Your data:** the same `data.json` as Remember Me for Windows (moves between phone and PC in both directions),
   encrypted backups, a weekly automatic copy, calendar import and export.
 

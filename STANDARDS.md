@@ -52,7 +52,7 @@ real phone yet** (see the end).
 | Control | Status | Evidence |
 |---|---|---|
 | MASVS-STORAGE-1/2: data in private storage only, no leak through backups or logs | **Met** | `files/data/data.json`; cloud backup excludes everything; phone-to-phone transfer only (D-008); no logging of content |
-| MASVS-PRIVACY-1..4: minimal data, no tracking, user control | **Met** | No internet permission (tested), no analytics, no identifiers; «أخفِ التفاصيل» per reminder and per phone (kept even when Android shows all content); logs (schedule, alerts) hold no content; the compatibility report is shown in full before the user shares it; delete-all; a privacy page lists every permission |
+| MASVS-PRIVACY-1..4: minimal data, no tracking, user control | **Met** | Internet for updates only, GitHub hosts only over HTTPS (D-081, 1.0.5; network_security_config and tests), no analytics, no identifiers; «أخفِ التفاصيل» per reminder and per phone (kept even when Android shows all content); logs (schedule, alerts) hold no content; the compatibility report is shown in full before the user shares it; delete-all; a privacy page lists every permission |
 | MASVS-PLATFORM-1: exported components | **Met** | `SystemReceiver` and `LockedReceiver` (system broadcasts only), `ShareActivity` (text only, 2,000 characters, never saves without the preview), the Quick Settings tile (behind `BIND_QUICK_SETTINGS_TILE`), plus AndroidX's profile installer behind DUMP (tested); fuzzed intents change nothing (torture) |
 | MASVS-PLATFORM: PendingIntents | **Met** | All `FLAG_IMMUTABLE`, explicit components |
 | MASVS-PLATFORM-3: UI on the lock screen | **Met** | The title is hidden on the lock screen with the privacy setting; editing asks to unlock |

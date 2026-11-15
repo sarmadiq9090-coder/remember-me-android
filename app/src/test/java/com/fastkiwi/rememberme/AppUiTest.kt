@@ -138,6 +138,8 @@ class AppUiTest {
             rule.onAllNodesWithText("حفظ").assertCountEquals(1)
             rule.onNodeWithText("حفظ").performClick()
             rule.waitUntil(10_000) { Repo.state(app).tasks.any { it.title == "موعد طبيب الأسنان" && it.dueAt != null } }
+            // «تذكير جديد» closes once the save (off the main thread) is done; until then the screen under it is hidden.
+            rule.waitUntil(10_000) { rule.onAllNodes(androidx.compose.ui.test.hasSetTextAction()).fetchSemanticsNodes().isEmpty() }
             rule.onNodeWithContentDescription("الإعدادات").performClick()
             shot("06-settings-ar")
             rule.onNodeWithText("صحة التذكيرات").performClick()

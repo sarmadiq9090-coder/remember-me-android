@@ -226,7 +226,6 @@ class QuickUiTest {
         }
         val requested = app.packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions.orEmpty()
         assertFalse(Manifest.permission.RECORD_AUDIO in requested)
-        assertFalse(Manifest.permission.INTERNET in requested)
     }
 
     // ---- Share (F-049) ----

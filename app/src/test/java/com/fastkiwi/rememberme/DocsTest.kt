@@ -33,6 +33,11 @@ class DocsTest {
         assertEquals(permissions, PrivacyText.PERMISSIONS.map { it.first }.toSet())
         val privacy = doc("PRIVACY.md")
         for (p in permissions) assertTrue(p, privacy.contains("`" + p.substringAfterLast('.') + "`"))
-        assertTrue("android.permission.INTERNET" !in permissions)
+        // 1.0.5 (D-081): the internet for updates only, and only to GitHub over HTTPS.
+        assertTrue("android.permission.INTERNET" in permissions)
+        val net = File("src/main/res/xml/network_security_config.xml").readText()
+        assertTrue(net.contains("cleartextTrafficPermitted=\"false\""))
+        val domains = Regex("<domain[^>]*>([^<]+)</domain>").findAll(net).map { it.groupValues[1] }.toSet()
+        assertEquals(com.fastkiwi.rememberme.update.UpdateClient.GITHUB_HOSTS, domains)
     }
 }
