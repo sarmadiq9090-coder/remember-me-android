@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -131,10 +132,17 @@ fun AlertListEditor(alerts: List<AlertItem>, onToggle: (index: Int, on: Boolean)
                         Text(a.title, style = MaterialTheme.typography.bodyLarge)
                         a.moment?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     }
-                    Switch(
-                        checked = a.on, enabled = a.minutes > 0, onCheckedChange = if (a.minutes > 0) ({ on -> onToggle(i, on) }) else null,
-                        modifier = Modifier.semantics { contentDescription = a.title },
-                    )
+                    if (a.minutes > 0) {
+                        Switch(checked = a.on, onCheckedChange = { on -> onToggle(i, on) }, modifier = Modifier.semantics { contentDescription = a.title })
+                    } else {
+                        // G-17: the at-time alert is the reminder itself, so it is never off. A disabled switch read as
+                        // "off" (grey); a check mark and «دائمًا» say what it is, and nothing here looks tappable.
+                        Row(Modifier.testTag("alert-at-time-always"), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Ms.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            Text(stringResource(R.string.fs_always), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = Dimens.xs))
+                        }
+                    }
                 }
             }
         }
