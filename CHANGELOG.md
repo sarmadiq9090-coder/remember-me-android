@@ -6,6 +6,48 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-15
+
+One release with every feature the feature council approved (docs/FEATURES.md, 80 features). Installs over
+0.1.0 and 0.1.1 and keeps all data (a safety copy is kept first). Still to be tried on the owner's phone.
+
+### Added
+
+- Alerts: «نوع التنبيه» (normal reminder that follows the phone's sound mode, or «منبّه مهم» that rings at
+  alarm volume even in silent mode); never bypasses Do Not Disturb; a tone per reminder and two defaults
+  (phone tones, three Remember Me tones, a file copied into the app, or silent); the app plays the tone in a
+  short foreground service with a fallback chain, so a reminder is never silent by accident; ring duration;
+  vibration patterns; full-screen mode; pinned notifications that come back up to 5 times; «أخفِ التفاصيل» on
+  the lock screen with «تم» and «أجّل» kept; «أجّل حتى…» and «تراجع» on the notification; up to 3 early alerts;
+  before-unlock reminders after a restart; "arrived late" notes; morning summary; read aloud (optional).
+- «صحة التذكيرات» (grouped checks, the source of each problem, one fix per row, unknown never shown as
+  ready), the alert test with three delays, the alert log, the compatibility report, DND help.
+- Quick Add (the Windows parser ported, with a preview and questions; numeric dates, every N hours and prayer
+  times added), templates, voice input, share to the app, a Quick Settings tile, widget «تم».
+- Prayer-relative reminders (10 methods, cities, no location permission) and the Hijri calendar (Umm al-Qura)
+  with Hijri yearly repeats.
+- Home: swipe actions with undo, bulk selection, quick-filter chips for lists, search across tags and states,
+  agenda/day/week/month views, a two-pane tablet layout. Tags, lists and saved filters; steps (checklist) with
+  auto-complete; change history (optional).
+- Data: password-encrypted backups, a weekly automatic copy to a folder, calendar (.ics) import, delete all,
+  tone copies in backups (optional), a privacy page and docs/DATA-FORMAT.md.
+- Design 1.0.0 (DESIGN-SPEC v2): Material Symbols Rounded icons, the new editor, sheets, reminder screen dock
+  with a 1-second tap guard; Arabic and English user guides; «ما الجديد».
+
+### Changed
+
+- New notification channels (fixed ids) and one notification id per reminder; 0.1.x notifications are replaced
+  on the first run after the update.
+- High priority rings as «منبّه مهم» by default (Settings or «ما الجديد» turn it back to normal).
+- Permissions: FOREGROUND_SERVICE added (the tone service); nothing else.
+- APK 2.13 MB → about 2.8 MB: Quick Add's parser and corpus rules, prayer times and their city list, the
+  calendar views, the new screens and the vendored icons (the icons library was removed).
+
+### Fixed
+
+- Every S1/S2 found by the independent bug hunt, the torture suite and the black-box user test (see
+  docs/QC-1.0.0.md and DECISIONS.md), each with a test that prevents it coming back.
+
 ## [0.1.1] - 2026-11-14
 
 ### Added
