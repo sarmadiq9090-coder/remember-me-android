@@ -1,8 +1,8 @@
 Remember Me Android torture run 2026-11-15-0348 (heavy=0, seed=default, gradle exit 1)
-commit 286e458 on wip/1.0-base
+commit 4b1534b on wip/1.0-base
 
-QuickAddFuzzTortureTest                    tests   2  failed   1  skipped   0  2.251 s
+QuickAddFuzzTortureTest                    tests   2  failed   1  skipped   0  2.248 s
 TOTAL tests 2, failed 1, skipped 0
 
 FAILURES
-- QuickAddFuzzTortureTest.theNoDateCorpusWithEverydayDecorationsStillHoldsNoDate: java.lang.AssertionError: no-break spaces «السبت اللي فات» → due=null ask=TIME title=«اللي فات» | no-break spaces «السبت اللي فات» → due=null ask=TIME title=«اللي فات» | double spaces «السبت  اللي  فات» → due=null ask=TIME title=«اللي فات» | double spaces «السبت  اللي  فات» → due=null ask=TIME title=«اللي فات»
+- QuickAddFuzzTortureTest.theNoDateCorpusWithEverydayDecorationsStillHoldsNoDate: java.lang.AssertionError: ALM after «pay $12.50 for parking؜» → due=null ask=MERIDIEM title=«pay $ parking؜» | ALM after «pay $12.50 for parking؜» → due=null ask=MERIDIEM title=«pay $ parking؜» | Arabic question «pay $12.50 for parking؟» → due=null ask=MERIDIEM title=«pay $ parking؟» | Arabic question «pay $12.50 for parking؟» → due=null ask=MERIDIEM title=«pay $ parking؟»
