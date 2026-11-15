@@ -207,7 +207,7 @@ fun HomeScreen(
     var viewName by rememberSaveable { mutableStateOf(HomeView.LIST.name) }
     val view = HomeView.valueOf(viewName)
     /** The day the calendar views show (F-064); today when Home opens. */
-    var calDay by rememberSaveable { mutableStateOf(now.atZone(zone).toLocalDate().toEpochDay()) }
+    var calDay by rememberSaveable { androidx.compose.runtime.mutableLongStateOf(now.atZone(zone).toLocalDate().toEpochDay()) }
     val calSelected = java.time.LocalDate.ofEpochDay(calDay)
     val inCalendar = view != HomeView.LIST
     LaunchedEffect(todayRequest) {

@@ -99,10 +99,10 @@ fun presetLabel(context: android.content.Context, p: SnoozePreset, now: Instant,
  * (DESIGN-SPEC §5.8, W7). Only pointer input is held back: accessibility actions are never blocked.
  */
 @Composable
-fun rememberTapGuard(key: Any?, ms: Long): Modifier {
+fun Modifier.tapGuard(key: Any?, ms: Long): Modifier {
     var armed by remember(key) { mutableStateOf(ms <= 0) }
     LaunchedEffect(key, ms) { if (ms > 0) { delay(ms); armed = true } }
-    return Modifier.pointerInput(armed) {
+    return this.pointerInput(armed) {
         if (armed) return@pointerInput
         awaitPointerEventScope {
             while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
@@ -136,7 +136,7 @@ fun AlertDock(
     val bigText = LocalDensity.current.fontScale >= 1.5f
     // F-104: a confirm haptic on «تم» and «أجّل» (the phone's touch-feedback setting applies).
     val haptic = rememberConfirmHaptic()
-    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = SheetShape, modifier = rememberTapGuard(Unit, guardMs)) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = SheetShape, modifier = Modifier.tapGuard(Unit, guardMs)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.m)) {
             if (hint != null) Text(hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
@@ -242,7 +242,7 @@ fun AlertScreen(
     val grid = choices.drop(1).take(5).map { DockChoice(it.label, it.at) } + DockChoice(stringResource(R.string.snooze_until), null)
     val hint = if (task.snoozeCount >= 3) stringResource(R.string.snooze_hint3) else null
     val haptic = rememberConfirmHaptic()
-    Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }.then(rememberTapGuard(task.id, guardMs))) {
+    Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }.tapGuard(task.id, guardMs)) {
         Box(Modifier.fillMaxSize()) {
             val bigText = LocalDensity.current.fontScale >= 1.5f
             // At large text the grid moves into the hero (QC G-04): «تم» and «أجّل» stay in the dock, and the hero keeps

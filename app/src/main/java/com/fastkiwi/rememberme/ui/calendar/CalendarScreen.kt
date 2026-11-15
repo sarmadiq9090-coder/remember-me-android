@@ -155,7 +155,9 @@ fun CalendarHeader(
 ) {
     TopAppBar(
         title = {
-            Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading(); paneTitle = title })
+            // Two lines at large text, so «November 2026» is never cut (QC, English at 200 %).
+            Text(title, maxLines = if (androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f) 2 else 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics { heading(); paneTitle = title })
         },
         actions = {
             TextButton(onClick = onToday, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.today)) }

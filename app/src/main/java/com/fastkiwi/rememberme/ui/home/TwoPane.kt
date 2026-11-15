@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -64,7 +63,8 @@ enum class WidthClass { COMPACT, MEDIUM, EXPANDED }
 /** < 600 dp phone; 600–839 dp one centred pane; ≥ 840 dp list + detail. No adaptive library: the configuration's width. */
 @Composable
 fun widthClass(): WidthClass {
-    val w = LocalConfiguration.current.screenWidthDp
+    // The window's own width (the configuration's screen width is not the window on a split screen).
+    val w = with(androidx.compose.ui.platform.LocalDensity.current) { androidx.compose.ui.platform.LocalWindowInfo.current.containerSize.width.toDp().value }
     return when {
         w >= Dimens.twoPane.value -> WidthClass.EXPANDED
         w >= Dimens.compactWidth.value -> WidthClass.MEDIUM
