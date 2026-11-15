@@ -1,0 +1,10 @@
+Remember Me Android torture run 2026-11-15-0402 (heavy=0, seed=default, gradle exit 1)
+commit b5dd565 on wip/1.0-base
+
+IcsFuzzTortureTest                         tests   3  failed   0  skipped   0  3.912 s
+IcsPropertyTortureTest                     tests   2  failed   1  skipped   0  1.124 s
+IcsTimezoneTortureTest                     tests   2  failed   0  skipped   0  1.074 s
+TOTAL tests 7, failed 1, skipped 0
+
+FAILURES
+- IcsPropertyTortureTest.exportedRemindersExpandAndImportBackTheSame: java.lang.AssertionError: [dtstart-off-rule] Asia/Tehran DAYS FREQ=WEEKLY;BYDAY=MO,TH days=[1, 4] from=2029-02-02T20:54 start=2029-02-02T20:54: occurrence 0 app 2029-02-02T20:54 calendar 2029-02-05T20:54 (13 vs 14)NL[dtstart-off-rule] Asia/Tehran DAYS FREQ=WEEKLY;BYDAY=MO days=[1] from=2029-03-21T07:28 start=2029-03-21T07:28: occurrence 0 app 2029-03-21T07:28 calendar 2029-03-26T07:28 (13 vs 14)NL[occurrences] America/Santiago DAYS FREQ=WEEKLY;BYDAY=MO,FR,SA days=[1, 5, 6] from=2027-08-06T20:23 start=2027-08-07T20:23: occurrence 10 app 2027-08-30T20:23 calendar 2027-08-30T21:23 (14 vs 14)NL[oc

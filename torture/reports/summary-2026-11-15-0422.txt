@@ -1,0 +1,7 @@
+Remember Me Android torture run 2026-11-15-0422 (heavy=0, seed=default, gradle exit 0)
+commit 53bd02d on wip/1.0-base
+
+IcsFuzzTortureTest                         tests   3  failed   0  skipped   0  4.109 s
+IcsPropertyTortureTest                     tests   2  failed   0  skipped   0  2.733 s
+IcsTimezoneTortureTest                     tests   2  failed   0  skipped   0  0.904 s
+TOTAL tests 7, failed 0, skipped 0

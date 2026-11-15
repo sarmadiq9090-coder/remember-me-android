@@ -1,0 +1,5 @@
+Remember Me Android torture run 2026-11-15-0839 (heavy=1, seed=default, gradle exit 0)
+commit 9606418 on wip/1.0-base
+
+RepeatParityTortureTest                    tests   1  failed   0  skipped   0  1.09 s
+TOTAL tests 1, failed 0, skipped 0

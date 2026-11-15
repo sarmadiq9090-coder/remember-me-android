@@ -1,0 +1,27 @@
+Remember Me Android torture run 2026-11-15-0804 (heavy=1, seed=default, gradle exit 1)
+commit e06f9e5 on torture
+
+BackupFuzzTortureTest                      tests   4  failed   0  skipped   0  34.022 s
+ChaosTortureTest                           tests  36  failed   0  skipped   1  23.156 s
+EnginePropertyTortureTest                  tests   2  failed   0  skipped   0  1560.622 s
+IcsFuzzTortureTest                         tests   3  failed   0  skipped   0  26.314 s
+IcsPropertyTortureTest                     tests   2  failed   0  skipped   0  12.996 s
+IcsTimezoneTortureTest                     tests   2  failed   0  skipped   0  1.124 s
+PerfTortureTest                            tests   4  failed   0  skipped   0  4.556 s
+PlanStressTortureTest                      tests   2  failed   0  skipped   0  59.763 s
+QuickAddFuzzTortureTest                    tests   2  failed   0  skipped   0  46.216 s
+ReceiverFuzzTortureTest                    tests   9  failed   0  skipped   0  53.129 s
+RepeatParityTortureTest                    tests   1  failed   1  skipped   0  0.819 s
+StoreChaosTortureTest                      tests   8  failed   0  skipped   0  1.311 s
+StressTortureTest                          tests  12  failed   0  skipped   0  63.327 s
+TaskOpsPropertyTortureTest                 tests   1  failed   0  skipped   0  63.884 s
+TimeEngineTortureTest                      tests  15  failed   0  skipped   0  28.729 s
+TimeRepeatTortureTest                      tests   4  failed   0  skipped   0  0.491 s
+UiMonkeyTortureTest                        tests   3  failed   2  skipped   0  57.561 s
+blackbox.BlackBoxDriver                    tests   1  failed   0  skipped   1  0.103 s
+TOTAL tests 111, failed 3, skipped 2
+
+FAILURES
+- RepeatParityTortureTest.sameAnswersAsTheWindowsEngineOnRandomCases: java.lang.AssertionError: Android and Windows disagree on 2 of 30000 cases: | Africa/Cairo monthly from=2014-07-31T00:00 days=[] every=2 current=2014-07-31T00:00 now=2014-07-30T23:44:10: windows 2014-08-31T01:00+03:00, android 2014-08-31T00:00+03:00 | Australia/Sydney monthly from=2034-07-15T02:00 days=[] every=2 current=2034-09-17T05:41:47 now=2034-09-17T06:21:52: windows 2034-10-15T03:00+11:00, android 2034-10-15T02:00+11:00 expected:<0> but was:<2>
+- UiMonkeyTortureTest.monkeyOnTheMainScreens: java.lang.NullPointerException: Cannot invoke "android.view.Surface.destroy()" because "this.mSurface" is null
+- UiMonkeyTortureTest.monkeyOnTheMainScreensAnotherSeed: java.lang.NullPointerException: Cannot invoke "android.view.Surface.destroy()" because "this.mSurface" is null

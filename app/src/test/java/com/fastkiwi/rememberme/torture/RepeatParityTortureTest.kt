@@ -104,6 +104,17 @@ class RepeatParityTortureTest {
             val sameData = a["offset"]!!.jsonPrimitive.int * 60 == c.zone.rules.getOffset(c.current).totalSeconds &&
                 a["nextOffset"]!!.jsonPrimitive.int * 60 == c.zone.rules.getOffset(want).totalSeconds
             val text = line(want.atZone(c.zone).toLocalDateTime().toString() + want.atZone(c.zone).offset)
+            // A known Windows bug (monthsLater builds the 1st, then setDate: when that 1st's midnight or 2:00
+            // falls in a DST gap, Windows ends an hour late). Android keeps the series' wall-clock time, which
+            // is right; recorded for the Windows backlog. Only this exact shape is accepted.
+            val windowsGapBug = (c.repeat == com.fastkiwi.rememberme.core.Repeat.MONTHLY || c.repeat == com.fastkiwi.rememberme.core.Repeat.YEARLY) &&
+                got.atZone(c.zone).toLocalTime() == c.rule.from!!.atZone(c.zone).toLocalTime() &&
+                java.time.Duration.between(got, want).toMinutes() == 60L &&
+                got.atZone(c.zone).toLocalDate().withDayOfMonth(1).let { first ->
+                    val t = c.zone.rules.getValidOffsets(first.atTime(c.rule.from!!.atZone(c.zone).toLocalTime())).isEmpty()
+                    t || c.zone.rules.getValidOffsets(first.atStartOfDay()).isEmpty()
+                }
+            if (windowsGapBug) { Torture.report("parity", "  WINDOWS-BUG (accepted) $text"); continue }
             if (sameData) { rules += text; byMode.merge(c.repeat.code + "@" + c.zone.id, 1, Int::plus) } else tzdata += text
         }
         Torture.report("parity", "repeat parity seed $seed: ${cases.size} cases, ${rules.size} rule differences ${byMode}, ${tzdata.size} tzdata differences")
