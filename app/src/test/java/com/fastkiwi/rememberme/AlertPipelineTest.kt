@@ -243,6 +243,24 @@ class AlertPipelineTest {
         assertEquals("لديك تذكير", n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
     }
 
+    /** Black-box U1: with «أخفِ التفاصيل», a reminder posted while locked shows no title even when the phone shows all content. */
+    @Test fun hiddenDetailsStayHiddenOnALockedPhoneThatShowsAllContentAndComeBackAfterTheUnlock() {
+        val now = Instant.now()
+        Repo.prefs(app).lockPrivacy = true
+        val km = shadowOf(app.getSystemService(android.app.KeyguardManager::class.java))
+        km.setKeyguardLocked(true)
+        val t = save(TaskInput(title = "موعد سري", body = "ملاحظة", dueAt = now.minusSeconds(5)), now.minusSeconds(60))
+        Engine.sync(app, now)
+        var n = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
+        assertEquals("لديك تذكير", n.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+        assertFalse(n.extras.toString().contains("سري"))
+        assertEquals("تم", n.actions[0].title.toString())
+        km.setKeyguardLocked(false)
+        Engine.sync(app, now.plusSeconds(30))
+        n = nm.activeNotifications.single { Notifier.dueTask(it) == t.id }.notification
+        assertEquals("موعد سري", n.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
+    }
+
     @Test fun theChannelsAreTheFixedSetAndTheDueOnesHaveNoSoundOfTheirOwn() {
         val ids = nm.notificationChannels.map { it.id }.toSet()
         assertEquals(setOf("due_normal_v1", "due_alarm_v1", "reminders_v1", "reminders_quiet_v1", "reminders_vibrate_v1", "notices_v1", "summary_v1"), ids)

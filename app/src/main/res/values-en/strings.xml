@@ -219,7 +219,7 @@
     <string name="week_start">First day of the week</string>
     <string name="summary_first">First at %1$s: %2$s</string>
     <string name="done_undo_title">Done: “%1$s”</string>
-    <string name="alarm_rings_until">%1$s, rings until you respond</string>
+    <string name="alarm_rings_until">%1$s, important alarm</string>
     <string name="channel_vibrate">Vibrate-only reminders</string>
     <string name="channel_vibrate_desc">Backup: vibrates when Remember Me cannot run the vibration of a reminder without sound.</string>
     <string name="cal_view_label">View</string>

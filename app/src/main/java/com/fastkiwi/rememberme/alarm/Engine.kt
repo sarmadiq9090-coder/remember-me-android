@@ -92,6 +92,11 @@ object Engine {
         val dueKeys = plan.due.map(::repostKey).toSet()
         if (reposts.keys.any { it !in dueKeys }) prefs.repostLog = reposts.filterKeys { it in dueKeys }
         for (id in shown) if (id !in dueIds || visible.none { it.id == id }) Notifier.cancelDue(app, id)
+        // Posted with «لديك تذكير» while locked (F-022): the details come back once the phone is unlocked.
+        if (!Notifier.isLocked(app)) {
+            val generic = runCatching { Notifier.shownGeneric(app) }.getOrDefault(emptySet())
+            for (t in visible) if (t.id in generic && t.id !in plan.loud) Notifier.postDue(app, t, false, now)
+        }
         Notifier.postSummary(app, plan.due.size)
         for (t in plan.notices) Notifier.postNotice(app, t, now)
         // A notice whose task is done, deleted or due is no longer useful. Only the ones showing are

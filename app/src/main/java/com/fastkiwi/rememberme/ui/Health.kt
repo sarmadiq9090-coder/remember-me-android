@@ -129,6 +129,13 @@ fun lockScreenHidesAll(context: Context): Boolean? = runCatching {
     when (Settings.Secure.getInt(r, "lock_screen_show_notifications", -1)) { 0 -> true; 1 -> false; else -> null }
 }.getOrNull()
 
+/** The phone hides sensitive notification content on the lock screen (null: cannot be read). */
+fun phoneHidesSensitiveContent(context: Context): Boolean? = runCatching {
+    val r = context.contentResolver
+    if (Settings.Secure.getInt(r, "lock_screen_show_notifications", 1) == 0) return@runCatching true
+    when (Settings.Secure.getInt(r, "lock_screen_allow_private_notifications", -1)) { 0 -> true; 1 -> false; else -> null }
+}.getOrNull()
+
 object SystemScreens {
     private fun pkg(context: Context): Uri = ("package:" + context.packageName).toUri()
 

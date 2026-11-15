@@ -219,7 +219,7 @@
     <string name="week_start">أول يوم في الأسبوع</string>
     <string name="summary_first">أولها %1$s: %2$s</string>
     <string name="done_undo_title">أُنجز «%1$s»</string>
-    <string name="alarm_rings_until">%1$s، يرنّ حتى تتعامل معه</string>
+    <string name="alarm_rings_until">%1$s، منبّه مهم</string>
     <string name="channel_vibrate">تذكيرات بالاهتزاز فقط</string>
     <string name="channel_vibrate_desc">احتياطية: تهتز إن تعذّر تشغيل الاهتزاز من «ذكرني» لتذكير بلا صوت.</string>
     <string name="cal_view_label">طريقة العرض</string>

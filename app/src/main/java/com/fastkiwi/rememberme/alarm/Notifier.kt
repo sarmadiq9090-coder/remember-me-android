@@ -50,6 +50,8 @@ object Notifier {
     const val CH_VIBRATE = "reminders_vibrate_v1"
     const val TAG_NOTICE = "notice:"
     const val EXTRA_TASK = "rm.task"
+    /** The notification was posted with «لديك تذكير» instead of its details (locked, details hidden). */
+    const val EXTRA_GENERIC = "rm.generic"
     private const val GROUP = "com.fastkiwi.rememberme.DUE"
     private const val SUMMARY_ID = 1
     const val TEST_ID = 2
@@ -193,11 +195,17 @@ object Notifier {
         val snooze = action(context, ActionReceiver.SNOOZE, t)
         val until = PendingIntent.getActivity(context, code(t.id, 4),
             alertIntent(context, t.id).putExtra(AlertActivity.EXTRA_PICK, true), flags())
+        // Lock screen (F-022). Android shows a private notification in full whenever the phone itself shows all
+        // content, so «أخفِ التفاصيل» is kept by the app: posted while the phone is locked, the notification
+        // itself says «لديك تذكير» (buttons kept), and the next run after the unlock puts the details back.
+        // The public version (used when the phone hides sensitive content) is always the hidden one.
+        val hideDetails = ext.hidesOnLockScreen(Repo.prefs(context).lockPrivacy)
+        val generic = hideDetails && isLocked(context)
         val b = NotificationCompat.Builder(c, channel)
             .setSmallIcon(R.drawable.ic_stat_bell)
-            .setContentTitle(t.title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(text, t.body.takeIf { it.isNotBlank() }).joinToString("\n")))
+            .setContentTitle(if (generic) c.getString(R.string.you_have_reminder) else t.title)
+            .setContentText(if (generic) c.getString(R.string.open_to_see) else text)
+            .apply { if (!generic) setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(text, t.body.takeIf { it.isNotBlank() }).joinToString("\n"))) }
             .setCategory(if (alarm) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(d.pinned)
@@ -215,19 +223,14 @@ object Notifier {
             .addAction(R.drawable.ic_check, c.getString(R.string.done), done)
             .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), snooze)
             .addAction(R.drawable.ic_snooze, c.getString(R.string.snooze_until), until)
-            .addExtras(android.os.Bundle().apply { putString(EXTRA_TASK, t.id) })
-        // Lock screen (F-022): details by default; hidden = «لديك تذكير» with the same buttons. The reminder's
-        // own choice wins over the phone setting.
-        val hideDetails = ext.hidesOnLockScreen(Repo.prefs(context).lockPrivacy)
-        if (hideDetails) {
-            b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-            b.setPublicVersion(NotificationCompat.Builder(c, channel).setSmallIcon(R.drawable.ic_stat_bell)
-                .setContentTitle(c.getString(R.string.you_have_reminder)).setContentText(c.getString(R.string.open_to_see))
-                .setCategory(if (alarm) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
-                .addAction(R.drawable.ic_check, c.getString(R.string.done), done)
-                .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), snooze)
-                .build())
-        } else b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .addExtras(android.os.Bundle().apply { putString(EXTRA_TASK, t.id); putBoolean(EXTRA_GENERIC, generic) })
+        b.setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+        b.setPublicVersion(NotificationCompat.Builder(c, channel).setSmallIcon(R.drawable.ic_stat_bell)
+            .setContentTitle(c.getString(R.string.you_have_reminder)).setContentText(c.getString(R.string.open_to_see))
+            .setCategory(if (alarm) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
+            .addAction(R.drawable.ic_check, c.getString(R.string.done), done)
+            .addAction(R.drawable.ic_snooze, snoozeLabel(c, now), snooze)
+            .build())
         val full = loud && d.fullScreen && canFullScreen(context)
         if (full) { b.setFullScreenIntent(open, true); log.add(AlertLog.Event.FULL_SCREEN, key, style = d.style.name) }
         val n = b.build()
@@ -329,9 +332,10 @@ object Notifier {
         val c = L10n.context(context)
         val open = PendingIntent.getActivity(context, code(t.id, 2),
             Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_OPEN, t.id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags())
+        val noticeHidden = AlertExt.of(t).hidesOnLockScreen(Repo.prefs(context).lockPrivacy) && isLocked(context)
         val b = NotificationCompat.Builder(c, CH_NOTICE)
             .setSmallIcon(R.drawable.ic_stat_bell)
-            .setContentTitle(t.title)
+            .setContentTitle(if (noticeHidden) c.getString(R.string.you_have_reminder) else t.title)
             .setContentText(c.getString(R.string.coming_up, L10n.dueText(c, t.dueAt!!, now)))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true).setContentIntent(open)
@@ -342,6 +346,14 @@ object Notifier {
                 .setContentTitle(c.getString(R.string.you_have_reminder)).build())
         try { NotificationManagerCompat.from(context).notify(TAG_NOTICE + t.id, 0, b.build()) } catch (_: SecurityException) { }
     }
+
+    fun isLocked(context: Context): Boolean =
+        runCatching { context.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked }.getOrDefault(true)
+
+    /** Ids of due notifications posted without their details while the phone was locked. */
+    fun shownGeneric(context: Context): Set<String> =
+        context.getSystemService(NotificationManager::class.java).activeNotifications
+            .filter { it.notification.extras?.getBoolean(EXTRA_GENERIC) == true }.mapNotNull(::dueTask).toSet()
 
     /** The task id of a due notification, or null for any other. */
     fun dueTask(sbn: StatusBarNotification): String? = sbn.notification.extras?.getString(EXTRA_TASK)?.takeIf { sbn.tag == null }

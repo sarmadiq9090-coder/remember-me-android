@@ -107,7 +107,10 @@ class AlertActivity : AppCompatActivity() {
             onEdit = { openInApp(task.id) },
             onLater = { finish() },
             // Lock-screen privacy: the title and note wait for the unlock.
-            hidden = com.fastkiwi.rememberme.core.AlertExt.of(task).hidesOnLockScreen(Repo.prefs(this).lockPrivacy) && getSystemService(KeyguardManager::class.java).isKeyguardLocked,
+            // Locked: the reminder's own choice, or the phone's own "hide sensitive content" (F-022).
+            hidden = getSystemService(KeyguardManager::class.java).isKeyguardLocked &&
+                (com.fastkiwi.rememberme.core.AlertExt.of(task).hidesOnLockScreen(Repo.prefs(this).lockPrivacy) ||
+                    com.fastkiwi.rememberme.ui.phoneHidesSensitiveContent(this) == true),
             pickFirst = pick && task.id == first,
             arrivedLateMs = androidx.compose.runtime.remember(task.id, due) { due?.let { arrivedLate(task.id, it) } },
             lateReasonOff = due != null && bootedAfter(due),
