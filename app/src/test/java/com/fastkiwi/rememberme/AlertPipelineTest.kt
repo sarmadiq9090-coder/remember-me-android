@@ -261,6 +261,19 @@ class AlertPipelineTest {
         assertEquals("موعد سري", n.extras.getCharSequence(android.app.Notification.EXTRA_TITLE).toString())
     }
 
+    /** Black-box U2: a reminder that arrives 30 minutes late (phone off) is in the alert log, late, with its lateness. */
+    @Test fun aLateArrivalIsInTheAlertLog() {
+        val now = Instant.now()
+        save(TaskInput(title = "x", dueAt = now.minusSeconds(30 * 60)), now.minusSeconds(3600))
+        // As after a restart: the boot run is the first to see it.
+        com.fastkiwi.rememberme.alarm.SystemReceiver().onReceive(app, Intent(Intent.ACTION_BOOT_COMPLETED))
+        Engine.drain()
+        val events = com.fastkiwi.rememberme.data.AlertLog(app).entries()
+        assertTrue("posted: $events", events.any { it.event == com.fastkiwi.rememberme.data.AlertLog.Event.POSTED })
+        val late = events.first { it.event == com.fastkiwi.rememberme.data.AlertLog.Event.LATE }
+        assertTrue(late.lateMs >= 29 * 60_000L)
+    }
+
     @Test fun theChannelsAreTheFixedSetAndTheDueOnesHaveNoSoundOfTheirOwn() {
         val ids = nm.notificationChannels.map { it.id }.toSet()
         assertEquals(setOf("due_normal_v1", "due_alarm_v1", "reminders_v1", "reminders_quiet_v1", "reminders_vibrate_v1", "notices_v1", "summary_v1"), ids)
