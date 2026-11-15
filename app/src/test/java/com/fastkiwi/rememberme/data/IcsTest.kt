@@ -22,6 +22,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import java.util.TimeZone
+import org.junit.runners.Parameterized
+import org.junit.runner.RunWith
+import org.junit.After
 import org.junit.Test
 import java.io.StringReader
 import java.time.DayOfWeek
@@ -41,9 +45,49 @@ import java.time.zone.ZoneRules
 /**
  * The iCalendar export, checked with an independent RFC 5545 implementation (ical4j, test only): it
  * parses our file and expands each RRULE, and the occurrences must equal the app's own nextOccurrence.
+ *
+ * Run under two default time zones (the phone's or the CI machine's: UTC and Asia/Baghdad). The first public
+ * CI (Linux, UTC, 2026-11-15) failed one case: ical4j drops an RDATE that sits within the zone offset of the
+ * query window's start when the default zone differs from the event's TZID. The export itself never depends on
+ * the default zone ([theExportDoesNotDependOnTheDefaultZone]); the queries use [occurrences].
  */
-class IcsTest {
-    @Before fun ids() = T.ids()
+@RunWith(Parameterized::class)
+class IcsTest(private val defaultZone: String) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "default zone {0}")
+        fun zones() = listOf("UTC", "Asia/Baghdad")
+    }
+
+    private lateinit var before: TimeZone
+
+    @Before fun ids() {
+        before = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone(defaultZone))
+        T.ids()
+    }
+
+    @After fun restore() = TimeZone.setDefault(before)
+
+    /**
+     * ical4j's occurrences between [from] and [to] (both included). It is asked for a day more on each side and the
+     * result is cut by instant, so its default-zone boundary comparison cannot drop an occurrence at [from].
+     */
+    private fun occurrences(ev: VEvent, from: Instant, to: Instant, zone: ZoneId): List<Instant> =
+        ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(from.minusSeconds(86_400), zone), ZonedDateTime.ofInstant(to.plusSeconds(86_400), zone)))
+            .map { p -> instant(p.start) }.filter { !it.isBefore(from) && !it.isAfter(to) }.sorted()
+
+    @Test fun theExportDoesNotDependOnTheDefaultZone() {
+        val zone = ZoneId.of("Asia/Baghdad")
+        val due = at(zone, 2026, 11, 16, 9)
+        val (s, _) = Tasks.save(AppState(), TaskInput(title = "x", dueAt = due, repeat = Repeat.DAYS, days = listOf(0, 3)), due.minusSeconds(3600), zone)
+        val texts = listOf("UTC", "Asia/Baghdad", "America/Los_Angeles", "Pacific/Kiritimati").map { z ->
+            TimeZone.setDefault(TimeZone.getTimeZone(z))
+            Ics.export(s, zone, due.minusSeconds(3600))
+        }
+        TimeZone.setDefault(TimeZone.getTimeZone(defaultZone))
+        assertEquals(1, texts.toSet().size)
+    }
 
     private fun parse(text: String): Calendar = CalendarBuilder().build(StringReader(text))
 
@@ -96,9 +140,7 @@ class IcsTest {
             expected += cur
             repeat(14) { cur = nextOccurrence(cur, t.repeat, cur, t.rule, zone); expected += cur }
             // ical4j's expansion of the same rule.
-            val end = ZonedDateTime.ofInstant(cur.plusSeconds(1), zone)
-            val period = Period<ZonedDateTime>(ZonedDateTime.ofInstant(due.minusSeconds(1), zone), end)
-            val got = ev.calculateRecurrenceSet<Temporal>(period).map { p -> instant(p.start) }.sorted()
+            val got = occurrences(ev, due, cur, zone)
             assertEquals("${pair.second.title} in ${pair.first}", expected, got)
         }
     }
@@ -231,8 +273,7 @@ class IcsTest {
         var cur = due
         expected += cur
         repeat(10) { cur = nextOccurrence(cur, t.repeat, cur, t.rule, zone); expected += cur }
-        val got = ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(due.minusSeconds(1), zone), ZonedDateTime.ofInstant(cur.plusSeconds(1), zone)))
-            .map { p -> instant(p.start) }.sorted()
+        val got = occurrences(ev, due, cur, zone)
         assertEquals(expected, got)
     }
 
@@ -251,8 +292,7 @@ class IcsTest {
         var cur = t.scheduleAt!!
         expected += cur
         repeat(5) { cur = nextOccurrence(cur, t.repeat, cur, t.rule, zone); expected += cur }
-        val got = ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(expected[0].minusSeconds(1), zone), ZonedDateTime.ofInstant(cur.plusSeconds(1), zone)))
-            .map { p -> instant(p.start) }.sorted()
+        val got = occurrences(ev, expected[0], cur, zone)
         assertEquals(expected, got)
     }
 
