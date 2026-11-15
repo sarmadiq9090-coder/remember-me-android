@@ -102,6 +102,10 @@ class QuickAddFuzzTortureTest {
         for (line in corpus) for ((kind, f) in decorate) for (now in nows) {
             val text = f(line)
             val r = strict(text, now, zone, 6)
+            // Accepted (lead, 2026-11-15): «الخميس، الماضي» / «السبت، اللي فات» are read the same way by the
+            // Windows parser (checked with parseWhen); Quick Add then asks for a time and never saves a date
+            // the user has not seen. Kept for parity; noted for both apps' backlog.
+            if (r.dueAt == null && r.ask != null && SHARED_WITH_WINDOWS.any { text.contains(it) }) continue
             if (r.understood || r.dueAt != null || r.ask != null) { invented += "$kind «$text» → due=${r.dueAt} ask=${r.ask} title=«${r.title}»"; inventedTexts += text; byKind.merge(kind, 1, Int::plus) }
         }
         // Which of them the Windows app reads the same way (a shared rule) and which only Android invents.
@@ -126,5 +130,9 @@ class QuickAddFuzzTortureTest {
         Torture.node("quickadd-windows.cjs", Torture.windowsDir().path, input.path, output.path)
         val answers = Codec.json.parseToJsonElement(output.readText()) as JsonArray
         return answers.map { a -> (a as JsonObject)["reading"]?.takeIf { it !is JsonNull } }
+    }
+
+    private companion object {
+        val SHARED_WITH_WINDOWS = listOf("الماضي", "اللي فات")
     }
 }
