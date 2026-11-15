@@ -123,4 +123,19 @@ class HuntQuickAddTest {
         assertEquals("«بعد المغرب» resolved to ${r.dueAt?.atZone(zone)}, a fixed part of the day, not the prayer", maghrib, r.dueAt)
         assertEquals("the title keeps a dangling «بعد»", "اتصل بأمي", r.title)
     }
+
+    /** Black-box U1: an English date phrase inside an Arabic text is read in full. */
+    @Test fun aMixedTextReadsTheEnglishDatePhrase() {
+        val r = QuickAdd.parse("دفع رسوم البنك tomorrow 10am", now, zone)
+        assertEquals(java.time.LocalDateTime.of(2026, 11, 16, 10, 0), r.dueAt?.atZone(zone)?.toLocalDateTime())
+        assertEquals("دفع رسوم البنك", r.title)
+        // P3's own phrases from the black-box test keep working.
+        assertTrue(QuickAdd.parse("call Sara بعد ساعة", now, zone).dueAt != null)
+    }
+
+    /** Black-box U2: the name «علي» before a day is part of the title. */
+    @Test fun theNameAliBeforeADayStaysInTheTitle() {
+        assertEquals("عيد ميلاد علي", QuickAdd.parse("عيد ميلاد علي الخميس 5 العصر", now, zone).title)
+        assertEquals("اتصل بأمي", QuickAdd.parse("اتصل بأمي علي الساعة 5 العصر", now, zone).title)
+    }
 }

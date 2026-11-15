@@ -58,7 +58,7 @@ object QuickAdd {
         val typed = text.take(MAX_TEXT)
         if (Js.trim(typed).isEmpty()) return none
         AndroidAdditions.parse(typed, now, zone)?.let { return it }
-        val reading = ArabicDates.parse(typed) ?: EnglishDates.parse(typed, now, zone) ?: return none
+        val reading = pick(typed, now, zone) ?: return none
         val week = if (weekStart in listOf(0, 1, 6)) weekStart else 6
         val r = resolve(reading, now, zone, week)
         val ask = r.ask
@@ -72,6 +72,20 @@ object QuickAdd {
             options = r.options.mapIndexed { i, at -> QuickOption(at, hint(ask, i, at, zone)) },
             understood = true,
         )
+    }
+
+    /**
+     * The Arabic reading first, as on Windows. Android addition: in a text that mixes Arabic and Latin letters
+     * («دفع رسوم البنك tomorrow 10am»), the English reading wins when it covers more of the text, so an English
+     * date phrase is never left half read (the Windows parity set has no mixed texts).
+     */
+    private fun pick(typed: String, now: Instant, zone: ZoneId): Reading? {
+        val ar = ArabicDates.parse(typed)
+        val mixed = typed.any { it in '\u0600'..'\u06FF' } && typed.any { it in 'a'..'z' || it in 'A'..'Z' }
+        if (ar == null || !mixed) return ar ?: EnglishDates.parse(typed, now, zone)
+        val en = EnglishDates.parse(typed, now, zone) ?: return ar
+        fun covered(r: Reading) = r.spans.sumOf { maxOf(0, it[1] - it[0]) }
+        return if (covered(en) > covered(ar)) en else ar
     }
 
     private fun hint(ask: Ask?, index: Int, at: Instant, zone: ZoneId): String {
@@ -222,8 +236,18 @@ internal fun cutTitle(text: String, spans: List<IntArray>): String {
     }
     pieces += text.substring(from)
     val words = pieces.map { Js.words(it).toMutableList() }
+    // Android addition: «علي» is also the name Ali. It is cut as «على» only before a time («علي الساعة 5»,
+    // «علي 5»), never before a day («عيد ميلاد علي الخميس» keeps the name). Not in the Windows parity set.
+    fun spanStartsWithTime(i: Int): Boolean {
+        val span = sorted.getOrNull(i) ?: return true
+        val head = text.substring(span[0].coerceIn(0, text.length), span[1].coerceIn(0, text.length)).trimStart()
+        return head.firstOrNull()?.let { it.isDigit() } == true || head.startsWith("الساع") || head.startsWith("ساع")
+    }
     words.forEachIndexed { i, list ->
-        if (i < words.size - 1) while (list.isNotEmpty() && CONNECTORS.matches(list.last())) list.removeAt(list.size - 1)
+        if (i < words.size - 1) while (list.isNotEmpty() && CONNECTORS.matches(list.last())) {
+            if (list.last() == "علي" && !spanStartsWithTime(i)) break
+            list.removeAt(list.size - 1)
+        }
         if (i > 0) while (list.isNotEmpty() && CONNECTORS.matches(list.first())) list.removeAt(0)
     }
     val title = EDGES.replace(words.flatten().joinToString(" "), "")

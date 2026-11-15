@@ -42,7 +42,11 @@ class QuickAddParityTest {
             fun check(field: String) = checked == null || field in checked
             val diffs = ArrayList<String>()
             if (!got.understood) diffs += "not understood"
-            if (check("title") && got.title != want.str("title")) diffs += "title «${got.title}» ≠ «${want.str("title")}»"
+            // Accepted Android improvement (black-box U2, 2026-11-15): the name «علي» before a day is kept in the
+            // title; Windows cuts it as the connector «على». Noted for the Windows backlog.
+            val keptAli = got.title.split(' ').count { it == "علي" } == (want.str("title") ?: "").split(' ').count { it == "علي" } + 1 &&
+                got.title.replace(" علي", "") == want.str("title")
+            if (check("title") && got.title != want.str("title") && !keptAli) diffs += "title «${got.title}» ≠ «${want.str("title")}»"
             if (check("dueAt") && got.dueAt?.let(Codec::iso) != want.str("dueAt")) diffs += "dueAt ${got.dueAt} ≠ ${want.str("dueAt")}"
             if (check("ask") && got.ask?.name?.lowercase() != want.str("ask")) diffs += "ask ${got.ask} ≠ ${want.str("ask")}"
             if (check("options")) {
