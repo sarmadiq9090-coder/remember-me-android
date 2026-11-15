@@ -146,9 +146,10 @@ class QcGapsTest {
     @Test fun texts_theRestoreCountUsesACorrectArabicPlural() {
         val ar = app.createConfigurationContext(android.content.res.Configuration(app.resources.configuration).apply { setLocale(java.util.Locale("ar")) })
         val en = app.createConfigurationContext(android.content.res.Configuration(app.resources.configuration).apply { setLocale(java.util.Locale.ENGLISH) })
-        val three = ar.getString(R.string.import_done, "3")
-        val eleven = ar.getString(R.string.import_done, "11")
-        val one = en.getString(R.string.import_done, "1")
+        // A plural resource since the fix (G-15).
+        val three = ar.resources.getQuantityString(R.plurals.import_done, 3, "3")
+        val eleven = ar.resources.getQuantityString(R.plurals.import_done, 11, "11")
+        val one = en.resources.getQuantityString(R.plurals.import_done, 1, "1")
         assertTrue("«$three» / «$eleven» / «$one»", three.contains("3 تذكيرات") && eleven.contains("11 تذكيرًا") && !one.contains("1 reminders"))
     }
 }

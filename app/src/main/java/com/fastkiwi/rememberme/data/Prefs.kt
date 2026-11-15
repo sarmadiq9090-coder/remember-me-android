@@ -33,6 +33,10 @@ class Prefs(context: Context) {
         set(v) = p.edit { if (v == null) remove("dataSchema") else putInt("dataSchema", v) }
 
     /** The versionCode that last opened the data (null before 0.2.0). */
+    var lastVersionName: String?
+        get() = p.getString("lastVersionName", null)
+        set(v) = p.edit { if (v == null) remove("lastVersionName") else putString("lastVersionName", v) }
+
     var lastVersion: Int?
         get() = if (p.contains("lastVersion")) p.getInt("lastVersion", 0) else null
         set(v) = p.edit { if (v == null) remove("lastVersion") else putInt("lastVersion", v) }

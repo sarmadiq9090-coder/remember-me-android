@@ -62,7 +62,6 @@
     <string name="fix">Fix</string>
     <string name="import_">Restore from a file</string>
     <string name="import_damaged">The backup is damaged: it does not match its saved checksum.</string>
-    <string name="import_done">Data restored: %1$s reminders. Your previous data was kept in Safety copies.</string>
     <string name="import_failed">Could not restore.</string>
     <string name="import_invalid">The data file is invalid.</string>
     <string name="import_not_backup">This file is not a Remember Me backup.</string>
@@ -1122,6 +1121,10 @@
     <plurals name="ics_years">
         <item quantity="one">%1$s year</item>
         <item quantity="other">%1$s years</item>
+    </plurals>
+    <plurals name="import_done">
+        <item quantity="one">Data restored: %1$s reminder. Your previous data was kept in Safety copies.</item>
+        <item quantity="other">Data restored: %1$s reminders. Your previous data was kept in Safety copies.</item>
     </plurals>
     <plurals name="set_tones_included">
         <item quantity="one">%1$s tone from your files is restored with it</item>

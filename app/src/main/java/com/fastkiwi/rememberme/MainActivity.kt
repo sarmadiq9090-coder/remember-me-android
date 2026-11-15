@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
     fun applyImport(imported: Backup.Imported): String = try {
         Repo.store(this).safetyCopy()
         Repo.change(this) { imported.state }
-        getString(R.string.import_done, imported.state.tasks.count { it.deletedAt == null }.toString())
+        imported.state.tasks.count { it.deletedAt == null }.let { n -> L10n.plural(this, R.plurals.import_done, n.toLong()) }
     } catch (_: Exception) {
         getString(R.string.import_failed)
     }

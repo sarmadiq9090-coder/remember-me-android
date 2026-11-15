@@ -64,7 +64,6 @@ S = [
 ("fix", "إصلاح", "Fix"),
 ("import_", "استعادة من ملف", "Restore from a file"),
 ("import_damaged", "النسخة تالفة: لا تطابق رمز التحقق المحفوظ معها.", "The backup is damaged: it does not match its saved checksum."),
-("import_done", "استُعيدت البيانات: %1$s تذكير. حُفظت بياناتك السابقة في «نسخ الأمان».", "Data restored: %1$s reminders. Your previous data was kept in Safety copies."),
 ("import_failed", "تعذّرت الاستعادة.", "Could not restore."),
 ("import_invalid", "ملف البيانات غير صالح.", "The data file is invalid."),
 ("import_not_backup", "هذا الملف ليس نسخة احتياطية من ذكرني.", "This file is not a Remember Me backup."),

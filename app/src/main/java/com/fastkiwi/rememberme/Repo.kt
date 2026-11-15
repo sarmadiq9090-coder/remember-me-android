@@ -27,9 +27,14 @@ object Repo {
             // A new version of the app: keep a copy of the data as it was before this version touches it.
             val had = st.file.exists()
             val code = com.fastkiwi.rememberme.BuildConfig.VERSION_CODE
+            val name = com.fastkiwi.rememberme.BuildConfig.VERSION_NAME
             val last = prefs.lastVersion ?: if (had) 1 else code
-            if (had && last != code && !st.newer) runCatching { st.safetyCopy("before-update-v$last-") }
+            // Keyed by versionCode and versionName (F-082): 1.0.0-rc.N and 1.0.0 share versionCode 3.
+            val lastName = prefs.lastVersionName
+            val changed = last != code || (lastName != null && lastName != name)
+            if (had && changed && !st.newer) runCatching { st.safetyCopy("before-update-v$last-") }
             prefs.lastVersion = code
+            prefs.lastVersionName = name
             val from = prefs.dataSchema ?: Migrations.CURRENT
             if (!st.newer) prefs.dataSchema = st.migrate(from, Migrations.CURRENT, Migrations.steps).coerceAtLeast(from)
             store = st

@@ -62,7 +62,6 @@
     <string name="fix">إصلاح</string>
     <string name="import_">استعادة من ملف</string>
     <string name="import_damaged">النسخة تالفة: لا تطابق رمز التحقق المحفوظ معها.</string>
-    <string name="import_done">استُعيدت البيانات: %1$s تذكير. حُفظت بياناتك السابقة في «نسخ الأمان».</string>
     <string name="import_failed">تعذّرت الاستعادة.</string>
     <string name="import_invalid">ملف البيانات غير صالح.</string>
     <string name="import_not_backup">هذا الملف ليس نسخة احتياطية من ذكرني.</string>
@@ -1250,6 +1249,14 @@
         <item quantity="few">%1$s سنوات</item>
         <item quantity="many">%1$s سنة</item>
         <item quantity="other">%1$s سنة</item>
+    </plurals>
+    <plurals name="import_done">
+        <item quantity="zero">استُعيدت البيانات: %1$s تذكير. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
+        <item quantity="one">استُعيدت البيانات: تذكير واحد. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
+        <item quantity="two">استُعيدت البيانات: تذكيران. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
+        <item quantity="few">استُعيدت البيانات: %1$s تذكيرات. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
+        <item quantity="many">استُعيدت البيانات: %1$s تذكيرًا. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
+        <item quantity="other">استُعيدت البيانات: %1$s تذكير. حُفظت بياناتك السابقة في «نسخ الأمان».</item>
     </plurals>
     <plurals name="set_tones_included">
         <item quantity="zero">%1$s نغمة من ملفاتك تُستعاد معها</item>

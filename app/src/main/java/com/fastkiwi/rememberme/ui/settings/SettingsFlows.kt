@@ -175,7 +175,8 @@ class SettingsFlows(private val activity: ComponentActivity) {
                 }.isSuccess
             }
             onRestored()
-            if (ok) toast(R.string.import_done, imported.state.tasks.count { it.deletedAt == null }.toString()) else toast(R.string.import_failed)
+            if (ok) Toast.makeText(activity, L10n.plural(activity, R.plurals.import_done, imported.state.tasks.count { it.deletedAt == null }.toLong()), Toast.LENGTH_LONG).show()
+            else toast(R.string.import_failed)
         }
     }
 
