@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.data
 
+import androidx.core.content.edit
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -38,7 +39,7 @@ object DeleteAll {
         runCatching { com.fastkiwi.rememberme.alarm.RingService.stop(app, remove = true) }
         runCatching {
             Prefs(app).autoBackupUri.takeIf { it.isNotEmpty() }?.let { u ->
-                app.contentResolver.releasePersistableUriPermission(android.net.Uri.parse(u),
+                app.contentResolver.releasePersistableUriPermission(u.toUri(),
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }
         }
@@ -59,7 +60,7 @@ object DeleteAll {
         val names = (dir.listFiles()?.map { it.name.removeSuffix(".xml") }.orEmpty() + known).distinct().filter { it !in LIBRARY_PREFS }
         for (name in names) {
             // Clear first: a SharedPreferences object stays cached in memory after its file is deleted.
-            runCatching { c.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit() }
+            runCatching { c.getSharedPreferences(name, Context.MODE_PRIVATE).edit(commit = true) { clear() } }
             runCatching { c.deleteSharedPreferences(name) }
         }
     }

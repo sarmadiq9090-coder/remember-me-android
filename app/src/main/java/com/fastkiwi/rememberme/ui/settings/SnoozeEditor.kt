@@ -77,7 +77,7 @@ object SnoozeOptions {
 @Composable
 fun SnoozeEditorScreen(presets: List<SnoozePreset>, onChange: (List<SnoozePreset>) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
-    var slot by rememberSaveable { mutableStateOf(-1) }
+    var slot by rememberSaveable { androidx.compose.runtime.mutableIntStateOf(-1) }
     var timeFor by rememberSaveable { mutableStateOf<String?>(null) }
     Page(stringResource(R.string.set_snooze_presets), onBack) {
         Text(stringResource(R.string.set_snooze_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.alarm
 
+import androidx.core.net.toUri
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
@@ -110,7 +111,7 @@ class RingService : Service() {
             }
             try {
                 mp.setAudioAttributes(attrs)
-                if (src.startsWith("/")) mp.setDataSource(src) else mp.setDataSource(this, Uri.parse(src))
+                if (src.startsWith("/")) mp.setDataSource(src) else mp.setDataSource(this, src.toUri())
                 mp.isLooping = alarm
                 mp.setOnPreparedListener {
                     if (settled || gen != generation) { runCatching { it.release() }; return@setOnPreparedListener }

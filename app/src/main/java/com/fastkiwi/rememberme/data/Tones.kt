@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.data
 
+import androidx.core.net.toUri
 import android.content.Context
 import android.media.RingtoneManager
 import android.net.Uri
@@ -42,7 +43,7 @@ object Tones {
         "bundled" -> bundledUri(c, t.ref)?.let { Source(it, t.ref) }
         "file" -> dir(c).listFiles()?.firstOrNull { it.name.substringBefore('.') == t.ref }?.let { Source(it.absolutePath, t.title) }
         "system" -> t.ref.takeIf { it.isNotEmpty() }?.let { ref ->
-            val title = runCatching { RingtoneManager.getRingtone(c, Uri.parse(ref))?.getTitle(c) }.getOrNull()
+            val title = runCatching { RingtoneManager.getRingtone(c, ref.toUri())?.getTitle(c) }.getOrNull()
             if (title != null && (t.title.isEmpty() || title == t.title)) Source(ref, title) else null
         }
         else -> null

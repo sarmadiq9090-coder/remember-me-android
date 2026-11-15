@@ -164,7 +164,7 @@ fun SettingsScreen(
     var safetyPick by remember { mutableStateOf<File?>(null) }
     val scroll = rememberScrollState()
     val tops = remember { HashMap<String, Float>() }
-    var columnTop by remember { mutableStateOf(0f) }
+    var columnTop by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
 
     // Sub-pages of Settings (Back returns to Settings).
     when (sub) {

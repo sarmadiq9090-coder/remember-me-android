@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.alarm
 
+import androidx.core.net.toUri
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -173,7 +174,7 @@ object Engine {
     const val HOUSEKEEPING = 102
 
     private fun intent(context: Context, slot: Int) = Intent(context, AlarmReceiver::class.java).setAction(AlarmReceiver.FIRE)
-        .setData(android.net.Uri.parse("rememberme://slot/$slot"))
+        .setData("rememberme://slot/$slot".toUri())
 
     private fun operation(context: Context, slot: Int): PendingIntent =
         PendingIntent.getBroadcast(context, slot, intent(context, slot), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
