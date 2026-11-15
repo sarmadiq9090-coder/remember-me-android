@@ -4,7 +4,6 @@ S = [
 ("added_msg", "أُضيف التذكير", "Reminder added"),
 ("qa_label", "اكتب التذكير وموعده", "Type a reminder and when"),
 ("qa_title_is", "العنوان: %1$s", "Title: %1$s"),
-("qa_nothing", "لم أفهم موعدًا. سيُحفظ النص عنوانًا بلا موعد.", "No time understood. The text will be saved as a title with no date."),
 ("qa_more", "خيارات أكثر", "More options"),
 ("qa_template", "من قالب", "From a template"),
 ("qa_category", "التصنيف: %1$s", "Category: %1$s"),

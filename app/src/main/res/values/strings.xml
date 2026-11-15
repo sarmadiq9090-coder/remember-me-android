@@ -702,7 +702,6 @@
     <string name="added_msg">أُضيف التذكير</string>
     <string name="qa_label">اكتب التذكير وموعده</string>
     <string name="qa_title_is">العنوان: %1$s</string>
-    <string name="qa_nothing">لم أفهم موعدًا. سيُحفظ النص عنوانًا بلا موعد.</string>
     <string name="qa_more">خيارات أكثر</string>
     <string name="qa_template">من قالب</string>
     <string name="qa_category">التصنيف: %1$s</string>

@@ -702,7 +702,6 @@
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>
     <string name="qa_title_is">Title: %1$s</string>
-    <string name="qa_nothing">No time understood. The text will be saved as a title with no date.</string>
     <string name="qa_more">More options</string>
     <string name="qa_template">From a template</string>
     <string name="qa_category">Category: %1$s</string>
