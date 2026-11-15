@@ -75,3 +75,17 @@ internet, no statistics.
 2. Run Test the alert now with "tomorrow 7:00" and leave the phone overnight.
 3. Some makers (Xiaomi, Samsung, Huawei, OPPO, vivo) stop background apps: follow their steps under Phone maker.
 4. The alert log shows when each alert arrived and how late, without any title.
+
+## 11. More features
+- **Voice input**: the microphone in Quick Add. It uses your phone's speech recognition (which may use the
+  internet on its side; Remember Me itself sends nothing). A note says so on first use.
+- **Read aloud**: per reminder in Alert options, or in Settings. Never in silent mode or Do Not Disturb; on a
+  locked phone with "hide details" it only says "You have a reminder".
+- **Morning summary**: Settings → Morning summary → choose the time. A quiet notice with today's count, none
+  when there is nothing.
+- **Change history**: Settings → Organisation (off by default). It keeps when a reminder was snoozed or moved,
+  without titles, on your phone only; cleared from Settings; opened from the editor's ⋮ menu.
+- **Complete the reminder when all steps are done**: Settings → Organisation (off by default).
+- **What's new**: shown once after updating to 1.0.0; from it you can turn every important reminder back to a
+  normal one.
+- **Privacy**: Settings → About → Privacy: every permission the app asks for, and why.
