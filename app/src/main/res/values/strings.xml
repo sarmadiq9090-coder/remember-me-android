@@ -696,6 +696,7 @@
     <string name="banner_notifications_off">الإشعارات مطفأة: لن يظهر أي تذكير.</string>
     <string name="banner_autobackup_failed">لم تُحفظ النسخة التلقائية الأسبوعية. اختر المجلد من جديد في الإعدادات.</string>
     <string name="h_autobackup">النسخة التلقائية الأسبوعية</string>
+    <string name="about_voice">الإدخال الصوتي وحده يمرّ عبر خدمة الكلام في هاتفك (غالبًا من Google)، وقد تعمل هذه الخدمة عبر الإنترنت. نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. ذكرني نفسه لا يملك إذن الميكروفون.</string>
     <string name="tone_bundled_default">نغمة ذكرني 1 (لا توجد نغمة افتراضية في الهاتف)</string>
     <string name="added_msg">أُضيف التذكير</string>
     <string name="qa_label">اكتب التذكير وموعده</string>
@@ -714,8 +715,9 @@
     <string name="qa_ask_choose">أي موعد تقصد؟</string>
     <string name="qa_choose_first">اختر موعدًا أو «بلا موعد»</string>
     <string name="qa_voice_title">الإدخال الصوتي</string>
-    <string name="qa_voice_body">يستعمل الإدخال الصوتي خدمة الكلام في هاتفك. قد تستعمل هذه الخدمة الإنترنت إن لم تكن حزمة اللغة مثبتة على الهاتف. ذكرني نفسه لا يرسل شيئًا ولا يطلب إذن الميكروفون.</string>
-    <string name="qa_voice_missing">لا توجد خدمة إدخال صوتي على هذا الهاتف.</string>
+    <string name="qa_voice_body">يمرّ الإدخال الصوتي عبر خدمة الكلام في هاتفك (غالبًا من Google)، وقد تعمل هذه الخدمة عبر الإنترنت. نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. ذكرني نفسه لا يرسل شيئًا ولا يطلب إذن الميكروفون.</string>
+    <string name="qa_voice_missing">الإدخال الصوتي غير متاح على هذا الهاتف. استعمل ميكروفون لوحة المفاتيح.</string>
+    <string name="qa_voice_no_text">لم يصل نص من الإدخال الصوتي. جرّب مرة أخرى، أو استعمل ميكروفون لوحة المفاتيح.</string>
     <string name="shortcut_quick">إضافة سريعة</string>
     <string name="templates_title">من قالب</string>
     <string name="templates_hint">القالب يملأ الحقول فقط. لا يُحفظ شيء قبل «حفظ».</string>
@@ -901,7 +903,7 @@
     <string name="set_privacy_permissions">كل إذن ولماذا</string>
     <string name="set_privacy_never">ما لا نفعله</string>
     <string name="set_privacy_voice">الإدخال الصوتي</string>
-    <string name="set_privacy_voice_body">ذكرني لا يسجّل الصوت ولا يملك إذن الميكروفون. حين تضغط زر الصوت يفتح أندرويد خدمة التعرّف على الكلام في هاتفك، ويعيد إلينا النص فقط. قد ترسل تلك الخدمة صوتك إلى شركتها إن لم تكن تعمل دون إنترنت؛ نطلب منها العمل دون إنترنت حين يمكن ذلك.</string>
+    <string name="set_privacy_voice_body">ذكرني لا يسجّل الصوت ولا يملك إذن الميكروفون. حين تضغط زر الصوت يفتح أندرويد خدمة التعرّف على الكلام في هاتفك، ويعيد إلينا النص فقط. قد تعمل تلك الخدمة عبر الإنترنت وترسل صوتك إلى شركتها (غالبًا Google)؛ نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. إن لم تتوفر الخدمة يختفي زر الصوت، ويبقى ميكروفون لوحة المفاتيح.</string>
     <string name="set_privacy_backups">النسخ والملفات</string>
     <string name="set_privacy_backups_body">النسخة تُحفظ حيث تختار أنت فقط. النسخة غير مشفّرة إلا إن فعّلت «تشفير النسخة». «تقرير التوافق» لا يُرسل إلا إن شاركته بنفسك.</string>
     <string name="set_perm_notifications">الإشعارات</string>

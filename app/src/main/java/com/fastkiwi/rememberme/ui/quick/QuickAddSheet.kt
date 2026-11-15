@@ -3,7 +3,6 @@ package com.fastkiwi.rememberme.ui.quick
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -150,18 +152,6 @@ internal object QuickPrefs {
     fun setVoiceDisclosed(context: Context) = p(context).edit { putBoolean("voiceDisclosed", true) }
 }
 
-/** The phone's speech service, offline when it can, in the app language. Needs no permission in this app. */
-fun voiceIntent(context: Context): Intent {
-    val locale = L10n.current(context)
-    val tag = if (locale.country.isNullOrEmpty()) locale.language else locale.language + "-" + locale.country
-    return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        .putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)
-        .putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-        .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-        .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.qa_label))
-}
-
 /**
  * The Quick Add sheet (DESIGN-SPEC §5.3): the field (focused, «اكتب التذكير وموعده», mic), the preview card
  * (always before «حفظ»), the chips «من قالب», «التصنيف», «الأهمية», and «خيارات أكثر» · «حفظ». «حفظ» stays
@@ -180,13 +170,43 @@ fun QuickAddSheet(
     val context = LocalContext.current
     val focus = remember { FocusRequester() }
     var disclose by remember { mutableStateOf(false) }
-    var voiceMissing by remember { mutableStateOf(false) }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    // 1.0.1: the mic only where the phone has a speech dialog and a speech service; never left at a dead dialog.
+    val canVoice = remember { VoiceInput.available(context) }
+    var voiceNote by remember { mutableStateOf<Int?>(null) }
+    var voiceTag by rememberSaveable { mutableStateOf<String?>(null) }
+    var backToField by remember { mutableStateOf(false) }
     val voice = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        res.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let(state::append)
+        voiceNote = when (val o = VoiceInput.result(context, voiceTag, res.resultCode, res.data)) {
+            is VoiceInput.Outcome.Text -> { state.append(o.text); null }
+            VoiceInput.Outcome.NoText -> R.string.qa_voice_no_text
+            VoiceInput.Outcome.Failed -> R.string.qa_voice_missing
+        }
+        // Back in the field with the keyboard open, whatever happened (its own mic is the way out).
+        backToField = true
     }
     fun listen() {
-        voiceMissing = false
-        try { voice.launch(voiceIntent(context)) } catch (_: ActivityNotFoundException) { voiceMissing = true }
+        voiceNote = null
+        val tag = VoiceInput.language(context)
+        voiceTag = tag
+        try {
+            if (!VoiceInput.available(context)) throw ActivityNotFoundException()
+            // The dialog takes over the screen; the cursor and keyboard come back with the answer.
+            focusManager.clearFocus()
+            voice.launch(VoiceInput.intent(context, tag))
+        } catch (_: ActivityNotFoundException) {
+            VoiceInput.failed(context, tag)
+            voiceNote = R.string.qa_voice_missing
+            backToField = true
+        }
+    }
+    LaunchedEffect(backToField) {
+        if (backToField) {
+            runCatching { focus.requestFocus() }
+            keyboard?.show()
+            backToField = false
+        }
     }
     // The preview follows the typing after a short pause (150 ms).
     LaunchedEffect(state.text) {
@@ -211,11 +231,11 @@ fun QuickAddSheet(
                 value = state.text, onValueChange = state::onTextChange,
                 label = { Text(stringResource(R.string.qa_label)) },
                 minLines = 1, maxLines = 3,
-                trailingIcon = {
+                trailingIcon = if (!canVoice) null else ({
                     TooltipIconButton(Ms.Mic, stringResource(R.string.qa_voice), {
                         if (QuickPrefs.voiceDisclosed(context)) listen() else disclose = true
                     })
-                },
+                }),
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -223,8 +243,10 @@ fun QuickAddSheet(
                 ),
                 modifier = Modifier.fillMaxWidth().focusRequester(focus),
             )
-            if (voiceMissing) Text(stringResource(R.string.qa_voice_missing), style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error)
+            voiceNote?.let { note ->
+                Text(stringResource(note), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            }
             if (state.text.isNotBlank()) PreviewCard(state)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
                 AssistChip(onClick = onTemplate, label = { Text(stringResource(R.string.qa_template)) }, modifier = Modifier.heightIn(min = Dimens.touch),

@@ -587,7 +587,10 @@ fun AboutScreen(onBack: () -> Unit) {
         Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.l)) {
             Row(Modifier.padding(Dimens.l)) {
                 Icon(Ms.VerifiedUser, null, tint = MaterialTheme.colorScheme.primary)
-                Text(stringResource(R.string.about_privacy), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = Dimens.l))
+                Column(Modifier.padding(start = Dimens.l), verticalArrangement = Arrangement.spacedBy(Dimens.s)) {
+                    Text(stringResource(R.string.about_privacy), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.about_voice), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
         SectionHeader(stringResource(R.string.licences))

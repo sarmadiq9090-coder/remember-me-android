@@ -77,8 +77,12 @@ internet, no statistics.
 4. The alert log shows when each alert arrived and how late, without any title.
 
 ## 11. More features
-- **Voice input**: the microphone in Quick Add. It uses your phone's speech recognition (which may use the
-  internet on its side; Remember Me itself sends nothing). A note says so on first use.
+- **Voice input**: the microphone in Quick Add. **Privacy note:** voice input goes through your phone's speech
+  service (usually Google's), which may work over the internet; we ask it to work offline, on the phone itself,
+  when it can. Remember Me itself has no microphone or internet permission. A note says so on first use and in
+  About. Without a speech service the microphone is hidden. If the service fails or you close it, a message shows
+  and the cursor returns to the field with the keyboard: use the keyboard's microphone. The next try uses another
+  language (the phone's, then Arabic, then Arabic (Saudi Arabia), then the service's own).
 - **Read aloud**: per reminder in Alert options, or in Settings. Never in silent mode or Do Not Disturb; on a
   locked phone with "hide details" it only says "You have a reminder".
 - **Morning summary**: Settings → Morning summary → choose the time. A quiet notice with today's count, none

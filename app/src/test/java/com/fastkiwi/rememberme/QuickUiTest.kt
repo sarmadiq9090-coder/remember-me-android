@@ -92,6 +92,19 @@ class QuickUiTest {
 
     private fun field() = rule.onNode(hasSetTextAction())
 
+    /** A phone with a speech dialog and service (the mic shows only then; VoiceUiTest covers phones without). */
+    private fun installRecognizer() {
+        val pm = shadowOf(app.packageManager)
+        val pkg = "com.google.android.googlequicksearchbox"
+        val ai = android.content.pm.ApplicationInfo().apply { packageName = pkg }
+        pm.addResolveInfoForIntent(Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), android.content.pm.ResolveInfo().apply {
+            activityInfo = android.content.pm.ActivityInfo().apply { packageName = pkg; name = "$pkg.VoiceSearchActivity"; applicationInfo = ai }
+        })
+        pm.addResolveInfoForIntent(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), android.content.pm.ResolveInfo().apply {
+            serviceInfo = android.content.pm.ServiceInfo().apply { packageName = pkg; name = "$pkg.RecognitionService"; applicationInfo = ai }
+        })
+    }
+
     /** Types, then lets the 150 ms preview debounce run (Robolectric's main looper is paused). */
     private fun type(text: String) {
         field().performTextInput(text)
@@ -122,6 +135,7 @@ class QuickUiTest {
     // ---- Quick Add (§7.4 row «Quick Add») ----
 
     @Test fun quickAddPreviewsThenSavesWithUndo() {
+        installRecognizer()
         quickAdd().use {
             rule.onNodeWithText("اكتب التذكير وموعده").assertExists()
             rule.onNodeWithContentDescription("إدخال صوتي").assertExists()
@@ -198,6 +212,7 @@ class QuickUiTest {
     }
 
     @Test fun voiceShowsTheDisclosureOnceAndAsksNoPermission() {
+        installRecognizer()
         quickAdd().use {
             rule.onNodeWithContentDescription("إدخال صوتي").performClick()
             rule.onNodeWithText("الإدخال الصوتي").assertExists()
