@@ -178,43 +178,46 @@ fun TonePickerSheet(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = SheetShape, containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = Dimens.l)) {
-            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = Dimens.xl).semantics { heading() })
-            subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.xs)) }
-            Spacer(Modifier.size(Dimens.s))
-            Column(Modifier.selectableGroup()) {
-                ToneRow(Ms.MusicNote, stringResource(R.string.tone_default), defaultLabel ?: defaultTone?.let { toneLabel(it) } ?: stringResource(R.string.tone_phone_default),
-                    selected == null, { selected = null }, playing == "default", { play("default", null) })
-                ToneRow(Ms.LibraryMusic, stringResource(R.string.tone_builtin), stringResource(R.string.tone_builtin_hint),
-                    selected?.kind == "bundled", { builtinOpen = !builtinOpen; if (selected?.kind != "bundled") selected = ToneRef("bundled", Tones.BUNDLED.first().first) },
-                    false, null)
-                if (builtinOpen) Tones.BUNDLED.forEachIndexed { i, (id, _) ->
-                    val ref = ToneRef("bundled", id)
-                    ToneRow(null, stringResource(R.string.tone_bundled_n, (i + 1).toString()), null, selected == ref, { selected = ref },
-                        playing == id, { play(id, ref) }, indent = true)
+        // The tones scroll; «إلغاء» · «تم» stay pinned under them (black-box U2-5: at 200 % they were off-screen).
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = Dimens.l)) {
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = Dimens.xl).semantics { heading() })
+                subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.xs)) }
+                Spacer(Modifier.size(Dimens.s))
+                Column(Modifier.selectableGroup()) {
+                    ToneRow(Ms.MusicNote, stringResource(R.string.tone_default), defaultLabel ?: defaultTone?.let { toneLabel(it) } ?: stringResource(R.string.tone_phone_default),
+                        selected == null, { selected = null }, playing == "default", { play("default", null) })
+                    ToneRow(Ms.LibraryMusic, stringResource(R.string.tone_builtin), stringResource(R.string.tone_builtin_hint),
+                        selected?.kind == "bundled", { builtinOpen = !builtinOpen; if (selected?.kind != "bundled") selected = ToneRef("bundled", Tones.BUNDLED.first().first) },
+                        false, null)
+                    if (builtinOpen) Tones.BUNDLED.forEachIndexed { i, (id, _) ->
+                        val ref = ToneRef("bundled", id)
+                        ToneRow(null, stringResource(R.string.tone_bundled_n, (i + 1).toString()), null, selected == ref, { selected = ref },
+                            playing == id, { play(id, ref) }, indent = true)
+                    }
+                    ToneRow(Ms.Notifications, stringResource(R.string.tone_phone), picked?.title?.ifEmpty { null } ?: stringResource(R.string.tone_phone_hint),
+                        selected?.kind == "system", {
+                            val type = if (style == AlertPolicy.Style.ALARM) RingtoneManager.TYPE_ALARM else RingtoneManager.TYPE_NOTIFICATION
+                            val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, type)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
+                                .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, title)
+                            picked?.let { intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it.ref.toUri()) }
+                            if (runCatching { phonePicker.launch(intent) }.isFailure) phoneError = errPlay
+                        }, playing == "system", picked?.let { p -> { play("system", p) } }, error = phoneError)
+                    ToneRow(Ms.Folder, stringResource(R.string.tone_files),
+                        file?.let { stringResource(R.string.list_separator).let { sep -> it.title + sep + stringResource(R.string.tone_copied) } },
+                        selected?.kind == "file", { runCatching { filePicker.launch(arrayOf("audio/*")) } },
+                        playing == "file", file?.let { f -> { play("file", f) } }, error = fileError)
+                    ToneRow(Ms.Vibration, stringResource(R.string.tone_silent), null, selected?.kind == "silent", { preview.stop(); playing = null; selected = ToneRef.SILENT }, false, null)
                 }
-                ToneRow(Ms.Notifications, stringResource(R.string.tone_phone), picked?.title?.ifEmpty { null } ?: stringResource(R.string.tone_phone_hint),
-                    selected?.kind == "system", {
-                        val type = if (style == AlertPolicy.Style.ALARM) RingtoneManager.TYPE_ALARM else RingtoneManager.TYPE_NOTIFICATION
-                        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                            .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, type)
-                            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-                            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-                            .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, title)
-                        picked?.let { intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it.ref.toUri()) }
-                        if (runCatching { phonePicker.launch(intent) }.isFailure) phoneError = errPlay
-                    }, playing == "system", picked?.let { p -> { play("system", p) } }, error = phoneError)
-                ToneRow(Ms.Folder, stringResource(R.string.tone_files),
-                    file?.let { stringResource(R.string.list_separator).let { sep -> it.title + sep + stringResource(R.string.tone_copied) } },
-                    selected?.kind == "file", { runCatching { filePicker.launch(arrayOf("audio/*")) } },
-                    playing == "file", file?.let { f -> { play("file", f) } }, error = fileError)
-                ToneRow(Ms.Vibration, stringResource(R.string.tone_silent), null, selected?.kind == "silent", { preview.stop(); playing = null; selected = ToneRef.SILENT }, false, null)
-            }
-            Row(Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.m), verticalAlignment = Alignment.Top) {
-                Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(Dimens.s))
-                Text(stringResource(if (style == AlertPolicy.Style.ALARM) R.string.tone_note_alarm else R.string.tone_note),
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.padding(horizontal = Dimens.xl, vertical = Dimens.m), verticalAlignment = Alignment.Top) {
+                    Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(Dimens.s))
+                    Text(stringResource(if (style == AlertPolicy.Style.ALARM) R.string.tone_note_alarm else R.string.tone_note),
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             val stacked = LocalDensity.current.fontScale >= 1.5f
             Column(Modifier.padding(horizontal = Dimens.l)) {
