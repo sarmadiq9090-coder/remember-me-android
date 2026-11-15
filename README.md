@@ -9,48 +9,58 @@ Proprietary FastKiwi software (D-051). Publishing under Apache-2.0 is proposed (
 no licence is granted. Local repository only; nothing is published. `LICENSES/` holds third-party texts.
 
 - **Research**: [RESEARCH.md](RESEARCH.md) (the Windows app, Android limits, patterns)
-- **Decisions**: [DECISIONS.md](DECISIONS.md) (councils, D-001 … D-018)
-- **Design**: [DESIGN-SPEC.md](DESIGN-SPEC.md) (design council, mockups in `design/shots/`)
+- **Decisions**: [DECISIONS.md](DECISIONS.md) (councils, D-001 … D-020)
+- **Design**: [DESIGN-SPEC.md](DESIGN-SPEC.md) 1.0.0 (design council v2, mockups in `design/v2/shots/`)
 - **Standards**: [STANDARDS.md](STANDARDS.md) (met, partial, gaps)
 - **Third-party notices**: [THIRD_PARTY.md](THIRD_PARTY.md)
 - **For the owner, in Arabic**: [اقرأني.txt](اقرأني.txt)
 - **Changes**: [CHANGELOG.md](CHANGELOG.md)
 - **Roadmap to 1.0** (the owner's PRD with the council's amendments): [docs/ROADMAP.md](docs/ROADMAP.md)
 - **Compatibility matrix** (only phones actually tried): [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
+- **Features** (council-approved, with status): [docs/FEATURES.md](docs/FEATURES.md); **privacy**: [docs/PRIVACY.md](docs/PRIVACY.md); **data format**: [docs/DATA-FORMAT.md](docs/DATA-FORMAT.md)
 - **Security** and **contributing**: [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## What it does (v0.1.0)
+## What it does (1.0.0)
 
-- Reminders with a title, a note, a date and time (or none), repeat (daily, weekly, chosen weekdays,
-  every N days, every N hours, monthly, yearly), an early notice, priority and category.
-- At the time: a high-priority notification with «تم» and «أجّل» that stays until one is pressed (it comes
-  back quietly if swiped away), and a full-screen reminder screen over the lock screen where Android
-  allows it, with Done, Skip (repeats) and the six snooze choices.
-- Exact alarms that survive Doze, reboots, app updates, clock and time-zone changes.
-- One list with Overdue, Today, Upcoming and a folded Done section (the time leads each row), search,
-  a 30-day trash, a home-screen widget and a "New reminder" launcher shortcut.
-- «السماح بالعمل في الخلفية»: checks notifications, exact alarms, full-screen, battery and the phone
-  maker's own settings, with a button for each.
-- Export and import as a zip that Remember Me for Windows restores (and the other way round), and an
-  iCalendar (.ics) export for other calendars.
-- No internet permission, no analytics, no account.
+Every feature the feature council approved ([docs/FEATURES.md](docs/FEATURES.md), 80 features); the user
+guide is [docs/GUIDE-ar.md](docs/GUIDE-ar.md) / [docs/GUIDE-en.md](docs/GUIDE-en.md). In short:
+
+- **Alerts**: a pinned notification with «تم», «أجّل 10 دقائق», «أجّل حتى…» and «تراجع»; the full-screen
+  reminder screen; «تذكير عادي» (follows the phone) or «منبّه مهم» (alarm volume, rings in silent mode,
+  never through Do Not Disturb unless the user's DND allows alarms); a tone per reminder, played by the app
+  with a fallback chain so a reminder is never silent by accident; up to 3 early alerts; «أخفِ التفاصيل» on
+  the lock screen; before-unlock rings after a restart; morning summary; read aloud.
+- **Adding**: Quick Add (the Windows parser, with a preview and questions; nothing unseen is saved),
+  templates, voice, share, a Quick Settings tile, widget «تم»; prayer-relative times and Hijri dates.
+- **Organising**: one list (Overdue, Today, Upcoming, Done) with swipe, bulk selection, search, lists and tags;
+  agenda, day, week and month views; steps; change history; a two-pane tablet layout.
+- **Trust**: «صحة التذكيرات» (every check, its source, one fix; unknown never shown as ready), the alert test,
+  the alert log, the compatibility report.
+- **Data**: the Windows app's `data.json` (both directions tested), encrypted backups, a weekly automatic
+  copy, calendar import and export, delete all, a privacy page. No internet permission, no analytics, no
+  account; one added permission in 1.0.0 (FOREGROUND_SERVICE, the tone service).
 
 ## Layout
 
 ```
 app/src/main/java/com/fastkiwi/rememberme/
-  core/    Repeat.kt (nextOccurrence, ported from Windows), Tasks.kt (save, complete, skip, snooze,
-           trash), Snooze.kt (presets), Planner.kt (what to announce and when to wake), Model.kt (data.json)
-  data/    Store.kt (durable file), Backup.kt (zip export/import), Prefs.kt (phone-only settings)
-  alarm/   Engine.kt (carries out a plan, sets the alarm), Notifier.kt, Receivers.kt
-  ui/      Compose screens, L10n.kt (language, dates, digits), Health.kt (permissions, makers)
-  widget/  ReminderWidget.kt
-  MainActivity.kt, AlertActivity.kt (the reminder screen), Repo.kt (the one store), RememberMeApp.kt
-app/src/test/   JUnit and Robolectric tests; resources/windows-golden.json, windows-data.json
-tools/          strings_gen.py (Arabic and English strings from one table),
-                windows-golden.cjs, windows-validate.cjs (checks against the Windows app's own code)
+  core/      Repeat.kt (ported from Windows), Tasks.kt, Planner.kt (what to announce, two alarm slots),
+             Model.kt (data.json), AlertExt.kt (the `android` object), AlertPolicy.kt (style, DND, sound),
+             Organize.kt (tags, steps), Search.kt, Bulk.kt, Calendar.kt, Hijri.kt (ICU Umm al-Qura),
+             Templates.kt, quickadd/ (the Windows parser + Android additions), prayer/ (times, cities)
+  data/      Store.kt (durable file), Backup.kt, BackupCrypto.kt, Ics*.kt (calendar), Tones.kt, AlertLog.kt,
+             ScheduleLog.kt, History.kt, AutoBackup.kt, DeleteAll.kt, Prefs*.kt (phone-only settings)
+  alarm/     Engine.kt, Notifier.kt (channels, notifications), RingService.kt (the tone), Receivers.kt,
+             DirectBoot.kt (before the unlock), Summary.kt (morning), TestAlarm.kt
+  ui/        Home.kt, Alert.kt, Edit.kt, Settings.kt, HealthScreens.kt; home/, editor/, calendar/, health/,
+             settings/, quick/; Theme.kt, Ms.kt (icons), L10n.kt, ScreenStack.kt, Haptics.kt
+  widget/, tile/, MainActivity.kt, AlertActivity.kt, ShareActivity.kt, Repo.kt, RememberMeApp.kt
+app/src/test/   JUnit, Robolectric and Compose UI tests; torture/ (the torture suite and the black-box driver)
+tools/          strings_gen.py + strings/*.py (Arabic and English), windows-*.cjs and interchange.sh (checks
+                with the Windows app's own code), vendor_symbols.py, make_tones.py, dist.sh
+torture/        run.sh, reports/, blackbox/ (driver README and examples)
 screenshots/    taken by AppUiTest; screenshots/qc/ by QcScreenshotsTest (sample data only)
-design/         the design council's mockups, palette and contrast tools
+design/         design council mockups (v1 and v2/shots)
 ```
 
 ## Build and test (Git Bash on Windows)
@@ -79,18 +89,27 @@ Keep a Changelog, SHA-256 and a CycloneDX SBOM, each marked met, partial or gap.
 
 ## Tested and not tested
 
-69 tests, all on the JVM (Robolectric, Android 16 / API 36): repeat rules (Windows' own cases plus 600
-parity cases computed by the Windows code), DST gaps and fall-back, time-zone moves, task actions and
-stale taps, snooze presets, the planner (remind-again, early notices), the data file (round trip,
-damage recovery), backups (checksum, Windows layout, hostile zips), alarms set as alarm clocks,
-notifications with their buttons and re-posting, reboot re-arm, lock-screen privacy, Western digits,
-the main screens in Arabic and English, the design rules (one «حفظ», «تم» at the end in RTL, 48 dp
-targets, row semantics), the `.ics` export expanded by an independent RFC 5545 library, and QC
-screenshots of every screen in Arabic and English, light and dark, and at 200 % text. An Android export
-is restored by the Windows app's `readBackup()`. An independent bug hunt found and fixed 7 S1/S2 defects.
+1.0.0 passed six gates, all on the PC (Robolectric API 26, 29, 31, 33, 34, 36; "Robolectric API N", not
+"Android N"):
+1. **Tests and lint**: 766 unit, Robolectric and Compose UI tests, 0 failed; lint debug and release: no issues.
+2. **An independent bug hunt** (it did not write the code): 13 confirmed defects (7 S1, 6 S2), each fixed with
+   the failing test that found it.
+3. **The torture suite** ([torture/README.md](torture/README.md)): 10,000 reminders, 500 in one minute, storms
+   of runs from many threads, DST in every zone, 50 years of month ends, random clock jumps, 30,000 repeat
+   cases against the Windows code, 6,000 calendar files read by RFC 5545, fuzzed backups, encrypted backups,
+   calendar files, Quick Add and intents, process death and full disks, and a UI monkey. Every finding was fixed
+   with a test, except one failure inside Robolectric's text magnifier (no app code; documented).
+4. **A black-box user test**: a tester that never saw the code used the app through screenshots and the
+   accessibility tree only ([torture/blackbox/](torture/blackbox/README.md)), 13 tasks as three people (busy
+   employee; older user at the largest text; student mixing Arabic and English). Every U1 and U2 was fixed and
+   re-tested ([docs/BLACKBOX-REPORT.md](docs/BLACKBOX-REPORT.md)).
+5. **QC** against FEATURES, DESIGN-SPEC and STANDARDS ([docs/QC-1.0.0.md](docs/QC-1.0.0.md)): no Q1; every Q2
+   fixed; 75 features met, 5 need the owner's phone.
+6. **Release**: signed with the same key as 0.1.x (certificate SHA-256 checked by `tools/dist.sh`), 16 KB
+   aligned, installs over 0.1.0 and 0.1.1 keeping all data (`UpgradeTest`), SHA-256 and a CycloneDX SBOM.
 
-**Not tested without a real phone**: alarms during deep Doze; OEM battery killers (Xiaomi, Samsung,
-Huawei, Oppo, Vivo) and the maker deep links; the full-screen screen over the lock screen and turning
-the screen on; the notification sound and vibration; the home-screen widget on a launcher; the
-per-app language switch on Android 12 and older; a sideloaded APK keeping the full-screen permission
-on Android 14+; the release build's R8-shrunk code at run time.
+**Not tested without a real phone**: real sound and vibration; alarms after hours of deep Doze; OEM battery
+killers (Xiaomi, Samsung, Huawei, OPPO, vivo) and their deep links; the full-screen screen over a real lock
+screen; a locked restart; the widget on a launcher; the Quick Settings tile; Android 14's non-linear font
+scaling; TalkBack itself. The owner's checklist in [docs/release-notes/1.0.0-ar.txt](docs/release-notes/1.0.0-ar.txt)
+covers them, with 14 days of daily use.
