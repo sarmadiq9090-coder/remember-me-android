@@ -160,6 +160,20 @@ class AlertPipelineTest {
         assertTrue(nm.activeNotifications.none { it.id == Notifier.UNDO_ID })
     }
 
+    /** Black-box U1: «تراجع» on the note after «تم» of a one-time reminder really reopens it. */
+    @Test fun undoFromTheNotificationReopensAOneTimeReminder() {
+        val now = Instant.now()
+        val t = save(TaskInput(title = "call ماما", dueAt = now.minusSeconds(5)), now.minusSeconds(60))
+        Engine.sync(app, now)
+        ActionReceiver.handle(app, ActionReceiver.DONE, t.id, t.dueAt, now.plusNanos(123_456_789))
+        assertNotNull(Repo.state(app).task(t.id)!!.completedAt)
+        val undo = nm.activeNotifications.single { it.id == Notifier.UNDO_ID }.notification
+        val i = shadowOf(undo.actions[0].actionIntent).savedIntent
+        ActionReceiver.handle(app, ActionReceiver.UNDO, t.id, null, now.plusSeconds(3), i.getStringExtra(ActionReceiver.EXTRA_COPY),
+            i.getLongExtra(ActionReceiver.EXTRA_DONE_AT, 0).takeIf { it > 0 }?.let(Instant::ofEpochMilli))
+        assertNull("reopened", Repo.state(app).task(t.id)!!.completedAt)
+    }
+
     @Test fun severalEarlyNoticesEachShowOnce() {
         val now = Instant.now()
         val due = now.plusSeconds(2 * 86_400)

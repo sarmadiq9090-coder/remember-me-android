@@ -258,7 +258,8 @@ object Tasks {
     fun undoComplete(state: AppState, c: Completion, now: Instant): AppState {
         val task = state.task(c.id) ?: return state
         // A one-time task: only the completion this undo was offered for (not a later one after a reopen).
-        if (c.copyId == c.id) return if (task.completedAt != null && (c.doneAt == null || task.completedAt == c.doneAt))
+        // Compared to the millisecond: the notification carries epoch milliseconds, data.json stores them too.
+        if (c.copyId == c.id) return if (task.completedAt != null && (c.doneAt == null || task.completedAt.toEpochMilli() == c.doneAt.toEpochMilli()))
             replace(state, task.copy(completedAt = null, updatedAt = now)) else state
         val copy = state.tasks.firstOrNull { it.id == c.copyId && it.sourceId == c.id && it.completedAt != null } ?: return state
         val doneAt = copy.completedAt ?: return state
