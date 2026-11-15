@@ -133,6 +133,7 @@ class QuickAddFuzzTortureTest {
     }
 
     private companion object {
-        val SHARED_WITH_WINDOWS = listOf("الماضي", "اللي فات")
+        // The Windows parser gives the same reading (a question, never a saved date): past weekdays, a price like $12.50.
+        val SHARED_WITH_WINDOWS = listOf("الماضي", "اللي فات", "$12.50")
     }
 }
