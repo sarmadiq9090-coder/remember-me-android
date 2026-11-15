@@ -14,17 +14,29 @@ import com.fastkiwi.rememberme.core.nextOccurrence
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.Period
+import net.fortuna.ical4j.model.Recur
 import net.fortuna.ical4j.model.component.VEvent
+import net.fortuna.ical4j.model.component.VTimeZone
 import net.fortuna.ical4j.model.component.VToDo
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.StringReader
+import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.Month
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
+import java.time.zone.ZoneOffsetTransition
+import java.time.zone.ZoneOffsetTransitionRule
+import java.time.zone.ZoneRules
 
 /**
  * The iCalendar export, checked with an independent RFC 5545 implementation (ical4j, test only): it
@@ -112,6 +124,136 @@ class IcsTest {
         assertTrue(ny.contains("RRULE:FREQ=YEARLY;BYMONTH=11;BYMONTHDAY=1,2,3,4,5,6,7;BYDAY=SU"))
         val baghdad = Ics.vtimezone(ZoneId.of("Asia/Baghdad"), now)
         assertEquals(listOf("BEGIN:VTIMEZONE", "TZID:Asia/Baghdad", "BEGIN:STANDARD", "DTSTART:20251113T100000", "TZOFFSETFROM:+0300", "TZOFFSETTO:+0300", "END:STANDARD", "END:VTIMEZONE"), baghdad)
+    }
+
+    /**
+     * Onsets of a VTIMEZONE read by the letter of RFC 5545 §3.6.5: DTSTART local time in TZOFFSETFROM, its RRULE
+     * expanded by ical4j's Recur; the offset at an instant is the TZOFFSETTO of the latest onset at or before it.
+     */
+    private fun onsets(lines: List<String>, until: Instant): List<Pair<Instant, ZoneOffset>> {
+        val f = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
+        fun off(v: String) = ZoneOffset.of(v.substring(0, 3) + ":" + v.substring(3, 5) + (if (v.length > 5) ":" + v.substring(5) else ""))
+        val out = ArrayList<Pair<Instant, ZoneOffset>>()
+        var i = 0
+        while (i < lines.size) {
+            if (lines[i] != "BEGIN:STANDARD" && lines[i] != "BEGIN:DAYLIGHT") { i++; continue }
+            val e = (i until lines.size).first { lines[it] == lines[i].replace("BEGIN", "END") }
+            val block = lines.subList(i, e + 1)
+            fun v(k: String) = block.firstOrNull { it.startsWith("$k:") }?.substringAfter(':')
+            val start = LocalDateTime.parse(v("DTSTART")!!, f)
+            val starts = v("RRULE")?.let { Recur<LocalDateTime>(it).getDates(start, start, LocalDateTime.ofInstant(until, ZoneOffset.UTC).plusDays(2)) } ?: listOf(start)
+            for (st in starts) out += st.atOffset(off(v("TZOFFSETFROM")!!)).toInstant() to off(v("TZOFFSETTO")!!)
+            i = e + 1
+        }
+        return out.sortedBy { it.first }
+    }
+
+    /** Java's offsets and the VTIMEZONE's (RFC reading) agree weekly, and around every transition, for [years]. */
+    private fun assertExact(id: String, rules: ZoneRules, now: Instant, years: Long, lines: List<String> = Ics.vtimezone(id, rules, now)) {
+        val from = now.minusSeconds(360L * 86_400)
+        val end = now.plusSeconds(years * 366 * 86_400)
+        val samples = ArrayList<Instant>()
+        var t = from
+        while (t.isBefore(end)) { samples += t; t = t.plusSeconds(7L * 86_400 + 3_600) }
+        generateSequence(rules.nextTransition(from)) { rules.nextTransition(it.instant) }.takeWhile { it.instant.isBefore(end) }
+            .forEach { samples += it.instant.minusSeconds(3_600); samples += it.instant; samples += it.instant.plusSeconds(3_600) }
+        val on = onsets(lines, end)
+        for (at in samples) assertEquals("$id at $at", rules.getOffset(at), on.lastOrNull { !it.first.isAfter(at) }?.second)
+        // ical4j reads it too.
+        val text = (listOf("BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//t//EN") + lines + "END:VCALENDAR").joinToString("\r\n") + "\r\n"
+        assertEquals(1, parse(text).getComponents<VTimeZone>("VTIMEZONE").size)
+    }
+
+    /**
+     * Release torture findings (S2, S3): a "weekday on or after day N" window past the month end (Cairo's Friday
+     * on or after 26 October), rules in UTC whose local day is the day before (Nuuk, Scoresbysund, Easter
+     * Island), predicted transitions listed one by one (Gaza, Hebron, to 2087), a zone without yearly rules
+     * (Casablanca), 30-minute DST (Lord Howe), changes at local midnight (Santiago).
+     */
+    @Test fun vtimezoneIsExactForTheTrickyZones() {
+        val now = Instant.parse("2026-11-15T06:00:00Z")
+        for (id in listOf("Africa/Cairo", "America/Nuuk", "America/Scoresbysund", "Pacific/Easter", "Asia/Gaza", "Asia/Hebron",
+            "Africa/Casablanca", "Australia/Lord_Howe", "America/Santiago", "Europe/Dublin", "Europe/Berlin", "America/New_York", "Asia/Tehran")) {
+            assertExact(id, ZoneId.of(id).rules, now, 70)
+        }
+        // Cairo's October rule gives Friday 1 November in the years where 26 to 31 October has no Friday.
+        val cairo = Ics.vtimezone(ZoneId.of("Africa/Cairo"), now)
+        assertTrue(cairo.toString(), cairo.contains("RRULE:FREQ=YEARLY;BYMONTH=10;BYMONTHDAY=26,27,28,29,30,31;BYDAY=FR"))
+        assertTrue(cairo.toString(), cairo.contains("RRULE:FREQ=YEARLY;BYMONTH=11;BYMONTHDAY=1;BYDAY=FR"))
+        // Nuuk's March change is at 01:00 UTC on a Sunday: 23:00 on the Saturday before, local time.
+        val nuuk = Ics.vtimezone(ZoneId.of("America/Nuuk"), now)
+        assertTrue(nuuk.toString(), nuuk.contains("RRULE:FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=24,25,26,27,28,29,30;BYDAY=SA"))
+    }
+
+    /** Every zone of java.time: a yearly RRULE form for each of its rules, and a VTIMEZONE exact for 30 years. */
+    @Test fun everyZoneHasAnExactVTimezone() {
+        val now = Instant.parse("2026-11-15T06:00:00Z")
+        for (id in ZoneId.getAvailableZoneIds().filter { !it.startsWith("ical4j") }.sorted()) {
+            val rules = ZoneId.of(id).rules
+            for (r in rules.transitionRules) assertNotNull("$id $r", Ics.yearlyForm(r))
+            assertExact(id, rules, now, 30)
+        }
+    }
+
+    /** A rule whose 7-day window crosses the end of February is written with BYYEARDAY (leap years move it). */
+    @Test fun aWindowAcrossTheEndOfFebruaryUsesYearDays() {
+        val std = ZoneOffset.ofHours(-3)
+        val dst = ZoneOffset.ofHours(-2)
+        val rules = ZoneRules.of(ZoneOffset.ofHours(-4), ZoneOffset.ofHours(-4), emptyList(),
+            listOf(ZoneOffsetTransition.of(LocalDateTime.of(1999, 1, 3, 2, 0), ZoneOffset.ofHours(-4), std)),
+            listOf(
+                // Sunday on or after 25 February, 02:00 wall time: 25 February to 2 or 3 March.
+                ZoneOffsetTransitionRule.of(Month.FEBRUARY, 25, DayOfWeek.SUNDAY, LocalTime.of(2, 0), false, ZoneOffsetTransitionRule.TimeDefinition.WALL, std, std, dst),
+                // Sunday on or after 25 October, 01:00 UTC: 23:00 on the Saturday before, local time.
+                ZoneOffsetTransitionRule.of(Month.OCTOBER, 25, DayOfWeek.SUNDAY, LocalTime.of(1, 0), false, ZoneOffsetTransitionRule.TimeDefinition.UTC, std, dst, std),
+            ))
+        for (r in rules.transitionRules) assertNotNull("$r", Ics.yearlyForm(r))
+        val now = Instant.parse("2026-11-15T06:00:00Z")
+        val lines = Ics.vtimezone("Test/Zone", rules, now)
+        assertTrue(lines.toString(), lines.contains("RRULE:FREQ=YEARLY;BYYEARDAY=56,57,58,59,60,61,62;BYDAY=SU"))
+        assertTrue(lines.toString(), lines.contains("RRULE:FREQ=YEARLY;BYMONTH=10;BYMONTHDAY=24,25,26,27,28,29,30;BYDAY=SA"))
+        assertExact("Test/Zone", rules, now, 60, lines)
+    }
+
+    /**
+     * A "chosen weekdays" reminder set for another weekday rings first on that day (the app's own series): DTSTART
+     * is the series' next occurrence and the first time an RDATE, so every RFC 5545 reader gets the same dates.
+     */
+    @Test fun aWeekdaysReminderStartingOnAnotherDayKeepsItsFirstTime() {
+        val zone = ZoneId.of("Asia/Baghdad")
+        val due = at(zone, 2026, 11, 16, 9) // a Monday; the rule is Sunday and Wednesday
+        val (s, t) = Tasks.save(AppState(), TaskInput(title = "x", dueAt = due, repeat = Repeat.DAYS, days = listOf(0, 3)), due.minusSeconds(3600), zone)
+        val text = Ics.export(s, zone, due.minusSeconds(3600))
+        assertTrue(text, text.contains("DTSTART;TZID=Asia/Baghdad:20261118T090000\r\n"))
+        assertTrue(text, text.contains("RDATE;TZID=Asia/Baghdad:20261116T090000\r\n"))
+        val ev = parse(text).getComponents<VEvent>("VEVENT").single()
+        val expected = ArrayList<Instant>()
+        var cur = due
+        expected += cur
+        repeat(10) { cur = nextOccurrence(cur, t.repeat, cur, t.rule, zone); expected += cur }
+        val got = ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(due.minusSeconds(1), zone), ZonedDateTime.ofInstant(cur.plusSeconds(1), zone)))
+            .map { p -> instant(p.start) }.sorted()
+        assertEquals(expected, got)
+    }
+
+    /** A daily 02:30 reminder whose current occurrence is on the spring-forward night (03:30) keeps 02:30 as its time. */
+    @Test fun aSeriesInADstGapKeepsItsTime() {
+        val zone = ZoneId.of("Europe/Berlin")
+        val first = at(zone, 2027, 3, 27, 2, 30)
+        val (s0, t0) = Tasks.save(AppState(), TaskInput(title = "x", dueAt = first, repeat = Repeat.DAILY), first.minusSeconds(3600), zone)
+        val (s, _) = Tasks.complete(s0, t0.id, first.plusSeconds(60), zone)!!
+        val t = s.task(t0.id)!!
+        assertEquals(at(zone, 2027, 3, 28, 3, 30), t.scheduleAt)
+        val text = Ics.export(s, zone, first.plusSeconds(120))
+        assertTrue(text, text.contains("DTSTART;TZID=Europe/Berlin:20270328T023000\r\n"))
+        val ev = parse(text).getComponents<VEvent>("VEVENT").single()
+        val expected = ArrayList<Instant>()
+        var cur = t.scheduleAt!!
+        expected += cur
+        repeat(5) { cur = nextOccurrence(cur, t.repeat, cur, t.rule, zone); expected += cur }
+        val got = ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(expected[0].minusSeconds(1), zone), ZonedDateTime.ofInstant(cur.plusSeconds(1), zone)))
+            .map { p -> instant(p.start) }.sorted()
+        assertEquals(expected, got)
     }
 
     /** F-046 + F-085: every early alert is exported as its own VALARM and comes back as the same alerts. */
