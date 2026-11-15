@@ -481,6 +481,7 @@ class MainActivity : AppCompatActivity() {
                     scrollToId = lastAddedId, onScrolled = { lastAddedId = null },
                     request = homeRequest, onRequestShown = { homeRequest = null },
                     onFixNotifications = { fix("notifications") },
+                    backupFailed = com.fastkiwi.rememberme.data.AutoBackup.failed(this),
                 )
             }
             is Screen.Edit -> {

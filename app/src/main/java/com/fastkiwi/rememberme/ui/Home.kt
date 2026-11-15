@@ -196,6 +196,7 @@ fun HomeScreen(
     onRequestShown: () -> Unit = {},
     /** The banner's button when notifications are off: Android's own question or its notification settings. */
     onFixNotifications: () -> Unit = onHealth,
+    backupFailed: Boolean = false,
 ) {
     val context = LocalContext.current
     val res = LocalResources.current
@@ -396,6 +397,8 @@ fun HomeScreen(
                 // Notifications off: say plainly that nothing will show, and fix it in one tap (black-box U2).
                 else if (!health.notifications) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_notifications_off), stringResource(R.string.allow), true, onFixNotifications)
                 else if (!health.essentialOk) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_health), stringResource(R.string.fix), true, onHealth)
+                // F-087: the weekly automatic copy failed (folder gone, no space): say so until it works again.
+                else if (backupFailed) StatusBanner(Ms.WarningAmber, stringResource(R.string.banner_autobackup_failed), stringResource(R.string.open_settings), false, onSettings)
                 else if (backupNudge) StatusBanner(null, stringResource(R.string.banner_backup), stringResource(R.string.save_copy), false, onBackup, onDismissBackup)
             }
             val rowActions = RowActions(
