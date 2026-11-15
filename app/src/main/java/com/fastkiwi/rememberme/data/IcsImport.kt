@@ -21,7 +21,6 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.time.zone.ZoneOffsetTransition
@@ -31,10 +30,10 @@ import java.util.Locale
 /** What [IcsImport.read] found: the reminders to add, what was left out and why, and what changed on the way. */
 data class IcsImportResult(
     val inputs: List<com.fastkiwi.rememberme.core.TaskInput>,
-    /** One line per event or task that is not imported, naming it and giving the reason. */
-    val skipped: List<String>,
-    /** One line per thing that was imported differently from the file (a repeat dropped, an alarm not kept...). */
-    val warnings: List<String>,
+    /** One note per event or task that is not imported, naming it and giving the reason. */
+    val skipped: List<IcsNote>,
+    /** One note per thing that was imported differently from the file (a repeat dropped, an alarm not kept...). */
+    val warnings: List<IcsNote>,
 )
 
 /**
@@ -66,9 +65,12 @@ data class IcsImportResult(
  * has passed: [save] moves it on to its next occurrence, as the Windows app's importTasks does. A one-time
  * event whose time has passed is skipped with a reason, also as on Windows.
  *
- * Alarms: VALARM triggers before the start (relative, or absolute DATE-TIME) become remindBefore when they are
- * one of 5, 10, 15, 30, 60 or 1440 minutes; an alarm at the start is this app's normal reminder; anything else
- * is a warning. The app has one early notice: the nearest one is kept and the others are named.
+ * Alarms: VALARM triggers before the start (relative, or absolute DATE-TIME) become early alerts when they are
+ * one of 5, 10, 15, 30, 60 or 1440 minutes (EARLY_MINUTES); an alarm at the start is this app's normal reminder;
+ * anything else is a warning. Up to 3 early alerts are kept (F-046): the nearest is remindBefore, and with 2 or
+ * more all of them are in the task's `android.alerts` ([TaskInput.alerts]); further ones are named in a warning.
+ *
+ * The report is data ([IcsNote]); the settings screen renders it in the app language.
  *
  * Limits: 20 MB of text ([ImportException] TOO_LARGE), 5,000 events and tasks (the rest is named in a
  * warning), 50,000 components and 200,000 properties in all (the rest is not read, with a warning). A file
@@ -384,12 +386,12 @@ object IcsImport {
     private val DAY_CODES = listOf("SU", "MO", "TU", "WE", "TH", "FR", "SA")
     private val DAY_SPEC = Regex("^([+-]?\\d{1,2})?(SU|MO|TU|WE|TH|FR|SA)$")
 
+    private const val MAX_ALARMS = Tasks.MAX_ALERTS
+
     private fun clip(s: String?, max: Int = 40): String {
         val t = s.orEmpty().replace('\n', ' ').replace('\r', ' ').trim()
         return if (t.length <= max) t else t.take(max) + "…"
     }
-
-    private val WHEN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ROOT)
 
     /** Common Windows (Outlook, Exchange) zone names: the Arab region first, then a few frequent ones (CLDR). */
     private val WINDOWS_ZONES = mapOf(
@@ -447,14 +449,14 @@ object IcsImport {
         val everyHours: Int = 1,
         /** For MONTHLY and YEARLY: the day of month the series keeps (29-31 fall back to the month's last day). */
         val anchorDay: Int = 0,
-        val note: String? = null,
+        val note: ((IcsItem) -> IcsNote)? = null,
     )
 
     private class Reader(val zone: ZoneId, val now: Instant, val calendars: List<Comp>, val stopped: Boolean) {
         val inputs = ArrayList<TaskInput>()
-        val skipped = ArrayList<String>()
-        val warnings = ArrayList<String>()
-        val allDay = ArrayList<String>()
+        val skipped = ArrayList<IcsNote>()
+        val warnings = ArrayList<IcsNote>()
+        val allDay = ArrayList<IcsItem>()
         val uids = HashSet<String>()
         val deviceRules: ZoneRules = zone.rules
         val timezones = HashMap<String, Comp>()
@@ -469,55 +471,55 @@ object IcsImport {
                 "VEVENT", "VTODO" -> items += c
                 else -> others[c.name] = (others[c.name] ?: 0) + 1
             }
-            if (stopped) warnings += "The file has more than ${"%,d".format(Locale.ROOT, MAX_COMPONENTS)} parts or ${"%,d".format(Locale.ROOT, MAX_PROPERTIES)} lines; the rest of it was not read."
-            else if (calendars.any { !it.closed }) warnings += "The file ends early (END:VCALENDAR is missing); it may be cut off."
-            if (others.isNotEmpty()) warnings += "Not imported, as they are not events or tasks: " + others.entries.joinToString(", ") { "${it.value} ${clip(it.key, 20)}" } + "."
+            if (stopped) warnings += IcsNote.TooBig(MAX_COMPONENTS, MAX_PROPERTIES)
+            else if (calendars.any { !it.closed }) warnings += IcsNote.CutOff
+            if (others.isNotEmpty()) {
+                val named = LinkedHashMap<String, Int>()
+                for ((k, v) in others) named.merge(clip(k, 20), v, Int::plus)
+                warnings += IcsNote.NotItems(named)
+            }
             for ((i, c) in items.withIndex()) {
                 if (i >= MAX_ITEMS) {
-                    warnings += "Only the first ${"%,d".format(Locale.ROOT, MAX_ITEMS)} events and tasks were read; ${"%,d".format(Locale.ROOT, items.size - MAX_ITEMS)} more were not imported."
+                    warnings += IcsNote.TooMany(MAX_ITEMS, items.size - MAX_ITEMS)
                     break
                 }
                 item(c, i)
             }
-            if (allDay.isNotEmpty()) {
-                val names = allDay.take(5).joinToString(", ") + if (allDay.size > 5) " and ${allDay.size - 5} more" else ""
-                warnings += "${allDay.size} all-day item(s) get their reminder at 09:00 on the day: $names."
-            }
+            if (allDay.isNotEmpty()) warnings += IcsNote.AllDay(allDay.toList(), ALL_DAY_TIME)
             return IcsImportResult(inputs, skipped, warnings)
         }
 
-        fun fmt(at: Instant): String = WHEN.format(at.atZone(zone))
+        fun wall(at: Instant): LocalDateTime = at.atZone(zone).toLocalDateTime()
 
         fun text(c: Comp, name: String) = c.first(name)?.value?.let(::unescape).orEmpty()
 
         fun item(c: Comp, index: Int) {
-            val kind = if (c.name == "VTODO") "task" else "event"
             val desc = text(c, "DESCRIPTION").trim()
             var title = text(c, "SUMMARY").replace("\r\n", " ").replace('\n', ' ').replace('\r', ' ').trim()
             if (title.isEmpty()) title = desc.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() }.orEmpty()
             val uid = c.first("UID")?.value?.trim()?.takeIf { it.isNotEmpty() }
-            val label = if (title.isNotEmpty()) "\"" + clip(title, 60) + "\"" else "The $kind #${index + 1}" + (uid?.let { " (UID ${clip(it)})" } ?: "")
-            if (!c.closed) { skipped += "$label: the file ends inside this $kind, so it may be incomplete."; return }
-            if (title.isEmpty()) { skipped += "$label: it has no title."; return }
+            val label = IcsItem(title.takeIf { it.isNotEmpty() }?.let { clip(it, 60) }, c.name == "VTODO", index + 1, if (title.isEmpty()) uid?.let { clip(it) } else null)
+            if (!c.closed) { skipped += IcsNote.Incomplete(label); return }
+            if (title.isEmpty()) { skipped += IcsNote.NoTitle(label); return }
             val status = c.first("STATUS")?.value?.trim()?.uppercase(Locale.ROOT)
-            if (status == "CANCELLED") { skipped += "$label: it is cancelled."; return }
+            if (status == "CANCELLED") { skipped += IcsNote.Cancelled(label); return }
             if (status == "COMPLETED" || c.first("COMPLETED") != null || c.first("PERCENT-COMPLETE")?.value?.trim() == "100") {
-                skipped += "$label: it is already completed."; return
+                skipped += IcsNote.Completed(label); return
             }
             val recurrenceId = c.first("RECURRENCE-ID")
-            if (uid != null && recurrenceId == null && !uids.add(uid)) { skipped += "$label: an earlier $kind has the same UID (a duplicate)."; return }
-            if (recurrenceId != null) warnings += "$label: it is one changed occurrence of a repeating event; it is imported as its own reminder, and the series keeps its usual time."
+            if (uid != null && recurrenceId == null && !uids.add(uid)) { skipped += IcsNote.Duplicate(label); return }
+            if (recurrenceId != null) warnings += IcsNote.ChangedOccurrence(label)
 
             if (title.length > 200) {
                 title = title.take(if (Character.isHighSurrogate(title[199])) 199 else 200).trim()
-                warnings += "$label: the title is shortened to 200 characters."
+                warnings += IcsNote.TitleShortened(label, 200)
             }
             var body = desc
             val location = text(c, "LOCATION").trim()
             if (location.isNotEmpty()) body = if (body.isEmpty()) location else "$body\n$location"
             if (body.length > 20_000) {
                 body = body.take(20_000)
-                warnings += "$label: the description is shortened to 20,000 characters."
+                warnings += IcsNote.BodyShortened(label, 20_000)
             }
             val priority = when (c.first("PRIORITY")?.value?.trim()?.toIntOrNull()) {
                 1, 2, 3, 4 -> Priority.HIGH
@@ -538,7 +540,7 @@ object IcsImport {
             var isAllDay = false
             if (timeProp != null) {
                 val w = parseWhen(timeProp)
-                if (w == null) { skipped += "$label: its time could not be read (${clip(timeProp.value)})."; return }
+                if (w == null) { skipped += IcsNote.BadTime(label, clip(timeProp.value)); return }
                 when (w) {
                     is When.Day -> {
                         isAllDay = true
@@ -557,11 +559,11 @@ object IcsImport {
                         }
                     }
                 }
-                if (local.year !in 1800..2999) { skipped += "$label: its date (${local.toLocalDate()}) is out of range."; return }
+                if (local.year !in 1800..2999) { skipped += IcsNote.OutOfRange(label, local.toLocalDate()); return }
                 dueAt = if (w is When.Utc) w.at else toInstant(local, rules)
                 if (isAllDay) allDay += label
             } else if (c.name == "VEVENT") {
-                warnings += "$label: it has no start time; it is imported without a time."
+                warnings += IcsNote.NoStart(label)
             }
 
             // Repeat
@@ -570,15 +572,15 @@ object IcsImport {
             var everyDays = 2
             var everyHours = 1
             val rrules = c.all("RRULE")
-            var problems: List<String> = emptyList()
+            var problems: List<IcsRulePart> = emptyList()
             if (rrules.isEmpty()) {
-                if (dueAt != null && c.first("RDATE") != null) warnings += "$label: its extra dates (RDATE) are not supported; only its first time is imported."
+                if (dueAt != null && c.first("RDATE") != null) warnings += IcsNote.ExtraDatesOnly(label)
             } else if (dueAt == null) {
-                warnings += "$label: its repeat is not imported, as it has no time."
+                warnings += IcsNote.RepeatWithoutTime(label)
             } else {
-                val list = ArrayList<String>()
-                if (rrules.size > 1) list += "${rrules.size} RRULEs"
-                for (k in listOf("EXRULE", "RDATE", "EXDATE")) if (c.first(k) != null) list += k
+                val list = ArrayList<IcsRulePart>()
+                if (rrules.size > 1) list += IcsRulePart.SeveralRules(rrules.size)
+                for (k in listOf("EXRULE", "RDATE", "EXDATE")) if (c.first(k) != null) list += IcsRulePart.Extra(k)
                 val (map, why) = mapRule(rrules[0].value, local!!, isAllDay)
                 list += why
                 problems = list
@@ -589,83 +591,67 @@ object IcsImport {
                     // BYDAY is in the event's own zone; the app counts weekdays in this phone's zone.
                     val shift = ChronoUnit.DAYS.between(local.toLocalDate(), dueAt.atZone(zone).toLocalDate()).toInt()
                     days = map.days.map { Math.floorMod(it + shift, 7) }.distinct().sorted()
-                    map.note?.let { warnings += "$label: $it" }
+                    map.note?.let { warnings += it(label) }
                     // BYMONTHDAY=-1 means day 31 for a month; a yearly series' month may be shorter (February: 29).
                     val anchor = if (repeat == Repeat.YEARLY) minOf(map.anchorDay, local.month.maxLength()) else map.anchorDay
                     if ((repeat == Repeat.MONTHLY || repeat == Repeat.YEARLY) && anchor > local.dayOfMonth) {
                         dueAt = anchoredStart(label, dueAt, local, rules, repeat, anchor)
                     }
                     if (rules != deviceRules && clockDiffers(rules, maxOf(dueAt, now))) {
-                        warnings += "$label: it repeats on $zoneName time, whose clock changes differ from this phone's ($zone); " +
-                            "its occurrences follow this phone's clock, so some may be an hour off."
+                        warnings += IcsNote.ClockDiffers(label, clip(zoneName), zone.id)
                     }
                 }
             }
             if (dueAt != null && repeat == Repeat.NONE && !dueAt.isAfter(now)) {
-                skipped += if (problems.isNotEmpty()) "$label: its repeat rule is not supported (${problems.joinToString(", ")}) and its time (${fmt(dueAt)}) has passed."
-                else "$label: its time (${fmt(dueAt)}) has passed."
+                skipped += IcsNote.Passed(label, wall(dueAt), problems)
                 return
             }
-            if (problems.isNotEmpty()) warnings += "$label: its repeat rule is not supported (${problems.joinToString(", ")}); it is imported as a one-time reminder."
+            if (problems.isNotEmpty()) warnings += IcsNote.RuleNotKept(label, problems)
 
-            // Alarms
-            var early = 0
+            // Alarms: up to 3 early alerts, the nearest ones (F-046).
+            var early = emptyList<Int>()
             val alarms = c.children.filter { it.name == "VALARM" }
             if (alarms.isNotEmpty() && dueAt == null) {
-                warnings += "$label: its alarms are not imported, as it has no time."
+                warnings += IcsNote.AlarmsWithoutTime(label)
             } else if (alarms.isNotEmpty()) {
                 val found = sortedSetOf<Int>()
                 for (a in alarms) {
-                    val r = alarmMinutes(a, dueAt!!)
-                    when {
-                        r is String -> warnings += "$label: $r is not imported."
-                        r is Int && r > 0 -> found += r
+                    when (val r = alarmMinutes(a, dueAt!!)) {
+                        is IcsAlarm -> warnings += IcsNote.AlarmNotKept(label, r)
+                        is Int -> if (r > 0) found += r
                     }
                 }
-                if (found.isNotEmpty()) {
-                    early = found.first()
-                    if (found.size > 1) warnings += "$label: this app has one early notice, so it keeps the nearest (${minutes(early)}); " +
-                        found.drop(1).joinToString(", ") { minutes(it) } + " before is not imported."
-                }
+                early = found.take(MAX_ALARMS)
+                if (found.size > MAX_ALARMS) warnings += IcsNote.TooManyAlarms(label, early, found.drop(MAX_ALARMS))
             }
             inputs += TaskInput(
                 title = title, body = body, priority = priority, category = category, dueAt = dueAt,
-                repeat = repeat, days = days, everyDays = everyDays, everyHours = everyHours, remindBefore = early,
+                repeat = repeat, days = days, everyDays = everyDays, everyHours = everyHours,
+                remindBefore = early.firstOrNull() ?: 0, alerts = early.takeIf { it.size >= 2 },
             )
         }
 
-        fun minutes(m: Int) = if (m == 1440) "1 day" else "$m minutes"
-
-        /** Minutes before the start (0 = at the start), or a description of an alarm this app cannot keep. */
+        /** Minutes before the start (0 = at the start), or the [IcsAlarm] this app cannot keep. */
         fun alarmMinutes(a: Comp, dueAt: Instant): Any {
             // ACTION:NONE (RFC 9074) is an alarm that does nothing, such as Apple's default-alarm placeholder.
             if (a.first("ACTION")?.value?.trim()?.uppercase(Locale.ROOT) == "NONE") return 0
-            val trig = a.first("TRIGGER") ?: return "an alarm without a TRIGGER"
+            val trig = a.first("TRIGGER") ?: return IcsAlarm.NoTrigger
             val seconds: Long
             if (trig.param("VALUE")?.uppercase(Locale.ROOT) == "DATE-TIME") {
                 val at = when (val w = parseWhen(trig)) {
                     is When.Utc -> w.at
                     is When.Local -> toInstant(w.time, w.tzid?.let(::resolve) ?: deviceRules)
                     else -> null
-                } ?: return "an alarm at \"${clip(trig.value)}\""
+                } ?: return IcsAlarm.BadTime(clip(trig.value))
                 seconds = dueAt.epochSecond - at.epochSecond
             } else {
-                if (trig.param("RELATED")?.uppercase(Locale.ROOT) == "END") return "an alarm set from the end of the event (${clip(trig.value)})"
-                seconds = -(durationSeconds(trig.value) ?: return "an alarm with the trigger \"${clip(trig.value)}\"")
+                if (trig.param("RELATED")?.uppercase(Locale.ROOT) == "END") return IcsAlarm.FromEnd(clip(trig.value))
+                seconds = -(durationSeconds(trig.value) ?: return IcsAlarm.BadTrigger(clip(trig.value)))
             }
             if (seconds == 0L) return 0
-            if (seconds < 0) return "an alarm ${describe(-seconds)} after the start"
-            if (seconds % 60 != 0L || seconds / 60 !in EARLY_MINUTES.map { it.toLong() }) {
-                return "an alarm ${describe(seconds)} before the start (this app offers 5, 10, 15, 30 or 60 minutes or 1 day)"
-            }
+            if (seconds < 0) return IcsAlarm.AfterStart(-seconds)
+            if (seconds % 60 != 0L || seconds / 60 !in EARLY_MINUTES.map { it.toLong() }) return IcsAlarm.NotOffered(seconds)
             return (seconds / 60).toInt()
-        }
-
-        fun describe(seconds: Long): String = when {
-            seconds % 86_400 == 0L -> "${seconds / 86_400} day(s)"
-            seconds % 3_600 == 0L -> "${seconds / 3_600} hour(s)"
-            seconds % 60 == 0L -> "${seconds / 60} minutes"
-            else -> "$seconds seconds"
         }
 
         fun toInstant(t: LocalDateTime, r: ZoneRules): Instant {
@@ -692,7 +678,7 @@ object IcsImport {
          * The latest such date before the start is used when it adds no occurrence that has not passed;
          * otherwise the first later occurrence on that day, naming the occurrences left out.
          */
-        fun anchoredStart(label: String, start: Instant, local: LocalDateTime, r: ZoneRules, repeat: Repeat, day: Int): Instant {
+        fun anchoredStart(label: IcsItem, start: Instant, local: LocalDateTime, r: ZoneRules, repeat: Repeat, day: Int): Instant {
             val ym = YearMonth.from(local)
             var a: LocalDateTime? = null
             for (k in 1L..(if (repeat == Repeat.MONTHLY) 12L else 8L)) {
@@ -707,7 +693,7 @@ object IcsImport {
             repeat(200) {
                 cur = nextOccurrence(cur, repeat, cur, rule, zone)
                 if (!cur.isBefore(start) && cur.atZone(zone).dayOfMonth == day) {
-                    if (cur != start) warnings += "$label: it keeps day $day of the month, so it starts on ${fmt(cur)}; the occurrence on ${fmt(start)} is not imported."
+                    if (cur != start) warnings += IcsNote.StartsLater(label, day, wall(cur).toLocalDate(), wall(start).toLocalDate())
                     return cur
                 }
             }
@@ -733,7 +719,7 @@ object IcsImport {
                 }
             }
             if (known != null) return known
-            warnings += "Unknown time zone \"${clip(tzid)}\": its times are read as this phone's time zone ($zone)."
+            warnings += IcsNote.UnknownZone(clip(tzid), zone.id)
             return deviceRules
         }
 
@@ -837,102 +823,100 @@ object IcsImport {
      * Maps an RRULE to this app's repeat, judged at the event's local start [start]. Returns the mapping and
      * the parts that cannot be kept exactly (the mapping is used only when that list is empty).
      */
-    private fun mapRule(value: String, start: LocalDateTime, allDay: Boolean): Pair<RuleMap?, List<String>> {
-        val problems = ArrayList<String>()
+    private fun mapRule(value: String, start: LocalDateTime, allDay: Boolean): Pair<RuleMap?, List<IcsRulePart>> {
+        val problems = ArrayList<IcsRulePart>()
         val parts = LinkedHashMap<String, String>()
         for (seg in value.split(';')) {
             if (seg.isBlank()) continue
             val eq = seg.indexOf('=')
-            if (eq <= 0) { problems += "\"${clip(seg, 20)}\""; continue }
+            if (eq <= 0) { problems += IcsRulePart.Garbled(clip(seg, 20)); continue }
             val k = seg.substring(0, eq).trim().uppercase(Locale.ROOT)
             val v = seg.substring(eq + 1).trim().uppercase(Locale.ROOT)
-            if (k in parts) problems += "$k twice" else parts[k] = v
+            if (k in parts) problems += IcsRulePart.Twice(clip(k, 20)) else parts[k] = v
         }
         for ((k, v) in parts) when (k) {
             "FREQ", "INTERVAL", "WKST", "BYDAY", "BYMONTHDAY", "BYMONTH", "BYSETPOS" -> Unit
-            else -> problems += "$k=${clip(v, 20)}"
+            else -> problems += IcsRulePart.Unsupported(clip(k, 20), clip(v, 20))
         }
         val freq = parts["FREQ"]
-        if (freq == null) problems += "no FREQ"
-        val interval = parts["INTERVAL"]?.let { it.toIntOrNull()?.takeIf { n -> n >= 1 } ?: run { problems += "INTERVAL=${clip(it, 12)}"; 1 } } ?: 1
+        if (freq == null) problems += IcsRulePart.NoFreq
+        val interval = parts["INTERVAL"]?.let { it.toIntOrNull()?.takeIf { n -> n >= 1 } ?: run { problems += IcsRulePart.BadValue("INTERVAL", clip(it, 12)); 1 } } ?: 1
         val bydayRaw = parts["BYDAY"]
         val byday: List<Int>? = bydayRaw?.let { raw ->
             val list = raw.split(',').map { it.trim() }
             if (list.all { it in DAY_CODES }) list.map { DAY_CODES.indexOf(it) }.distinct().sorted()
-            else { problems += "BYDAY=${clip(raw, 20)}"; null }
+            else { problems += IcsRulePart.BadValue("BYDAY", clip(raw, 20)); null }
         }
         val monthDays = parts["BYMONTHDAY"]?.let { raw ->
             raw.split(',').map { it.trim().toIntOrNull()?.takeIf { d -> d != 0 && d in -31..31 } }.let { l ->
-                if (l.any { it == null }) { problems += "BYMONTHDAY=${clip(raw, 20)}"; null } else l.filterNotNull()
+                if (l.any { it == null }) { problems += IcsRulePart.BadValue("BYMONTHDAY", clip(raw, 20)); null } else l.filterNotNull()
             }
         }
         val setpos = parts["BYSETPOS"]
         val bymonth = parts["BYMONTH"]
-        fun none(vararg keys: String) { for (k in keys) parts[k]?.let { problems += "$k=${clip(it, 20)} with FREQ=$freq" } }
+        fun none(vararg keys: String) { for (k in keys) parts[k]?.let { problems += IcsRulePart.NotWithFreq(k, clip(it, 20), freq.orEmpty()) } }
         val map: RuleMap? = when (freq) {
             null -> null
             "HOURLY" -> {
                 none("BYDAY", "BYMONTHDAY", "BYMONTH", "BYSETPOS")
-                if (allDay) problems += "FREQ=HOURLY on an all-day date"
-                if (interval !in 1..23) problems += "FREQ=HOURLY;INTERVAL=$interval (this app repeats every 1 to 23 hours)"
+                if (allDay) problems += IcsRulePart.HourlyAllDay
+                if (interval !in 1..23) problems += IcsRulePart.EveryHours(interval)
                 RuleMap(Repeat.HOURS, everyHours = interval.coerceIn(1, 23))
             }
             "DAILY" -> {
                 none("BYMONTHDAY", "BYMONTH", "BYSETPOS")
                 when {
                     bydayRaw != null -> {
-                        if (interval != 1) problems += "FREQ=DAILY;INTERVAL=$interval with BYDAY"
+                        if (interval != 1) problems += IcsRulePart.EveryDaysOnDays(interval)
                         RuleMap(Repeat.DAYS, days = byday.orEmpty())
                     }
                     interval == 1 -> RuleMap(Repeat.DAILY)
                     interval <= 365 -> RuleMap(Repeat.INTERVAL, everyDays = interval)
-                    else -> { problems += "FREQ=DAILY;INTERVAL=$interval (this app repeats every 2 to 365 days)"; null }
+                    else -> { problems += IcsRulePart.EveryDays(interval); null }
                 }
             }
             "WEEKLY" -> {
                 none("BYMONTHDAY", "BYMONTH", "BYSETPOS")
                 when {
                     interval == 1 -> if (bydayRaw != null) RuleMap(Repeat.DAYS, days = byday.orEmpty()) else RuleMap(Repeat.WEEKLY)
-                    bydayRaw != null && byday != listOf(jsDay(start.toLocalDate())) -> { problems += "FREQ=WEEKLY;INTERVAL=$interval;BYDAY=${clip(bydayRaw, 20)}"; null }
+                    bydayRaw != null && byday != listOf(jsDay(start.toLocalDate())) -> { problems += IcsRulePart.EveryWeeksOnDays(interval, clip(bydayRaw, 20)); null }
                     interval * 7 <= 365 -> RuleMap(Repeat.INTERVAL, everyDays = interval * 7)
-                    else -> { problems += "FREQ=WEEKLY;INTERVAL=$interval"; null }
+                    else -> { problems += IcsRulePart.EveryWeeks(interval); null }
                 }
             }
             "MONTHLY", "YEARLY" -> {
                 val yearly = freq == "YEARLY"
-                if (interval != 1) problems += "FREQ=$freq;INTERVAL=$interval"
+                if (interval != 1) problems += IcsRulePart.EveryMonthsOrYears(yearly, interval)
                 none("BYDAY")
                 if (!yearly) none("BYMONTH")
-                else if (bymonth != null && bymonth.toIntOrNull() != start.monthValue) problems += "BYMONTH=${clip(bymonth, 12)} (the start is in month ${start.monthValue})"
+                else if (bymonth != null && bymonth.toIntOrNull() != start.monthValue) problems += IcsRulePart.OtherMonth(clip(bymonth, 12), start.monthValue)
                 val day = anchorDay(monthDays, setpos, start, problems)
-                val note = when {
+                val note: ((IcsItem) -> IcsNote)? = when {
                     day == 0 -> null
-                    !yearly && day > 28 && monthDays == null || !yearly && monthDays == listOf(day) && day > 28 ->
-                        "in months without day $day, this app reminds on the month's last day (the calendar skips those months)."
-                    yearly && start.monthValue == 2 && day == 29 && (monthDays == null || monthDays == listOf(29)) ->
-                        "in years without 29 February, this app reminds on 28 February (the calendar skips those years)."
+                    !yearly && day > 28 && monthDays == null || !yearly && monthDays == listOf(day) && day > 28 -> { item -> IcsNote.MonthEnd(item, day) }
+                    yearly && start.monthValue == 2 && day == 29 && (monthDays == null || monthDays == listOf(29)) -> { item -> IcsNote.LeapDay(item) }
                     else -> null
                 }
                 RuleMap(if (yearly) Repeat.YEARLY else Repeat.MONTHLY, anchorDay = day, note = note)
             }
-            else -> { problems += "FREQ=${clip(freq, 12)}"; null }
+            else -> { problems += IcsRulePart.Freq(clip(freq, 12)); null }
         }
         return map to problems
     }
 
     /** The day of month a MONTHLY/YEARLY rule keeps, judged against the start; 0 (and a problem) when it cannot be kept. */
-    private fun anchorDay(monthDays: List<Int>?, setpos: String?, start: LocalDateTime, problems: MutableList<String>): Int {
+    private fun anchorDay(monthDays: List<Int>?, setpos: String?, start: LocalDateTime, problems: MutableList<IcsRulePart>): Int {
         val day = start.dayOfMonth
         val last = YearMonth.from(start).lengthOfMonth()
         if (monthDays == null) {
-            if (setpos != null) problems += "BYSETPOS=${clip(setpos, 12)}"
+            if (setpos != null) problems += IcsRulePart.SetPos(clip(setpos, 12))
             return day
         }
         // Ics.export's month end: BYMONTHDAY=28,...,D;BYSETPOS=-1 (the D-th, or the month's last day if shorter).
         if (setpos != null) {
             val d = monthDays.maxOrNull() ?: 0
             if (setpos == "-1" && d in 29..31 && monthDays.sorted() == (28..d).toList() && (day == d || (day < d && day == last && day >= 28))) return d
-            problems += "BYMONTHDAY=${monthDays.joinToString(",")};BYSETPOS=${clip(setpos, 12)} (the start is on day $day)"
+            problems += IcsRulePart.MonthDays(monthDays, clip(setpos, 12), day)
             return 0
         }
         if (monthDays.size == 1) {
@@ -940,7 +924,7 @@ object IcsImport {
             if (d == day) return d
             if (d == -1 && day == last) return 31
         }
-        problems += "BYMONTHDAY=${monthDays.joinToString(",")} (the start is on day $day)"
+        problems += IcsRulePart.MonthDays(monthDays, null, day)
         return 0
     }
 }
