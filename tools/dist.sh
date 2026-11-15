@@ -17,6 +17,10 @@ sha=$(sha256sum "$out" | cut -d' ' -f1)
 cert=$(apksigner.bat verify --print-certs "$apk" | grep "SHA-256 digest" | head -1 | sed 's/.*: //')
 printf '%s  %s\nsize: %s bytes\nsigning certificate SHA-256: %s\n' "$sha" "RememberMe-$version.apk" "$size" "$cert" > "dist/RememberMe-$version.sha256.txt"
 cp "اقرأني.txt" dist/
+cp docs/GUIDE-ar.md dist/GUIDE-ar.md
+cp "docs/release-notes/$version-ar.txt" "dist/ما-الجديد-$version.txt"
+# The SBOM (CycloneDX) of what ships in the APK: ./build.sh :app:releaseSbom writes it into dist/.
+[ -f "dist/RememberMe-$version.cdx.json" ] || { echo "no SBOM: run ./build.sh :app:releaseSbom"; exit 1; }
 rm -rf dist/screenshots && cp -r screenshots dist/screenshots
 echo "$out"
 echo "size $size bytes"

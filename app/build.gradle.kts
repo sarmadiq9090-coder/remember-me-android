@@ -167,6 +167,12 @@ tasks.register("releaseSbom") {
                 "externalReferences" to listOf(mapOf("type" to "website", "url" to "https://notofonts.github.io/")),
             )
         }
+        // The vendored Material Symbols Rounded drawables (Apache-2.0, THIRD_PARTY.md).
+        components += mapOf(
+            "type" to "data", "bom-ref" to "icons:material-symbols-rounded", "name" to "Material Symbols Rounded (res/drawable/ms_*.xml)",
+            "licenses" to listOf(mapOf("license" to mapOf("id" to "Apache-2.0"))),
+            "externalReferences" to listOf(mapOf("type" to "vcs", "url" to "https://github.com/google/material-design-icons")),
+        )
         output.parentFile.mkdirs()
         output.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(bom)) + "\n")
     }
