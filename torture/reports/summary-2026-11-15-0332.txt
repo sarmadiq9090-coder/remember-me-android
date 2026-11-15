@@ -1,0 +1,9 @@
+Remember Me Android torture run 2026-11-15-0332 (heavy=1, seed=default, gradle exit 1)
+commit 9f1b668 on torture
+
+UiMonkeyTortureTest                        tests   3  failed   2  skipped   0  93.329 s
+TOTAL tests 3, failed 2, skipped 0
+
+FAILURES
+- UiMonkeyTortureTest.monkeyOnTheMainScreens: java.lang.AssertionError: monkey seed 14003: AppNotIdleException (recomposer states over 30 frames: {pending=30}): Compose did not get idle after 7157 attempts in 60 SECONDS. Please check your measure/layout lambdas, they may be causing an infinite composition loop. Or set Espresso's master idling policy if you require a longer timeout. The following Idle Conditions failed . | last events: long-press «رجوع» | type «1:30» | tap «إضافة تنبيه» | tap «رجوع» | type «#منزل» | tap «عادي» | tap «متابعة التعديل» | tap «خيارات التنبيه, تذكير عادي، النغمة الافت» | wait | swipe 3 | tap «أضف خطوة» | long-p
+- UiMonkeyTortureTest.monkeyOnTheMainScreensAnotherSeed: java.lang.NullPointerException: Cannot invoke "android.view.Surface.destroy()" because "this.mSurface" is null

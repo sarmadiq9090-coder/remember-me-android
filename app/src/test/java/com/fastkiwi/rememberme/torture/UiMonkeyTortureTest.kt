@@ -128,7 +128,8 @@ class UiMonkeyTortureTest {
                 try {
                     when {
                         kind < 55 -> { val n = nodes(hasClickAction()); if (n > 0) { val node = nth(hasClickAction(), rnd.nextInt(n)); log += "tap «${label(node)}»"; node.performClick() } }
-                        kind < 62 -> { val n = nodes(hasClickAction()); if (n > 0) { val node = nth(hasClickAction(), rnd.nextInt(n)); log += "long-press «${label(node)}»"; node.performTouchInput { longClick() } } }
+                        // Long presses skip text fields: their selection magnifier has no surface under Robolectric.
+                        kind < 62 -> { val m = hasClickAction() and !hasSetTextAction(); val n = nodes(m); if (n > 0) { val node = nth(m, rnd.nextInt(n)); log += "long-press «${label(node)}»"; node.performTouchInput { longClick() } } }
                         kind < 75 -> { val n = nodes(hasScrollAction()); if (n > 0) { val node = nth(hasScrollAction(), rnd.nextInt(n)); val d = rnd.nextInt(4); log += "swipe $d"
                             node.performTouchInput { when (d) { 0 -> swipeUp(); 1 -> swipeDown(); 2 -> swipeLeft(); else -> swipeRight() } } } }
                         kind < 83 -> { val n = nodes(hasSetTextAction()); if (n > 0) { val t = texts[rnd.nextInt(texts.size)]; log += "type «${t.take(20)}»"; nth(hasSetTextAction(), rnd.nextInt(n)).performTextInput(t) } }
@@ -141,6 +142,13 @@ class UiMonkeyTortureTest {
                     // The node went away between finding and acting on it (the screen changed): not a finding.
                     if (e is Hang) throw e
                     log += "  (skipped: ${e.message?.lineSequence()?.firstOrNull()?.take(60)})"
+                } catch (e: NullPointerException) {
+                    // Robolectric has no surface for the text magnifier (android.widget.Magnifier): an artefact of the
+                    // test host, not of the app. The screen is started again and the walk goes on.
+                    if (e.stackTrace.none { it.className.startsWith("android.widget.Magnifier") }) throw e
+                    log += "  (robolectric magnifier; relaunch)"
+                    runCatching { scenario.close() }
+                    scenario = launch()
                 } catch (e: IllegalStateException) {
                     if (e.message?.contains("No compose hierarchies found") == true || e.message?.contains("not attached") == true) log += "  (no screen)" else throw e
                 }
@@ -179,7 +187,7 @@ class UiMonkeyTortureTest {
             throw AssertionError("monkey seed $seed: ${e::class.java.simpleName}${if (busy.isNotEmpty()) " (recomposer states over 30 frames: $busy)" else ""}: ${e.message?.take(300)} | last events: " + log.takeLast(15).joinToString(" | "), e)
         } finally {
             runCatching { scenario.close() }
-            RuntimeEnvironment.setQualifiers("+port")
+            runCatching { RuntimeEnvironment.setQualifiers("+port") }
         }
         Torture.report("ui", "UI monkey seed $seed: $events events, slowest $slow ms, ${log.count { it.startsWith("tap") }} taps, ${log.count { it == "relaunch" }} relaunches")
         assertTrue(events > 0)
