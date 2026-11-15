@@ -19,6 +19,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.fastkiwi.rememberme.alarm.Engine
@@ -56,8 +57,8 @@ class VoiceUiTest {
     @get:Rule val rule = createEmptyComposeRule()
     private val app: Application = ApplicationProvider.getApplicationContext()
 
-    private val unavailable = "الإدخال الصوتي غير متاح على هذا الهاتف. استعمل ميكروفون لوحة المفاتيح."
-    private val noText = "لم يصل نص من الإدخال الصوتي. جرّب مرة أخرى، أو استعمل ميكروفون لوحة المفاتيح."
+    private val unavailable = "الإدخال الصوتي غير متاح على هذا الهاتف. اكتب التذكير، أو جرّب ميكروفون لوحة المفاتيح."
+    private val noText = "لم يصل نص من الإدخال الصوتي. جرّب مرة أخرى، أو اكتب التذكير."
 
     @Before fun setUp() {
         Engine.drain()
@@ -178,8 +179,17 @@ class VoiceUiTest {
             answer(sc, last, Activity.RESULT_CANCELED)
             rule.onNodeWithText(unavailable).assertExists()
             field().assertIsFocused()
-            // The mic stays (a service exists); the next try starts the round again.
-            assertEquals("ar", tapMic(sc).language())
+            // The mic stays (a service exists); the next try starts the round again, and the plain message stays
+            // until one works (black-box: the soft one came back on the 4th try).
+            val again = tapMic(sc)
+            assertEquals("ar", again.language())
+            answer(sc, again, Activity.RESULT_CANCELED)
+            rule.onNodeWithText(unavailable).assertExists()
+            rule.onNodeWithText(noText).assertDoesNotExist()
+            // Typing makes the note go away.
+            field().performTextInput("اتصل بأمي")
+            rule.waitForIdle()
+            rule.onNodeWithText(unavailable).assertDoesNotExist()
         }
     }
 

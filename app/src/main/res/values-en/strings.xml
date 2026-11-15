@@ -696,7 +696,7 @@
     <string name="banner_notifications_off">Notifications are off: no reminder will show.</string>
     <string name="banner_autobackup_failed">The weekly automatic copy was not saved. Choose the folder again in Settings.</string>
     <string name="h_autobackup">Weekly automatic copy</string>
-    <string name="about_voice">Only voice input goes through your phone\'s speech service (usually Google\'s), which may work over the internet. We ask it to work offline, on the phone itself, when it can. Remember Me itself has no microphone permission.</string>
+    <string name="about_voice">Only voice input goes through your phone\'s speech service (usually Google\'s), which may work over the internet. We ask it to work offline, on the phone itself, when it can. Remember Me itself has no microphone permission. If there is no microphone button in «New reminder», the phone has no speech service: type the reminder, or try the keyboard\'s microphone.</string>
     <string name="tone_bundled_default">Remember Me tone 1 (the phone has no default tone)</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>
@@ -716,8 +716,8 @@
     <string name="qa_choose_first">Pick a time, or “No date”</string>
     <string name="qa_voice_title">Voice input</string>
     <string name="qa_voice_body">Voice input uses your phone\'s speech service. That service may use the internet if the language pack is not installed on the phone. Remember Me itself sends nothing and does not ask for the microphone permission.</string>
-    <string name="qa_voice_missing">Voice input is not available on this phone. Use the keyboard\'s microphone.</string>
-    <string name="qa_voice_no_text">No text came back from voice input. Try again, or use the keyboard\'s microphone.</string>
+    <string name="qa_voice_missing">Voice input is not available on this phone. Type the reminder, or try the keyboard\'s microphone.</string>
+    <string name="qa_voice_no_text">No text came back from voice input. Try again, or type the reminder.</string>
     <string name="shortcut_quick">Quick add</string>
     <string name="templates_title">From a template</string>
     <string name="templates_hint">A template only fills in the fields. Nothing is saved before “Save”.</string>

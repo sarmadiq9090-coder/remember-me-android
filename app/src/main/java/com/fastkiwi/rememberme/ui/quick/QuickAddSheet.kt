@@ -220,6 +220,10 @@ fun QuickAddSheet(
             backToField = false
         }
     }
+    // A voice note goes away as soon as the person types something else.
+    var noteText by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(state.text) { if (noteText != null && state.text != noteText) voiceNote = null }
+    LaunchedEffect(voiceNote) { noteText = if (voiceNote != null) state.text else null }
     // The preview follows the typing after a short pause (150 ms).
     LaunchedEffect(state.text) {
         if (state.pending) { delay(Behaviour.QuickAddDebounceMs); state.parseNow() }

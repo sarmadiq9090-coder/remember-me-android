@@ -102,14 +102,16 @@ object VoiceInput {
             ?.firstOrNull { it.isNotBlank() }?.trim()
         val p = prefs(context)
         return when {
-            text != null -> { p.edit { putString("voiceGood", key(tag)); remove("voiceFailed") }; Outcome.Text(text) }
+            text != null -> { p.edit { putString("voiceGood", key(tag)); remove("voiceFailed"); remove("voiceDead") }; Outcome.Text(text) }
             code == Activity.RESULT_OK || code == Activity.RESULT_CANCELED || code == RecognizerIntent.RESULT_NO_MATCH -> {
                 // Back on a dialog that never worked (or one that heard nothing): the next try uses another
                 // language. Only in the language that has worked here, a cancel is just a cancel.
                 if (p.getString("voiceGood", null) == key(tag)) return Outcome.NoText
                 failed(context, tag)
                 // Every language came back empty and none ever worked: say plainly that it does not work here.
-                if (exhausted(context)) Outcome.Failed else Outcome.NoText
+                // Once every language has failed, say so plainly every time until one works.
+                if (exhausted(context)) p.edit { putBoolean("voiceDead", true) }
+                if (p.getBoolean("voiceDead", false)) Outcome.Failed else Outcome.NoText
             }
             else -> { failed(context, tag); Outcome.Failed }
         }
