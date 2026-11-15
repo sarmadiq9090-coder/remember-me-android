@@ -13,8 +13,8 @@ import java.time.ZoneId
 
 /**
  * Property (torture suite 3): the VTIMEZONE the .ics export writes for a zone must give, read by the letter of
- * RFC 5545 §3.6.5 (each observance's onsets = its DTSTART, local time in TZOFFSETFROM, plus its RRULE expanded by
- * ical4j's Recur; the offset at an instant is the TZOFFSETTO of the latest onset before it), the same UTC offset as
+ * RFC 5545 §3.6.5 ([IcsRfc]: each observance's onsets = its DTSTART and RDATEs, local time in TZOFFSETFROM, plus its
+ * RRULE expanded by ical4j's Recur; the offset at an instant is the TZOFFSETTO of the latest onset before it), the same UTC offset as
  * Java's zone rules, every week and an hour either side of every transition, for ten years, for every zone with
  * DST (heavy: every zone). A wrong observance shifts every reminder in that part of the year by the DST difference
  * in any calendar app that uses the file's VTIMEZONE.
@@ -23,7 +23,6 @@ class IcsTimezoneTortureTest {
     @Before fun on() = Torture.assumeOn()
 
     private val now = Instant.parse("2026-11-15T06:00:00Z")
-    private val local = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
 
     private fun samples(zone: ZoneId): List<Instant> {
         val end = now.plusSeconds(10L * 366 * 86_400)
@@ -35,30 +34,9 @@ class IcsTimezoneTortureTest {
         return out
     }
 
-    private fun offset(v: String): java.time.ZoneOffset = java.time.ZoneOffset.of(v.substring(0, 3) + ":" + v.substring(3, 5) + (if (v.length > 5) ":" + v.substring(5) else ""))
-
-    /** Onsets (instant → offset after) of every observance in [lines], by RFC 5545. */
-    private fun onsets(lines: List<String>, until: Instant): List<Pair<Instant, java.time.ZoneOffset>> {
-        val out = ArrayList<Pair<Instant, java.time.ZoneOffset>>()
-        var i = 0
-        while (i < lines.size) {
-            if (lines[i] == "BEGIN:STANDARD" || lines[i] == "BEGIN:DAYLIGHT") {
-                var e = i
-                while (lines[e] != lines[i].replace("BEGIN", "END")) e++
-                val block = lines.subList(i, e + 1)
-                fun v(k: String) = block.firstOrNull { it.startsWith("$k:") }?.substringAfter(':')
-                val start = java.time.LocalDateTime.parse(v("DTSTART")!!, local)
-                val from = offset(v("TZOFFSETFROM")!!)
-                val to = offset(v("TZOFFSETTO")!!)
-                val starts = v("RRULE")?.let { r ->
-                    net.fortuna.ical4j.model.Recur<java.time.LocalDateTime>(r).getDates(start, start, java.time.LocalDateTime.ofInstant(until, java.time.ZoneOffset.UTC).plusDays(2))
-                } ?: listOf(start)
-                for (st in starts) out += st.atOffset(from).toInstant() to to
-                i += block.size
-            } else i++
-        }
-        return out.sortedBy { it.first }
-    }
+    /** Onsets (instant → offset after) of every observance in [lines], by RFC 5545 (the shared reading, [IcsRfc]). */
+    private fun onsets(lines: List<String>, until: Instant): List<Pair<Instant, java.time.ZoneOffset>> =
+        IcsRfc.onsets(lines, null, until).map { it.at to it.to }
 
     @Test fun everyZonesVTimezoneGivesJavasOffsets() {
         val zones = ZoneId.getAvailableZoneIds().filter { !it.startsWith("Etc/") && !it.startsWith("SystemV/") && it.contains('/') }.sorted().map(ZoneId::of)

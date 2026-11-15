@@ -8,7 +8,6 @@ import com.fastkiwi.rememberme.core.nextOccurrence
 import com.fastkiwi.rememberme.data.Ics
 import com.fastkiwi.rememberme.data.IcsImport
 import net.fortuna.ical4j.data.CalendarBuilder
-import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.component.VToDo
 import org.junit.Assert.assertEquals
@@ -18,24 +17,18 @@ import org.junit.Test
 import java.io.StringReader
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.Temporal
 import kotlin.random.Random
 
 /**
- * Property (torture suite 3): the .ics export of random reminders, read by an independent RFC 5545 implementation
- * (ical4j, test only). Each event's expanded occurrences must equal the app's own next occurrences, the text must
- * read back as written, and the file must import back (IcsImport) to the same reminders (F-085 round trip).
+ * Property (torture suite 3): the .ics export of random reminders. ical4j (test only) must read the file and its
+ * text must read back as written; each event's recurrence set, read from the file by RFC 5545 itself ([IcsRfc]: the
+ * file's own VTIMEZONE, its local DTSTART, RRULE and RDATE times; ical4j's Recur only expands RRULE dates), must be
+ * exactly the app's own occurrences, with DTSTART one of its RRULE's instances; and the file must import back
+ * (IcsImport) to the same reminders (F-085 round trip). ical4j's own time-zone reading is not the reference: it
+ * reads VTIMEZONE onset times as UTC and compares times in zones with non-whole-hour offsets wrongly.
  */
 class IcsPropertyTortureTest {
     @Before fun on() = Torture.assumeOn()
-
-    private fun instant(t: Any): Instant = when (t) {
-        is ZonedDateTime -> t.toInstant()
-        is java.time.OffsetDateTime -> t.toInstant()
-        is Instant -> t
-        else -> error("unexpected temporal ${t::class}")
-    }
 
     /** The app's series from the exported start: what a calendar should show. */
     private fun appSeries(t: Task, zone: ZoneId, n: Int): List<Instant> {
@@ -77,31 +70,42 @@ class IcsPropertyTortureTest {
             val vtodos = cal.getComponents<VToDo>("VTODO").associateBy { it.getProperty<net.fortuna.ical4j.model.property.Uid>("UID").get().value }
             val active = s.tasks.filter { it.active }
             if (vevents.size + vtodos.size != active.size) failures += "[count] file $file: ${active.size} active reminders, ${vevents.size} events + ${vtodos.size} to-dos"
+            // The app's series of each timed reminder, and the file's own recurrence sets read by RFC 5545 (IcsRfc).
+            val wants = active.filter { it.dueAt != null }.associate { t ->
+                val n = when (t.repeat) { Repeat.HOURS -> 30; Repeat.YEARLY -> 6; Repeat.NONE -> 1; else -> 14 }
+                t.id to appSeries(t, zone, n)
+            }
+            val until = wants.values.maxOfOrNull { it.last() }?.plusSeconds(1) ?: now
+            // Titles by the RFC's TEXT unescaping (ical4j reads a backslash before a line break wrongly).
+            val summaries = IcsRfc.summaries(text)
+            val rfc = try { IcsRfc.events(text, until).associateBy { it.uid } } catch (e: Exception) {
+                failures += "[expand] file $file (${zone.id}): the RFC 5545 reading fails: $e"; return@repeat
+            }
             for (t in active) {
                 checked++
                 val uid = "${t.id}@rememberme.fastkiwi.app"
                 if (t.dueAt == null) {
                     val todo = vtodos[uid] ?: run { failures += "[missing] untimed ${t.id}"; null } ?: continue
-                    if (todo.summary.get().value != t.title) failures += "[title] to-do title «${t.title}» read back as «${todo.summary.get().value}»"
+                    if (summaries[uid] != t.title) failures += "[title] to-do title «${t.title}» read back as «${summaries[uid]}»"
                     continue
                 }
                 val ev = vevents[uid] ?: run { failures += "[missing] event ${t.id}"; null } ?: continue
+                val set = rfc[uid] ?: run { failures += "[missing] event ${t.id} in the RFC reading"; null } ?: continue
                 events++
-                if (ev.summary.get().value != t.title) failures += "[title] title «${t.title}» read back as «${ev.summary.get().value}»"
-                val n = when (t.repeat) { Repeat.HOURS -> 30; Repeat.YEARLY -> 6; Repeat.NONE -> 1; else -> 14 }
-                val want = appSeries(t, zone, n)
-                val end = ZonedDateTime.ofInstant(want.last().plusSeconds(1), zone)
-                val got = try {
-                    ev.calculateRecurrenceSet<Temporal>(Period<ZonedDateTime>(ZonedDateTime.ofInstant(want.first().minusSeconds(1), zone), end))
-                        .map { instant(it.start) }.sorted()
-                } catch (e: Exception) { failures += "[expand] ical4j cannot expand ${t.repeat} ${Ics.rrule(t, zone)}: ${e.message}"; continue }
+                if (summaries[uid] != t.title) failures += "[title] title «${t.title}» read back as «${summaries[uid]}»"
+                val want = wants.getValue(t.id)
+                val describe = { "${zone.id} ${t.repeat} ${set.rrule} days=${t.rule.days} from=${t.rule.from?.atZone(zone)?.toLocalDateTime()} " +
+                    "start=${want.first().atZone(zone).toLocalDateTime()}" }
+                // RFC 5545 leaves a recurrence set undefined when DTSTART is not one of its RRULE's instances.
+                if (!set.synchronized) failures += "[dtstart-off-rule] ${describe()}: DTSTART ${set.dtstart.atZone(zone).toLocalDateTime()} is not an instance of its RRULE"
+                val got = set.instances.filter { !it.isAfter(want.last()) }
                 if (got != want) {
                     val i = want.indices.firstOrNull { it >= got.size || got[it] != want[it] } ?: want.size
-                    // DTSTART not on one of the rule's days (a DAYS reminder started on another weekday): RFC 5545 calls that
-                    // recurrence set undefined, and calendars disagree on whether the start is an occurrence.
-                    val offRule = t.repeat == Repeat.DAYS && com.fastkiwi.rememberme.core.jsDay(want.first().atZone(zone).toLocalDate()) !in t.rule.days
-                    failures += (if (offRule) "[dtstart-off-rule] " else "[occurrences] ") + "${zone.id} ${t.repeat} ${Ics.rrule(t, zone)} days=${t.rule.days} from=${t.rule.from?.atZone(zone)?.toLocalDateTime()} " +
-                        "start=${want.first().atZone(zone).toLocalDateTime()}: occurrence $i app ${want.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} calendar ${got.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} (${got.size} vs ${want.size})"
+                    // An hourly series in a zone with DST: the file's RRULE counts wall-clock hours (RFC 5545 computes
+                    // instances in local time), the app counts elapsed hours. Named apart, still a difference.
+                    val elapsed = t.repeat == Repeat.HOURS && want.indices.all { want[it] == set.dtstart.plusSeconds(it * 3600L * t.rule.everyHours) }
+                    failures += (if (elapsed) "[hourly-dst] " else "[occurrences] ") + "${describe()}: occurrence $i app ${want.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} " +
+                        "file ${got.getOrNull(i)?.atZone(zone)?.toLocalDateTime()} (${got.size} vs ${want.size})"
                 }
                 val alarms = ev.alarms.size
                 if (alarms != 1 + (if (t.remindBefore > 0) 1 else 0)) failures += "[alarms] alarms $alarms for remindBefore ${t.remindBefore}"
@@ -129,7 +133,11 @@ class IcsPropertyTortureTest {
                 } ?: continue
                 if (t.dueAt == null) continue
                 val wantNext = wantNextOf(t)
-                if (back.dueAt != wantNext) failures += "[import-next] ${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}"
+                if (back.dueAt != wantNext) {
+                    val note = r.warnings.filterIsInstance<com.fastkiwi.rememberme.data.IcsNote.StartsLater>().firstOrNull { oneLine(it.item.title.orEmpty()) == oneLine(t.title).take(oneLine(it.item.title.orEmpty()).length) }
+                    failures += "[import-next] ${zone.id} «${t.title.take(20)}» ${t.repeat} ${Ics.rrule(t, zone)}: next ${wantNext?.atZone(zone)} imported as ${back.dueAt?.atZone(zone)}" +
+                        (note?.let { "; the import says: ${it.english()}" } ?: "")
+                }
                 if (back.remindBefore != t.remindBefore) failures += "[import-alarm] remindBefore ${t.remindBefore} imported as ${back.remindBefore}"
             }
         }
