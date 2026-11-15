@@ -70,6 +70,9 @@ object Engine {
         val state = store.state.value
         val plan = Planner.plan(state, now, Repo.remindAgain(state), prefs.alertLog, prefs.noticeLog)
 
+        // Notifications left by 0.1.x (tag "due:<id>"; 1.0.0 uses one numeric id per reminder): removed, so an
+        // update never shows a reminder twice. Its announced log is kept, so the update rings nothing again.
+        runCatching { Notifier.cancelLegacy(app) }
         val shown = runCatching { Notifier.shownDue(app) }.getOrDefault(emptySet())
         val dueIds = plan.due.map { it.id }.toSet()
         // Newest first among the shown ones, the rest are counted in the summary and listed in the app.

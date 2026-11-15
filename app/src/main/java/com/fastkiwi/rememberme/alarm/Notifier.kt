@@ -347,6 +347,14 @@ object Notifier {
         try { NotificationManagerCompat.from(context).notify(TAG_NOTICE + t.id, 0, b.build()) } catch (_: SecurityException) { }
     }
 
+    /** 0.1.x posted a due reminder with the tag "due:<id>" and id 0. */
+    private const val LEGACY_TAG_DUE = "due:"
+
+    fun cancelLegacy(context: Context) {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        for (sbn in nm.activeNotifications) if (sbn.tag?.startsWith(LEGACY_TAG_DUE) == true) nm.cancel(sbn.tag, sbn.id)
+    }
+
     fun isLocked(context: Context): Boolean =
         runCatching { context.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked }.getOrDefault(true)
 
