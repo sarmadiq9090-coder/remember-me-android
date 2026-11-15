@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.update
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import com.fastkiwi.rememberme.R
@@ -12,6 +13,8 @@ import kotlinx.coroutines.SupervisorJob
  * check, the download and the install in progress, and the installer's report reaches the controller the screen shows.
  * It holds the application context only. Rebuilt when the Application changes (each Robolectric test has its own).
  */
+// It keeps the application context only (never an activity), which lives as long as the process: not a leak.
+@SuppressLint("StaticFieldLeak")
 object UpdateHub {
     @Volatile private var app: Context? = null
     @Volatile private var controller: UpdateController? = null
