@@ -54,9 +54,11 @@ fun EditorHeader(text: String) {
 /** A tonal chip that opens a picker: 48 dp, the value as its text, [label] spoken first. */
 @Composable
 fun PickerChip(label: String, value: String, supporting: String? = null, onClick: () -> Unit) {
+    val separator = stringResource(R.string.list_separator)
     Surface(
         onClick = onClick, shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = listOfNotNull(label, value, supporting).joinToString("، ") },
+        // The interface's separator («، » in Arabic, ", " in English; QC 1.0.0 Q3).
+        modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = listOfNotNull(label, value, supporting).joinToString(separator) },
     ) {
         Column(Modifier.padding(horizontal = Dimens.l, vertical = Dimens.s), verticalArrangement = Arrangement.Center) {
             Text(value, style = MaterialTheme.typography.bodyLarge)

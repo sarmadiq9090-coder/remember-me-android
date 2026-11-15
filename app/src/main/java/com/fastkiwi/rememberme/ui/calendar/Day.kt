@@ -205,16 +205,22 @@ private fun Block(o: Occurrence, fmt: CalFormat, onOpen: (Task) -> Unit) {
         onClick = { onOpen(o.task) }, color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.touch),
     ) {
-        Row(
-            Modifier.padding(horizontal = Dimens.m, vertical = Dimens.xs).semantics(mergeDescendants = true) { },
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s),
-        ) {
-            if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(18.dp))
-            else if (o.snoozed) Icon(Ms.Snooze, null, tint = muted, modifier = Modifier.size(18.dp))
-            Text(fmt.timeText(o.at!!), style = MaterialTheme.typography.bodyLarge, color = if (overdue) error else MaterialTheme.colorScheme.onSurface)
-            Text(o.task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
-            else if (o.snoozed) Text(stringResource(R.string.cal_snoozed), style = MaterialTheme.typography.bodySmall, color = muted)
+        // G-03: at large text the title gets its own line under the time, so it is not cut to a few letters.
+        val big = LocalDensity.current.fontScale >= 1.5f
+        val title: @Composable (Modifier) -> Unit = { m ->
+            Text(o.task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = m)
+        }
+        Column(Modifier.padding(horizontal = Dimens.m, vertical = Dimens.xs).semantics(mergeDescendants = true) { }) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
+                if (overdue) Icon(Ms.Warning, null, tint = error, modifier = Modifier.size(18.dp))
+                else if (o.snoozed) Icon(Ms.Snooze, null, tint = muted, modifier = Modifier.size(18.dp))
+                Text(fmt.timeText(o.at!!), style = MaterialTheme.typography.bodyLarge, color = if (overdue) error else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1, softWrap = false)
+                if (!big) title(Modifier.weight(1f))
+                if (overdue) Text(stringResource(R.string.cal_late), style = MaterialTheme.typography.bodySmall, color = error)
+                else if (o.snoozed) Text(stringResource(R.string.cal_snoozed), style = MaterialTheme.typography.bodySmall, color = muted)
+            }
+            if (big) title(Modifier)
         }
     }
 }
