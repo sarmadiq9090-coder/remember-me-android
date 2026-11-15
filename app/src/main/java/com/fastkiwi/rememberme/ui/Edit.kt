@@ -663,7 +663,10 @@ fun Segments(options: List<Pair<String, String>>, selected: String, icons: Map<S
             SegmentedButton(
                 selected = code == selected, onClick = { onSelect(code) },
                 shape = SegmentedButtonDefaults.itemShape(i, options.size), modifier = Modifier.heightIn(min = 48.dp),
-                icon = { SegmentedButtonDefaults.Icon(code == selected) { icons[code]?.let { Icon(it, null, Modifier.size(18.dp)) } } },
+                // The option's icon on the selected segment, drawn plainly. Not SegmentedButtonDefaults.Icon: its
+                // AnimatedVisibility measured 0 wide in one pass and 18 dp in the next, so the button's content-offset
+                // animation got a new target every frame and the screen never settled (UI monkey seed 14003).
+                icon = { if (code == selected) icons[code]?.let { Icon(it, null, Modifier.size(SegmentedButtonDefaults.IconSize)) } },
             ) { Text(text, maxLines = 1) }
         }
     }
