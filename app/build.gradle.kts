@@ -24,8 +24,8 @@ android {
         applicationId = "com.fastkiwi.rememberme"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.2"
+        versionCode = 6
+        versionName = "1.0.3"
         // Arabic is the default (values/), English in values-en/.
         androidResources.localeFilters += listOf("ar", "en")
     }

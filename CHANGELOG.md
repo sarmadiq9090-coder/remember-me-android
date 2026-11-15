@@ -6,6 +6,18 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-15
+
+The owner asked for a time picker in Quick Add («اضف موعد تذكير في هذه شاشه»).
+
+### Added
+
+- Quick Add: a «الموعد» chip, first in the row, opens the Material 3 date then time pickers (today and the next
+  full hour by default; 12/24 h as the phone). It shows the moment («اليوم، 5:30 م»), has its own ✕, and TalkBack
+  reads «الموعد: …» or «الموعد: غير محدد». It follows the time read from the text until the person picks one,
+  which then wins. A time that has passed offers «غدًا في الوقت نفسه». The pickers use Western digits and stop
+  growing at 130 % text, where their fixed cells would overlap.
+
 ## [1.0.2] - 2026-11-15
 
 Voice input again, from the owner's phone: Google's «ميزة "البحث الصوتي" غير متاحة» for Arabic (Iraq).

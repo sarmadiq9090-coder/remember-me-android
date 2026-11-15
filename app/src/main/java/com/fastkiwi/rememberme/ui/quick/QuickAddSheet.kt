@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -177,6 +178,8 @@ fun QuickAddSheet(
     val context = LocalContext.current
     val focus = remember { FocusRequester() }
     var disclose by rememberSaveable { mutableStateOf(false) }
+    var dueDialog by remember { mutableStateOf<String?>(null) }
+    var dueDate by remember { mutableStateOf<java.time.LocalDate?>(null) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val windowInfo = LocalWindowInfo.current
@@ -275,10 +278,21 @@ fun QuickAddSheet(
             }
             if (state.text.isNotBlank()) PreviewCard(state)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
+                // 1.0.3: «الموعد», first in reading order.
+                DueChip(state, onOpen = { dueDialog = "date" })
                 AssistChip(onClick = onTemplate, label = { Text(stringResource(R.string.qa_template)) }, modifier = Modifier.heightIn(min = Dimens.touch),
                     leadingIcon = { Icon(Ms.DashboardCustomize, null, Modifier.size(18.dp)) })
                 CategoryChip(state.category) { state.category = it }
                 PriorityChip(state.priority) { state.priority = it }
+            }
+            state.pastPick?.let { past ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+                    Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(Dimens.s))
+                    Text(stringResource(R.string.qa_due_past, L10n.dueText(context, past, Instant.now(), state.zone)), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { state.pickTomorrow() }, modifier = Modifier.heightIn(min = Dimens.touch)) { Text(stringResource(R.string.qa_due_tomorrow)) }
+                }
             }
             if (state.asking && state.choice == null && !state.pending) Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Ms.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -301,6 +315,44 @@ fun QuickAddSheet(
             )
         }
     }
+    if (dueDialog != null) {
+        remember { L10n.latinDigitsDefault() }
+        val base = (state.dueAt ?: state.suggestedAt()).atZone(state.zone)
+        when (dueDialog) {
+            "date" -> LatinDigits {
+                val today = java.time.LocalDate.now(state.zone)
+                val picker = androidx.compose.material3.rememberDatePickerState(
+                    initialSelectedDateMillis = base.toLocalDate().atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli(),
+                    selectableDates = object : androidx.compose.material3.SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long) =
+                            !Instant.ofEpochMilli(utcTimeMillis).atZone(java.time.ZoneOffset.UTC).toLocalDate().isBefore(today)
+                        override fun isSelectableYear(year: Int) = year >= today.year
+                    },
+                )
+                androidx.compose.material3.DatePickerDialog(
+                    onDismissRequest = { dueDialog = null },
+                    dismissButton = { TextButton(onClick = { dueDialog = null }) { Text(stringResource(R.string.cancel)) } },
+                    confirmButton = { TextButton(onClick = {
+                        dueDate = picker.selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(java.time.ZoneOffset.UTC).toLocalDate() } ?: base.toLocalDate()
+                        dueDialog = "time"
+                    }) { Text(stringResource(R.string.ok)) } },
+                ) { PickerLocals { androidx.compose.material3.DatePicker(state = picker) } }
+            }
+            "time" -> {
+                val picker = androidx.compose.material3.rememberTimePickerState(base.hour, base.minute, L10n.is24(context))
+                AlertDialog(
+                    onDismissRequest = { dueDialog = null },
+                    dismissButton = { TextButton(onClick = { dueDialog = null }) { Text(stringResource(R.string.cancel)) } },
+                    confirmButton = { TextButton(onClick = {
+                        val day = dueDate ?: base.toLocalDate()
+                        state.pick(day.atTime(picker.hour, picker.minute).atZone(state.zone).toInstant())
+                        dueDialog = null
+                    }) { Text(stringResource(R.string.ok)) } },
+                    text = { PickerLocals { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { androidx.compose.material3.TimePicker(state = picker) } } },
+                )
+            }
+        }
+    }
     if (disclose) AlertDialog(
         onDismissRequest = { disclose = false },
         icon = { Icon(Ms.Mic, null) },
@@ -311,6 +363,50 @@ fun QuickAddSheet(
             TextButton(onClick = { disclose = false; QuickPrefs.setVoiceDisclosed(context); listen() }) { Text(stringResource(R.string.continue_)) }
         },
     )
+}
+
+/**
+ * Inside a picker dialog (its own window, so its own locals): Western digits, as everywhere in the app, and text
+ * no larger than 130 %, where Material 3's fixed-size date cells and time fields stop overlapping.
+ */
+@Composable
+private fun PickerLocals(content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    val capped = remember(density) { androidx.compose.ui.unit.Density(density.density, minOf(density.fontScale, 1.3f)) }
+    LatinDigits { androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides capped, content = content) }
+}
+
+/** The configuration's locale with Western digits (the date picker's state takes its locale where it is created). */
+@Composable
+private fun LatinDigits(content: @Composable () -> Unit) {
+    val cfg = androidx.compose.ui.platform.LocalConfiguration.current
+    val latn = remember(cfg) {
+        android.content.res.Configuration(cfg).apply {
+            setLocale(java.util.Locale.Builder().setLocale(cfg.locales[0]).setUnicodeLocaleKeyword("nu", "latn").build())
+        }
+    }
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalConfiguration provides latn, content = content)
+}
+
+/**
+ * «الموعد» (1.0.3): shows the moment that will be saved (from the text or picked), opens the date and time
+ * pickers, and has its own ✕ when a moment is set. TalkBack reads «الموعد: …» or «الموعد: غير محدد».
+ */
+@Composable
+private fun DueChip(state: QuickAddState, onOpen: () -> Unit) {
+    val context = LocalContext.current
+    val due = if (state.pending) null else state.dueAt
+    val shown = due?.let { L10n.dueText(context, it, Instant.now(), state.zone) }
+    val desc = stringResource(R.string.qa_due_desc, shown ?: stringResource(R.string.qa_due_none))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AssistChip(
+            onClick = onOpen,
+            label = { Text(shown ?: stringResource(R.string.qa_due)) },
+            leadingIcon = { Icon(Ms.Schedule, null, Modifier.size(18.dp)) },
+            modifier = Modifier.heightIn(min = Dimens.touch).semantics { contentDescription = desc },
+        )
+        if (due != null) TooltipIconButton(Ms.Close, stringResource(R.string.qa_due_clear), { state.clearPick() })
+    }
 }
 
 /** The preview card: what will be saved, always shown before «حفظ» (never a date the person has not seen). */
@@ -356,7 +452,7 @@ private fun PreviewCard(state: QuickAddState) {
                         Column(Modifier.weight(1f)) {
                             Text(buildAnnotatedString {
                                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(L10n.dueText(context, due, now)) }
-                                state.phrase?.let { p ->
+                                state.phrase?.takeIf { !state.picked }?.let { p ->
                                     append("  ")
                                     withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Normal)) { append(p) }
                                 }

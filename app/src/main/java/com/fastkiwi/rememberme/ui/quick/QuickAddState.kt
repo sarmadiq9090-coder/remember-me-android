@@ -15,6 +15,7 @@ import com.fastkiwi.rememberme.core.quickadd.QuickResult
 import com.fastkiwi.rememberme.ui.Behaviour
 import java.time.Instant
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 /** A dated choice the person picked, or «بلا موعد». */
 sealed interface QuickChoice {
@@ -43,6 +44,11 @@ class QuickAddState(
     var choice by mutableStateOf<QuickChoice?>(null); private set
     /** The person dropped the date with the preview's ✕. */
     var dateCleared by mutableStateOf(false); private set
+    /** 1.0.3: the date and time picked with the «الموعد» chip; it wins over what the text says. */
+    var manualAt by mutableStateOf<Instant?>(null); private set
+    /** A picked moment that had already passed (the sheet offers «غدًا في الوقت نفسه»). */
+    var pastPick by mutableStateOf<Instant?>(null); private set
+    val picked: Boolean get() = manualAt != null
     var category by mutableStateOf(Category.PERSONAL)
     var priority by mutableStateOf(Priority.NORMAL)
 
@@ -73,7 +79,7 @@ class QuickAddState(
     val pending: Boolean get() = parsedText != text
 
     /** The reading asks a question (AM or PM, this week or next…) that the person has to answer. */
-    val asking: Boolean get() = !dateCleared && result?.ask != null
+    val asking: Boolean get() = !dateCleared && manualAt == null && result?.ask != null
 
     /** At most [Behaviour.MaxQuickAddChoices] dated choices, all in the future. */
     val options: List<QuickOption> get() = if (asking) result!!.options.take(Behaviour.MaxQuickAddChoices) else emptyList()
@@ -81,15 +87,17 @@ class QuickAddState(
     /** The moment the preview shows (and [toInput] saves), or null. */
     val dueAt: Instant?
         get() {
-            val r = result ?: return null
             if (dateCleared) return null
+            manualAt?.let { return it }
+            val r = result ?: return null
             return if (r.ask != null) (choice as? QuickChoice.At)?.dueAt else r.dueAt
         }
 
     val repeat: Repeat get() = if (dueAt != null) result?.repeat ?: Repeat.NONE else Repeat.NONE
 
     /** Nothing understood, or the date was dropped: the text is saved as a title with no date. */
-    val noDate: Boolean get() = !pending && text.isNotBlank() && (result?.understood != true || dateCleared || choice == QuickChoice.NoDate)
+    val noDate: Boolean get() = !pending && text.isNotBlank() && (dateCleared ||
+        manualAt == null && (result?.understood != true || choice == QuickChoice.NoDate))
 
     val canSave: Boolean get() = text.isNotBlank() && !pending && result != null && (!asking || choice != null) && title.isNotEmpty()
 
@@ -101,7 +109,29 @@ class QuickAddState(
         choice = c
     }
 
-    fun clearDate() { dateCleared = true; choice = null }
+    /** The preview's ✕ and the chip's ✕: no date (a picked one is dropped too). */
+    fun clearDate() { dateCleared = true; choice = null; manualAt = null; pastPick = null }
+
+    fun clearPick() = clearDate()
+
+    /** The chip's starting point: the next full hour (today, or tomorrow just before midnight). */
+    fun suggestedAt(): Instant = clock().atZone(zone).truncatedTo(ChronoUnit.HOURS).plusHours(1).toInstant()
+
+    /** A moment from the chip's pickers. A past one is not taken: [pastPick] holds it for «غدًا في الوقت نفسه». */
+    fun pick(at: Instant): Boolean {
+        if (!at.isAfter(clock())) { pastPick = at; return false }
+        manualAt = at; pastPick = null; dateCleared = false; choice = null
+        return true
+    }
+
+    /** «غدًا في الوقت نفسه» for a [pastPick]. */
+    fun pickTomorrow() {
+        val p = pastPick ?: return
+        pastPick = null
+        var next = p.atZone(zone).plusDays(1)
+        while (!next.toInstant().isAfter(clock())) next = next.plusDays(1)
+        pick(next.toInstant())
+    }
 
     /** The reminder to save, or null while [canSave] is false. */
     fun toInput(): TaskInput? = if (!canSave) null else input()

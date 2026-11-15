@@ -34,6 +34,16 @@ object L10n {
         return Locale.Builder().setLanguage("ar").setRegion(region).setUnicodeLocaleKeyword("nu", "latn").build()
     }
 
+    /**
+     * Material 3's date and time pickers write their numbers with the JVM's default locale, not the app's: keep
+     * that default on Western digits (only the digit system changes; 1.0.3, the «الموعد» chip's pickers).
+     */
+    fun latinDigitsDefault() {
+        val d = Locale.getDefault()
+        if (d.getUnicodeLocaleType("nu") == "latn") return
+        runCatching { Locale.setDefault(Locale.Builder().setLocale(d).setUnicodeLocaleKeyword("nu", "latn").build()) }
+    }
+
     fun current(context: Context): Locale {
         val prefs = Repo.prefs(context)
         return locale(prefs.language, Repo.arabicMonths(Repo.state(context)))

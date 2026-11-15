@@ -316,6 +316,41 @@ class QcScreenshotsTest {
         try { tour("ar-dark-200", false) } finally { RuntimeEnvironment.setFontScale(1f) }
     }
 
+    /**
+     * 1.0.3: the Quick Add sheet alone with its «الموعد» chip (QC limited to the change): not set, filled from
+     * the text, the date picker, the time picker, and a picked moment with its ✕.
+     */
+    private fun dueSheet(prefix: String, en: Boolean) {
+        if (en) Repo.prefs(app).language = "en"
+        val qa = com.fastkiwi.rememberme.ui.quick.QuickEntry::quickAddIntent
+        ActivityScenario.launch<MainActivity>(qa(app, null)).also { scenario = it }.use {
+            rule.mainClock.advanceTimeBy(300)
+            shotRoots("$prefix-40-due-unset")
+        }
+        ActivityScenario.launch<MainActivity>(qa(app, if (en) "call mum in an hour" else "اتصل بأمي بعد ساعة")).also { scenario = it }.use {
+            rule.mainClock.advanceTimeBy(300)
+            shotRoots("$prefix-41-due-from-text")
+        }
+        ActivityScenario.launch<MainActivity>(qa(app, if (en) "call mum" else "اتصل بأمي")).also { scenario = it }.use {
+            rule.mainClock.advanceTimeBy(300)
+            rule.onNode(hasContentDescription(if (en) "Date and time:" else "الموعد:", substring = true)).performClick()
+            rule.waitForIdle(); shotRoots("$prefix-42-due-date-picker")
+            rule.onNodeWithText(if (en) "OK" else "موافق").performClick()
+            rule.waitForIdle(); shotRoots("$prefix-43-due-time-picker")
+            rule.onNodeWithText(if (en) "OK" else "موافق").performClick()
+            rule.waitForIdle(); shotRoots("$prefix-44-due-picked")
+        }
+    }
+
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi") fun dueSheetArabicLight() = dueSheet("ar-light", false)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi") fun dueSheetArabicDark() = dueSheet("ar-dark", false)
+    @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi") fun dueSheetEnglishLight() = dueSheet("en-light", true)
+    @Test @Config(qualifiers = "en-w412dp-h915dp-night-xxhdpi") fun dueSheetEnglishDark() = dueSheet("en-dark", true)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi")
+    fun dueSheetArabicLargeText() { RuntimeEnvironment.setFontScale(2f); try { dueSheet("ar-200", false) } finally { RuntimeEnvironment.setFontScale(1f) } }
+    @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi")
+    fun dueSheetEnglishLargeText() { RuntimeEnvironment.setFontScale(2f); try { dueSheet("en-200", true) } finally { RuntimeEnvironment.setFontScale(1f) } }
+
     /** G-05: the tablet layout (840 dp and wider): the list and the chosen reminder's details side by side. */
     private fun tablet(prefix: String, en: Boolean) {
         if (en) Repo.prefs(app).language = "en"

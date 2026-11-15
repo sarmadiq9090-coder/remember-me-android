@@ -111,6 +111,8 @@ class UpgradeTest {
         assertEquals(BuildConfig.VERSION_CODE, Repo.prefs(app).lastVersion)
     }
 
+    @Test fun from102() = check(5)
+
     @Test fun from101() = check(4)
 
     @Test fun from100() = check(3)

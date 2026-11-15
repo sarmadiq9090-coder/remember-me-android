@@ -718,6 +718,12 @@
     <string name="qa_voice_title">Voice input</string>
     <string name="qa_voice_body">Voice input uses your phone\'s speech service. That service may use the internet if the language pack is not installed on the phone. Remember Me itself sends nothing and does not ask for the microphone permission.</string>
     <string name="qa_voice_missing">Voice input is not available on this phone. Type the reminder, or try the keyboard\'s microphone.</string>
+    <string name="qa_due">Date and time</string>
+    <string name="qa_due_desc">Date and time: %1$s</string>
+    <string name="qa_due_none">not set</string>
+    <string name="qa_due_clear">Remove the date</string>
+    <string name="qa_due_past">%1$s has passed.</string>
+    <string name="qa_due_tomorrow">Tomorrow, same time</string>
     <string name="qa_voice_no_text">No text came back from voice input. Try again, or type the reminder.</string>
     <string name="shortcut_quick">Quick add</string>
     <string name="templates_title">From a template</string>
