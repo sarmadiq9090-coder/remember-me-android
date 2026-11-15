@@ -24,6 +24,10 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
+        <!-- 1.0.2: RecognizerIntent.getVoiceDetailsIntent finds the service's language list through WEB_SEARCH. -->
+        <intent>
+            <action android:name="android.intent.action.WEB_SEARCH" />
+        </intent>
     </queries>
     <!-- [quick] end -->
 

@@ -37,7 +37,8 @@ data class Template(
 }
 
 /** What a template puts in the editor: the fields, plus the Android-only part (extra alerts, alert style). */
-data class TemplateFill(val input: TaskInput, val ext: AlertExt = AlertExt())
+/** [draft]: text the person typed (Quick Add's «خيارات أكثر»), not a template: Back asks before dropping it. */
+data class TemplateFill(val input: TaskInput, val ext: AlertExt = AlertExt(), val draft: Boolean = false)
 
 object Templates {
     private const val DAY = 1440

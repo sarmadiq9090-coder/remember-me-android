@@ -697,6 +697,7 @@
     <string name="banner_autobackup_failed">The weekly automatic copy was not saved. Choose the folder again in Settings.</string>
     <string name="h_autobackup">Weekly automatic copy</string>
     <string name="about_voice">Only voice input goes through your phone\'s speech service (usually Google\'s), which may work over the internet. We ask it to work offline, on the phone itself, when it can. Remember Me itself has no microphone permission. If there is no microphone button in «New reminder», the phone has no speech service: type the reminder, or try the keyboard\'s microphone.</string>
+    <string name="discard_draft_title">This reminder is not saved yet. Discard it?</string>
     <string name="tone_bundled_default">Remember Me tone 1 (the phone has no default tone)</string>
     <string name="added_msg">Reminder added</string>
     <string name="qa_label">Type a reminder and when</string>

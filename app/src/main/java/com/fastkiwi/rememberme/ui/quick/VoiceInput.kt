@@ -2,11 +2,21 @@ package com.fastkiwi.rememberme.ui.quick
 
 import android.app.Activity
 import android.app.LocaleManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Build
+import android.speech.RecognitionSupport
+import android.speech.RecognitionSupportCallback
 import android.speech.RecognizerIntent
+import androidx.annotation.RequiresApi
+import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
 import android.speech.SpeechRecognizer
 import androidx.core.content.edit
 import com.fastkiwi.rememberme.R
@@ -17,14 +27,15 @@ import java.util.Locale
  * Voice input through the phone's speech dialog (F-048), made safe for phones where it does not work (1.0.1).
  *
  * - The mic shows only when the phone has both the speech dialog and a speech service ([available]).
- * - The language is the phone's own (when it is the app's language), then the plain language, then a common
- *   region, then none at all (the service's own language) — never the region the app picked for month names
- *   (ar-IQ / ar-EG), which Google's dialog may refuse as «غير متاحة».
+ * - 1.0.2: the service is asked first which languages it supports (and, on Android 13+, which are on the
+ *   phone). The language is one it supports: the phone's own, then ar-SA, ar-EG, ar-AE, ar; without a list,
+ *   ar-SA first. Never the region the app picked for month names, and ar-IQ only when the service lists it.
+ *   Offline is asked only for a language that is on the phone.
  * - A failed or empty result moves to the next language for the next try; a result with text keeps that
  *   language. Both are remembered on this phone only.
  *
  * In-app recognition (SpeechRecognizer, on-device on Android 13+) needs the microphone permission, which this
- * app deliberately does not have; the dialog is asked to work offline instead (EXTRA_PREFER_OFFLINE).
+ * app deliberately does not have; the dialog is asked to work offline instead, when the language is on the phone.
  */
 object VoiceInput {
     /** What came back from the dialog. */
@@ -47,20 +58,104 @@ object VoiceInput {
     private fun probe() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
 
     /**
-     * The languages to try, in order; null = send no language. [app] is the app's locale, [phone] the phone's
-     * own (system) locale. Only language and country are sent (no -u-nu-latn and the like).
+     * What the phone's speech service says it can do: the languages it understands ([supported], null when it
+     * did not say) and the ones it has on the phone itself ([offline]).
      */
-    fun candidates(app: Locale, phone: Locale): List<String?> {
+    data class Details(val supported: List<String>?, val offline: Set<String> = emptySet())
+
+    /** Tests and the black-box driver answer for the speech service here. */
+    @VisibleForTesting var detailsSource: (suspend (Context) -> Details?)? = null
+
+    private const val ASK_MS = 1_500L
+    private const val KEEP_MS = 10 * 60_000L
+    private var cached: Pair<Long, Details?>? = null
+
+    private val PREFERRED = mapOf(
+        "ar" to listOf("ar-SA", "ar-EG", "ar-AE", "ar"),
+        "en" to listOf("en-US", "en-GB", "en"),
+    )
+
+    private fun norm(tag: String) = tag.replace('_', '-').lowercase(Locale.ROOT)
+    private fun same(a: String, b: String) = norm(a) == norm(b)
+
+    /**
+     * The languages to try, in order; null = send no language. [app] is the app's locale, [phone] the phone's
+     * own (system) locale, [d] what the service said. With a list: only languages in it (the phone's own, then
+     * ar-SA, ar-EG, ar-AE, ar), so ar-IQ only when the service says it has it. Without a list: ar-SA first, never
+     * the phone's region (1.0.2: an Iraqi phone got Google's «غير متاحة» for ar-IQ). Only language and country
+     * are sent (no -u-nu-latn and the like).
+     */
+    fun candidates(app: Locale, phone: Locale, d: Details? = null): List<String?> {
         val lang = app.language.ifEmpty { "ar" }
+        val prefer = PREFERRED[lang] ?: listOf(lang)
         val out = LinkedHashSet<String?>()
-        if (phone.language == lang && phone.country.isNotEmpty()) out += "$lang-${phone.country}"
-        out += lang
-        FALLBACK[lang]?.let { out += it }
+        val sup = d?.supported?.filter { it.isNotBlank() }?.takeIf { it.isNotEmpty() }
+        if (sup == null) {
+            out += prefer
+        } else {
+            val phoneTag = if (phone.language == lang && phone.country.isNotEmpty()) "$lang-${phone.country}" else null
+            // The service's own spelling of each language it has.
+            for (w in listOfNotNull(phoneTag) + prefer) sup.firstOrNull { same(it, w) }?.let { out += it.replace('_', '-') }
+            if (out.isEmpty()) sup.firstOrNull { norm(it).substringBefore('-') == lang }?.let { out += it.replace('_', '-') }
+        }
         out += null
         return out.toList()
     }
 
-    private val FALLBACK = mapOf("ar" to "ar-SA", "en" to "en-US")
+    /** Offline only for a language the service has on the phone itself. */
+    fun offline(tag: String?, d: Details?): Boolean = tag != null && d?.offline?.any { same(it, tag) } == true
+
+    /**
+     * Asks the speech service which languages it supports (the standard language-details broadcast) and, on
+     * Android 13+, which it has on the phone; each answer has [ASK_MS] at most. Kept for [KEEP_MS].
+     */
+    suspend fun details(context: Context): Details? {
+        detailsSource?.let { return it(context) }
+        val now = System.currentTimeMillis()
+        cached?.let { (at, d) -> if (now - at < KEEP_MS) return d }
+        val listed = withTimeoutOrNull(ASK_MS) { runCatching { askLanguages(context) }.getOrNull() }
+        val support = if (Build.VERSION.SDK_INT >= 33) withTimeoutOrNull(ASK_MS) { runCatching { askSupport(context) }.getOrNull() } else null
+        val supported = listed?.takeIf { it.isNotEmpty() } ?: support?.first?.takeIf { it.isNotEmpty() }
+        val offline = support?.second.orEmpty()
+        val d = if (supported == null && offline.isEmpty()) null else Details(supported, offline)
+        cached = now to d
+        return d
+    }
+
+    /** RecognizerIntent's language-details broadcast: EXTRA_SUPPORTED_LANGUAGES, or null when nobody answers. */
+    private suspend fun askLanguages(context: Context): List<String>? {
+        val ask = RecognizerIntent.getVoiceDetailsIntent(context) ?: return null
+        return withContext(Dispatchers.Main) {
+            suspendCancellableCoroutine { c ->
+                context.sendOrderedBroadcast(ask, null, object : BroadcastReceiver() {
+                    override fun onReceive(ctx: Context, intent: Intent) {
+                        val list = runCatching { getResultExtras(true).getStringArrayList(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES) }.getOrNull()
+                        if (c.isActive) c.resume(list)
+                    }
+                }, null, Activity.RESULT_OK, null, null)
+            }
+        }
+    }
+
+    /** Android 13+: (online + on-phone languages, on-phone languages) from the speech service itself. */
+    @RequiresApi(33)
+    private suspend fun askSupport(context: Context): Pair<List<String>, Set<String>>? = withContext(Dispatchers.Main) {
+        val sr = SpeechRecognizer.createSpeechRecognizer(context)
+        try {
+            suspendCancellableCoroutine { c ->
+                sr.checkRecognitionSupport(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), context.mainExecutor,
+                    object : RecognitionSupportCallback {
+                        override fun onSupportResult(r: RecognitionSupport) {
+                            val on = r.installedOnDeviceLanguages.toSet()
+                            if (c.isActive) c.resume((r.onlineLanguages + r.installedOnDeviceLanguages + r.supportedOnDeviceLanguages).distinct() to on)
+                        }
+                        override fun onError(error: Int) { if (c.isActive) c.resume(null) }
+                    })
+            }
+        } finally {
+            runCatching { sr.destroy() }
+        }
+    }
 
     /** The phone's own language (Android 13+ keeps the per-app language apart; ask for the system's). */
     private fun phoneLocale(context: Context): Locale {
@@ -74,9 +169,12 @@ object VoiceInput {
 
     private fun key(tag: String?) = tag ?: NONE
 
-    /** The language for the next try on this phone. */
-    fun language(context: Context): String? {
-        val list = candidates(L10n.current(context), phoneLocale(context))
+    private var lastList: List<String?>? = null
+
+    /** The language for the next try on this phone, given what the service said ([d]). */
+    fun language(context: Context, d: Details? = null): String? {
+        val list = candidates(L10n.current(context), phoneLocale(context), d)
+        lastList = list
         val p = prefs(context)
         val good = list.indexOfFirst { key(it) == p.getString("voiceGood", null) }
         if (good >= 0) return list[good]
@@ -88,11 +186,11 @@ object VoiceInput {
         return list.first()
     }
 
-    /** The dialog's intent for [tag] (null: no language), offline when it can. */
-    fun intent(context: Context, tag: String?): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+    /** The dialog's intent for [tag] (null: no language); [offline] only when that language is on the phone. */
+    fun intent(context: Context, tag: String?, offline: Boolean = false): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
         .apply { if (tag != null) putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag) }
-        .putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+        .apply { if (offline) putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) }
         .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
         .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.qa_label))
 
@@ -119,7 +217,7 @@ object VoiceInput {
 
     private fun exhausted(context: Context): Boolean {
         val failed = prefs(context).getStringSet("voiceFailed", emptySet()).orEmpty()
-        return candidates(L10n.current(context), phoneLocale(context)).all { key(it) in failed }
+        return (lastList ?: candidates(L10n.current(context), phoneLocale(context))).all { key(it) in failed }
     }
 
     /** [tag] did not work: forget it as the working one and skip it next time. */

@@ -81,8 +81,10 @@ internet, no statistics.
   service (usually Google's), which may work over the internet; we ask it to work offline, on the phone itself,
   when it can. Remember Me itself has no microphone or internet permission. A note says so on first use and in
   About. Without a speech service the microphone is hidden. If the service fails or you close it, a message shows
-  and the cursor returns to the field with the keyboard: use the keyboard's microphone. The next try uses another
-  language (the phone's, then Arabic, then Arabic (Saudi Arabia), then the service's own).
+  and the cursor returns to the field with the keyboard: use the keyboard's microphone. Before opening Google's dialog
+  the app asks the service which languages it supports and picks from them: the phone's, then Arabic (Saudi
+  Arabia), (Egypt), (UAE), then Arabic; without an answer it starts with Arabic (Saudi Arabia). After a failure
+  the next try uses the next language.
 - **Read aloud**: per reminder in Alert options, or in Settings. Never in silent mode or Do Not Disturb; on a
   locked phone with "hide details" it only says "You have a reminder".
 - **Morning summary**: Settings → Morning summary → choose the time. A quiet notice with today's count, none

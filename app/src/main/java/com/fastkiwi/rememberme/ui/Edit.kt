@@ -171,6 +171,7 @@ fun EditScreen(
     onDuplicate: ((TaskInput) -> Unit)? = null,
     onHistory: ((Task) -> Unit)? = null,
     onDndHelp: (() -> Unit)? = null,
+    draft: Boolean = false,
 ) {
     val context = LocalContext.current
     val zone = ZoneId.systemDefault()
@@ -229,7 +230,10 @@ fun EditScreen(
     val dueAt = if (timed) localToInstant(LocalDateTime.of(localDate, localTime), zone) else null
     val rep = Repeat.of(repeat)
     val dayList = days.split(',').mapNotNull { it.toIntOrNull() }
-    val changed = allKey() != openedAll
+    // 1.0.2: a new reminder opened from Quick Add with typed text counts as unsaved even before any change.
+    val isDraft = rememberSaveable { draft }
+    val edited = allKey() != openedAll
+    val changed = edited || (task == null && isDraft && title.isNotBlank())
     val bigText = LocalDensity.current.fontScale >= 1.5f
     val arabic = LocalConfiguration.current.locales[0].language == "ar"
     val prayer = ext.prayer?.takeIf { timed && rep == Repeat.DAILY }
@@ -540,7 +544,7 @@ fun EditScreen(
             listOf("" to stringResource(R.string.fs_follow), "show" to stringResource(R.string.lock_show), "hide" to stringResource(R.string.lock_hide)),
             ext.lock() ?: "", { setExt(ext.withLock(it.ifEmpty { null })) }, { dialog = null },
         )
-        "discard" -> ConfirmDialog(stringResource(R.string.discard_title), null, stringResource(R.string.discard), onBack, { dialog = null },
+        "discard" -> ConfirmDialog(stringResource(if (!edited && isDraft) R.string.discard_draft_title else R.string.discard_title), null, stringResource(R.string.discard), onBack, { dialog = null },
             dismissLabel = stringResource(R.string.keep_editing))
     }
 

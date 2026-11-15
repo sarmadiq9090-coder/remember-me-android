@@ -127,6 +127,8 @@ class Driver(val rule: ComposeTestRule, val session: File) {
             "timezone", "lockscreen-notifications", "exact-alarms", "full-screen-permission", "on-error", "speech")
         const val DOCS = "com.android.externalstorage.documents"
         const val GOOGLE = "com.google.android.googlequicksearchbox"
+        /** The languages the driver's Google speech service has (like the owner's phone: no ar-IQ). */
+        val SPEECH_LANGS = listOf("ar-SA", "ar-EG", "ar-AE", "ar-JO", "en-US", "en-GB")
     }
 
     val app: Application = ApplicationProvider.getApplicationContext()
@@ -140,7 +142,11 @@ class Driver(val rule: ComposeTestRule, val session: File) {
     var fontScale = 1f
     var locked = false
     var lockMode = "all"
-    /** The phone's speech service: none (no Google app), google (works), google-dead (the dialog says «غير متاحة»). */
+    /**
+     * The phone's speech service: none (no Google app); google (lists [SPEECH_LANGS], no ar-IQ, and its dialog
+     * says «غير متاحة» for any other language); google-nolist (the same dialog, but it does not answer which
+     * languages it has); google-dead (the dialog always says «غير متاحة»).
+     */
     var speechMode = "none"
     var dndMode = "off"
     var notifDenials = 0
@@ -1147,8 +1153,11 @@ class Driver(val rule: ComposeTestRule, val session: File) {
     // ---- the phone's speech service (Google's dialog) ----
 
     private fun speech(mode: String) {
-        if (mode !in listOf("none", "google", "google-dead")) throw ActionError("use speech none, speech google or speech google-dead")
+        if (mode !in listOf("none", "google", "google-nolist", "google-dead")) throw ActionError("use speech none, google, google-nolist or google-dead")
         speechMode = mode
+        com.fastkiwi.rememberme.ui.quick.VoiceInput.detailsSource = {
+            if (speechMode == "google" || speechMode == "google-dead") com.fastkiwi.rememberme.ui.quick.VoiceInput.Details(SPEECH_LANGS) else null
+        }
         if (mode == "none") {
             // A phone without the Google app: no speech dialog and no speech service. Takes effect on the next screen.
             val pm = shadowOf(app.packageManager)
@@ -1174,7 +1183,8 @@ class Driver(val rule: ComposeTestRule, val session: File) {
         val tag = i.getStringExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE)
         val lang = tag?.let { java.util.Locale.forLanguageTag(it).getDisplayName(java.util.Locale.forLanguageTag("ar")) } ?: "لغة الخدمة الافتراضية"
         val toast = "تحوّل خدمات التحدث في Google المحتوى الصوتي إلى نص وتشارك النص مع هذا التطبيق."
-        return if (speechMode == "google-dead") Overlay(Overlay.Kind.SPEECH, "Google",
+        val dead = speechMode == "google-dead" || (tag != null && SPEECH_LANGS.none { it.equals(tag, ignoreCase = true) })
+        return if (dead) Overlay(Overlay.Kind.SPEECH, "Google",
             listOf("ميزة \"البحث الصوتي\" غير متاحة.", "($lang)", "رسالة صغيرة: $toast", "(say \"…\" does nothing here; the dialog is not listening)"),
             listOf("إعادة المحاولة"), transparent = true)
         else Overlay(Overlay.Kind.SPEECH, "Google",
@@ -1185,7 +1195,7 @@ class Driver(val rule: ComposeTestRule, val session: File) {
     private fun say(text: String) {
         val t = frontTask(); val o = t?.overlay
         if (t == null || o == null || o.kind != Overlay.Kind.SPEECH) throw ActionError("no speech dialog is open (nothing is listening)")
-        if (speechMode == "google-dead") { events += "You spoke, but Google's dialog is not listening («غير متاحة»)."; return }
+        if (o.lines.firstOrNull()?.contains("غير متاحة") == true) { events += "You spoke, but Google's dialog is not listening («غير متاحة»)."; return }
         val data = Intent().putStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS, arrayListOf(text))
         closeOverlay(t, o, Activity.RESULT_OK, data)
         events += "Google's dialog heard: «$text»"

@@ -32,6 +32,7 @@ class VoiceInputTest {
     private val pkg = "com.google.android.googlequicksearchbox"
 
     @Before fun setUp() {
+        com.fastkiwi.rememberme.ui.quick.VoiceInput.detailsSource = { null }
         Repo.resetForTests()
         File(app.filesDir, "data").deleteRecursively()
         for (name in listOf("device", "quick")) app.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit()
@@ -58,23 +59,25 @@ class VoiceInputTest {
         assertTrue(VoiceInput.available(app))
     }
 
-    @Test fun theIntentAsksForOfflineAndOmitsTheLanguageWhenNone() {
+    @Test fun theIntentAsksForOfflineOnlyWhenToldAndOmitsTheLanguageWhenNone() {
         val i = VoiceInput.intent(app, null)
-        assertTrue(i.getBooleanExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
+        assertFalse(i.hasExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE))
         assertFalse(i.hasExtra(RecognizerIntent.EXTRA_LANGUAGE))
+        assertTrue(VoiceInput.intent(app, "ar-EG", offline = true).getBooleanExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
         assertEquals("ar", VoiceInput.intent(app, "ar").getStringExtra(RecognizerIntent.EXTRA_LANGUAGE))
     }
 
     @Test fun resultsMoveThroughTheLanguagesAndKeepTheOneThatWorks() {
-        assertEquals("ar", VoiceInput.language(app))
-        assertEquals(VoiceInput.Outcome.Failed, VoiceInput.result(app, "ar", RecognizerIntent.RESULT_NETWORK_ERROR, null))
-        assertEquals("ar-SA", VoiceInput.language(app))
+        val d = VoiceInput.Details(listOf("ar-SA", "ar-EG"))
+        assertEquals("ar-SA", VoiceInput.language(app, d))
+        assertEquals(VoiceInput.Outcome.Failed, VoiceInput.result(app, "ar-SA", RecognizerIntent.RESULT_NETWORK_ERROR, null))
+        assertEquals("ar-EG", VoiceInput.language(app, d))
         // Blank text is no text.
-        assertEquals(VoiceInput.Outcome.NoText, VoiceInput.result(app, "ar-SA", Activity.RESULT_OK, texts("  ")))
-        assertNull(VoiceInput.language(app))
+        assertEquals(VoiceInput.Outcome.NoText, VoiceInput.result(app, "ar-EG", Activity.RESULT_OK, texts("  ")))
+        assertNull(VoiceInput.language(app, d))
         assertEquals(VoiceInput.Outcome.Text("ذكرني"), VoiceInput.result(app, null, Activity.RESULT_OK, texts(" ذكرني ")))
         // The service's own language worked: it is kept, a cancel does not move it.
-        assertNull(VoiceInput.language(app))
+        assertNull(VoiceInput.language(app, d))
         assertEquals(VoiceInput.Outcome.NoText, VoiceInput.result(app, null, Activity.RESULT_CANCELED, null))
         assertNull(VoiceInput.language(app))
         // Nothing heard is not a failure of the language.

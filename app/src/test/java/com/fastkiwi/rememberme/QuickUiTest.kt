@@ -72,6 +72,7 @@ class QuickUiTest {
     private val zone = ZoneId.of("Asia/Baghdad")
 
     @Before fun setUp() {
+        com.fastkiwi.rememberme.ui.quick.VoiceInput.detailsSource = { null }
         Engine.drain()
         TimeZone.setDefault(TimeZone.getTimeZone(zone))
         Repo.resetForTests()
@@ -220,7 +221,8 @@ class QuickUiTest {
             rule.waitForIdle()
             val started = shadowOf(app).nextStartedActivity
             assertEquals(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH, started?.action)
-            assertTrue(started!!.getBooleanExtra(android.speech.RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
+            // 1.0.2: offline only for a language the service has on the phone (none known here).
+            assertFalse(started!!.getBooleanExtra(android.speech.RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
         }
         val requested = app.packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions.orEmpty()
         assertFalse(Manifest.permission.RECORD_AUDIO in requested)

@@ -61,6 +61,7 @@ class VoiceUiTest {
     private val noText = "لم يصل نص من الإدخال الصوتي. جرّب مرة أخرى، أو اكتب التذكير."
 
     @Before fun setUp() {
+        com.fastkiwi.rememberme.ui.quick.VoiceInput.detailsSource = { null }
         Engine.drain()
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Baghdad")))
         Repo.resetForTests()
@@ -130,9 +131,10 @@ class VoiceUiTest {
         installRecognizer()
         quickAdd().use { sc ->
             val first = tapMic(sc)
-            // The app's own locale is ar-EG or ar-IQ only for the month names; the phone here is plain "ar".
-            assertEquals("ar", first.language())
-            assertTrue(first.getBooleanExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
+            // The app's own locale is ar-EG or ar-IQ only for the month names. 1.0.2: no list from the service,
+            // so Saudi Arabic first, and offline is not asked for (no pack is known to be on the phone).
+            assertEquals("ar-SA", first.language())
+            assertFalse(first.getBooleanExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false))
         }
     }
 
@@ -169,11 +171,13 @@ class VoiceUiTest {
     @Test fun aDialogDeadInEveryLanguageEndsWithThePlainMessage() {
         installRecognizer()
         quickAdd().use { sc ->
-            // The owner's phone: Back on «غير متاحة» each time. ar, ar-SA, then the service's own language.
-            answer(sc, tapMic(sc), Activity.RESULT_CANCELED)
-            rule.onNodeWithText(noText).assertExists()
-            answer(sc, tapMic(sc), Activity.RESULT_CANCELED)
-            rule.onNodeWithText(noText).assertExists()
+            // The owner's phone: Back on «غير متاحة» each time. ar-SA, ar-EG, ar-AE, ar, then the service's own.
+            for (tag in listOf("ar-SA", "ar-EG", "ar-AE", "ar")) {
+                val r = tapMic(sc)
+                assertEquals(tag, r.language())
+                answer(sc, r, Activity.RESULT_CANCELED)
+                rule.onNodeWithText(noText).assertExists()
+            }
             val last = tapMic(sc)
             assertEquals(null, last.language())
             answer(sc, last, Activity.RESULT_CANCELED)
@@ -182,7 +186,7 @@ class VoiceUiTest {
             // The mic stays (a service exists); the next try starts the round again, and the plain message stays
             // until one works (black-box: the soft one came back on the 4th try).
             val again = tapMic(sc)
-            assertEquals("ar", again.language())
+            assertEquals("ar-SA", again.language())
             answer(sc, again, Activity.RESULT_CANCELED)
             rule.onNodeWithText(unavailable).assertExists()
             rule.onNodeWithText(noText).assertDoesNotExist()
@@ -211,12 +215,27 @@ class VoiceUiTest {
 
     @Test fun languagesNeverDependOnTheMonthNameRegion() {
         fun ar(region: String) = java.util.Locale.Builder().setLanguage("ar").setRegion(region).setUnicodeLocaleKeyword("nu", "latn").build()
-        // The owner's case: the app is ar-IQ (month names), the phone is Arabic (Iraq).
-        assertEquals(listOf("ar-IQ", "ar", "ar-SA", null), VoiceInput.candidates(ar("IQ"), java.util.Locale.forLanguageTag("ar-IQ")))
-        // The app's region is never sent by itself: a phone in English gives plain Arabic first.
-        assertEquals(listOf("ar", "ar-SA", null), VoiceInput.candidates(ar("IQ"), java.util.Locale.forLanguageTag("en-US")))
-        assertEquals(listOf("ar", "ar-SA", null), VoiceInput.candidates(ar("EG"), java.util.Locale.forLanguageTag("ar")))
-        assertEquals(listOf("en-GB", "en", "en-US", null), VoiceInput.candidates(java.util.Locale.forLanguageTag("en-US"), java.util.Locale.forLanguageTag("en-GB")))
+        val iq = java.util.Locale.forLanguageTag("ar-IQ")
+        // 1.0.2, the owner's case: an Iraqi phone and no list from the service: never ar-IQ, Saudi Arabic first.
+        assertEquals(listOf("ar-SA", "ar-EG", "ar-AE", "ar", null), VoiceInput.candidates(ar("IQ"), iq))
+        // A list without ar-IQ: only what the service has, in this order.
+        val noIq = VoiceInput.Details(listOf("ar-AE", "ar-EG", "ar_SA", "ar-JO", "en-US"))
+        assertEquals(listOf("ar-SA", "ar-EG", "ar-AE", null), VoiceInput.candidates(ar("IQ"), iq, noIq))
+        // ar-IQ only when the service lists it, then the phone's language comes first.
+        val withIq = VoiceInput.Details(listOf("ar-SA", "ar-IQ"))
+        assertEquals(listOf("ar-IQ", "ar-SA", null), VoiceInput.candidates(ar("IQ"), iq, withIq))
+        // Only other Arabic in the list: that one, never a language it does not have.
+        assertEquals(listOf("ar-JO", null), VoiceInput.candidates(ar("IQ"), iq, VoiceInput.Details(listOf("ar-JO", "en-US"))))
+        // The app's region is never sent by itself.
+        assertEquals(listOf("ar-SA", "ar-EG", "ar-AE", "ar", null), VoiceInput.candidates(ar("EG"), java.util.Locale.forLanguageTag("en-US")))
+        assertEquals(listOf("en-GB", "en-US", null), VoiceInput.candidates(java.util.Locale.forLanguageTag("en-US"), java.util.Locale.forLanguageTag("en-GB"),
+            VoiceInput.Details(listOf("en-US", "en-GB"))))
+        // Offline only for a language on the phone.
+        val on = VoiceInput.Details(listOf("ar-SA", "ar-EG"), offline = setOf("ar-EG"))
+        assertFalse(VoiceInput.offline("ar-SA", on))
+        assertTrue(VoiceInput.offline("ar-EG", on))
+        assertFalse(VoiceInput.offline(null, on))
+        assertFalse(VoiceInput.offline("ar-SA", null))
         // No -u-nu-latn or other extensions reach the service.
         assertTrue(VoiceInput.candidates(ar("IQ"), ar("IQ")).filterNotNull().none { "-u-" in it })
     }

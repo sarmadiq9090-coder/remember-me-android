@@ -194,21 +194,31 @@ fun QuickAddSheet(
         // Back in the field with the keyboard open, whatever happened (its own mic is the way out).
         backToField = true
     }
+    val scope = rememberCoroutineScope()
+    var asking by remember { mutableStateOf(false) }
     fun listen() {
+        if (asking) return
         voiceNote = null
-        val tag = VoiceInput.language(context)
-        voiceTag = tag
-        try {
-            if (!VoiceInput.available(context)) throw ActivityNotFoundException()
-            // The dialog takes over the screen; the cursor and keyboard come back with the answer.
-            focusManager.clearFocus()
-            voice.launch(VoiceInput.intent(context, tag))
-        } catch (_: ActivityNotFoundException) {
-            voiceNote = R.string.qa_voice_missing
-            backToField = true
-        } catch (_: SecurityException) {
-            voiceNote = R.string.qa_voice_missing
-            backToField = true
+        if (!VoiceInput.available(context)) { voiceNote = R.string.qa_voice_missing; backToField = true; return }
+        asking = true
+        scope.launch {
+            try {
+                // 1.0.2: which languages the service has, before opening its dialog (a second and a half at most).
+                val d = VoiceInput.details(context)
+                val tag = VoiceInput.language(context, d)
+                voiceTag = tag
+                // The dialog takes over the screen; the cursor and keyboard come back with the answer.
+                focusManager.clearFocus()
+                voice.launch(VoiceInput.intent(context, tag, VoiceInput.offline(tag, d)))
+            } catch (_: ActivityNotFoundException) {
+                voiceNote = R.string.qa_voice_missing
+                backToField = true
+            } catch (_: SecurityException) {
+                voiceNote = R.string.qa_voice_missing
+                backToField = true
+            } finally {
+                asking = false
+            }
         }
     }
     LaunchedEffect(backToField) {

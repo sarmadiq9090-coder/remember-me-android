@@ -47,6 +47,7 @@ class VoiceHuntTest {
     private val app: Application = ApplicationProvider.getApplicationContext()
 
     @Before fun setUp() {
+        com.fastkiwi.rememberme.ui.quick.VoiceInput.detailsSource = { null }
         Engine.drain()
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Baghdad")))
         Repo.resetForTests()

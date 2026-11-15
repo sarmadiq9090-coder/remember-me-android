@@ -7,6 +7,7 @@ S = [
 ("banner_autobackup_failed", "لم تُحفظ النسخة التلقائية الأسبوعية. اختر المجلد من جديد في الإعدادات.", "The weekly automatic copy was not saved. Choose the folder again in Settings."),
 ("h_autobackup", "النسخة التلقائية الأسبوعية", "Weekly automatic copy"),
 ("about_voice", "الإدخال الصوتي وحده يمرّ عبر خدمة الكلام في هاتفك (غالبًا من Google)، وقد تعمل هذه الخدمة عبر الإنترنت. نطلب منها العمل دون إنترنت على الهاتف نفسه حين يمكن ذلك. ذكرني نفسه لا يملك إذن الميكروفون. إن لم يظهر زر الميكروفون في «تذكير جديد» فليس في هاتفك خدمة كلام: اكتب التذكير، أو جرّب ميكروفون لوحة المفاتيح.", "Only voice input goes through your phone's speech service (usually Google's), which may work over the internet. We ask it to work offline, on the phone itself, when it can. Remember Me itself has no microphone permission. If there is no microphone button in «New reminder», the phone has no speech service: type the reminder, or try the keyboard's microphone."),
+("discard_draft_title", "لم يُحفظ هذا التذكير بعد. تجاهله؟", "This reminder is not saved yet. Discard it?"),
 ("tone_bundled_default", "نغمة ذكرني 1 (لا توجد نغمة افتراضية في الهاتف)", "Remember Me tone 1 (the phone has no default tone)"),
 ]
 

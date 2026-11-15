@@ -6,6 +6,19 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-15
+
+Voice input again, from the owner's phone: Google's «ميزة "البحث الصوتي" غير متاحة» for Arabic (Iraq).
+
+### Fixed
+
+- The phone itself is set to Arabic (Iraq), and 1.0.1 tried the phone's language first, offline. Now the app
+  first asks the speech service which languages it supports (the standard language-details broadcast, and on
+  Android 13+ the service's own list, including what is on the phone) and picks one it has: the phone's, then
+  ar-SA, ar-EG, ar-AE, ar. ar-IQ is used only when the service lists it. Without an answer it starts with ar-SA.
+  Offline is asked only for a language that is on the phone.
+- Quick Add's «خيارات أكثر» then Back no longer drops the typed reminder without a question.
+
 ## [1.0.1] - 2026-11-15
 
 Fixes voice input, found on the owner's phone. Installs over 1.0.0, 0.1.1 and 0.1.0 and keeps all data.

@@ -410,7 +410,7 @@ class MainActivity : AppCompatActivity() {
                         lifecycleScope.launch(Dispatchers.IO) { runCatching { com.fastkiwi.rememberme.ui.quick.QuickAddSave.undo(ctx, id) } }
                     }
                 },
-                onMore = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input); push(Screen.Edit(null)) },
+                onMore = { input -> editPrefill = com.fastkiwi.rememberme.core.TemplateFill(input, draft = true); push(Screen.Edit(null)) },
                 onTemplate = { push(Screen.Templates) },
             )
         }
@@ -528,6 +528,7 @@ class MainActivity : AppCompatActivity() {
                     },
                     onHistory = { t -> push(Screen.History(t.id)) },
                     onDndHelp = { push(Screen.DndHelp) },
+                    draft = screen.id == null && editPrefill?.draft == true,
                     // [editor] end
                 )
                 // [editor] begin: the editor keeps the prefill in its saved state; the next new reminder starts empty.
