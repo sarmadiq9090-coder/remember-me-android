@@ -598,6 +598,85 @@
     <string name="home_alerts">Alerts</string>
     <string name="home_at_time">At the time</string>
     <string name="home_no_repeat">Does not repeat</string>
+    <string name="ics_item_title">“%1$s”</string>
+    <string name="ics_item_event_n">The event #%1$s</string>
+    <string name="ics_item_task_n">The task #%1$s</string>
+    <string name="ics_item_line">%1$s: %2$s</string>
+    <string name="ics_w_too_big">The file has more than %1$s parts or %2$s lines; the rest of it was not read.</string>
+    <string name="ics_w_cut_off">The file ends early; it may be cut off.</string>
+    <string name="ics_w_not_items">Not imported, as they are not events or tasks: %1$s.</string>
+    <string name="ics_w_unknown_zone">Unknown time zone %1$s: its times are read as this phone\'s time zone (%2$s).</string>
+    <string name="ics_w_changed_occurrence">it is one changed occurrence of a repeating event; it is imported as its own reminder, and the series keeps its usual time.</string>
+    <string name="ics_w_title_short">the title is shortened to %1$s characters.</string>
+    <string name="ics_w_body_short">the description is shortened to %1$s characters.</string>
+    <string name="ics_w_no_start">it has no start time; it is imported without a time.</string>
+    <string name="ics_w_extra_dates">its extra dates are not supported; only its first time is imported.</string>
+    <string name="ics_w_repeat_no_time">its repeat is not imported, as it has no time.</string>
+    <string name="ics_w_month_end">in months without day %1$s, this app reminds on the month\'s last day (the calendar skips those months).</string>
+    <string name="ics_w_leap_day">in years without %1$s, this app reminds on %2$s (the calendar skips those years).</string>
+    <string name="ics_w_clock">it repeats on %1$s time, whose clock changes differ from this phone\'s (%2$s); its occurrences follow this phone\'s clock, so some may be an hour off.</string>
+    <string name="ics_w_rule">its repeat rule is not supported (%1$s); it is imported as a one-time reminder.</string>
+    <string name="ics_w_starts_later">it keeps day %1$s of the month, so it starts on %2$s; the occurrence on %3$s is not imported.</string>
+    <string name="ics_w_alarms_no_time">its alarms are not imported, as it has no time.</string>
+    <string name="ics_w_alarm">%1$s is not imported.</string>
+    <string name="ics_w_too_many_alarms">this app keeps up to 3 early alerts, the nearest to the time (%1$s); the others (%2$s before) are not imported.</string>
+    <string name="ics_alarm_no_trigger">an alarm without a trigger</string>
+    <string name="ics_alarm_bad_time">an alarm at a time that cannot be read</string>
+    <string name="ics_alarm_from_end">an alarm set from the end of the event</string>
+    <string name="ics_alarm_bad_trigger">an alarm with a trigger that cannot be read</string>
+    <string name="ics_alarm_after">an alarm %1$s after the start</string>
+    <string name="ics_alarm_not_offered">an alarm %1$s before the start (this app offers 5, 10, 15, 30 or 60 minutes or 1 day)</string>
+    <string name="ics_s_incomplete_event">the file ends inside this event, so it may be incomplete.</string>
+    <string name="ics_s_incomplete_task">the file ends inside this task, so it may be incomplete.</string>
+    <string name="ics_s_no_title">it has no title.</string>
+    <string name="ics_s_cancelled">it is cancelled.</string>
+    <string name="ics_s_completed">it is already completed.</string>
+    <string name="ics_s_duplicate">an earlier item has the same ID (a duplicate).</string>
+    <string name="ics_s_bad_time">its time could not be read.</string>
+    <string name="ics_s_out_of_range">its date (%1$s) is out of range.</string>
+    <string name="ics_s_passed">its time (%1$s) has passed.</string>
+    <string name="ics_s_passed_rule">its repeat rule is not supported (%1$s) and its time (%2$s) has passed.</string>
+    <string name="ics_r_garbled">a part that cannot be read</string>
+    <string name="ics_r_twice">a part given twice</string>
+    <string name="ics_r_count">a set number of times</string>
+    <string name="ics_r_until">an end date</string>
+    <string name="ics_r_byhour">set hours of the day</string>
+    <string name="ics_r_byminute">set minutes</string>
+    <string name="ics_r_bysecond">set seconds</string>
+    <string name="ics_r_byweekno">set weeks of the year</string>
+    <string name="ics_r_byyearday">set days of the year</string>
+    <string name="ics_r_rscale">a calendar other than the Gregorian</string>
+    <string name="ics_r_unknown">the part %1$s</string>
+    <string name="ics_r_no_freq">no repeat type</string>
+    <string name="ics_r_bad_interval">an invalid interval</string>
+    <string name="ics_r_bad_byday">numbered weekdays such as the first Monday of the month</string>
+    <string name="ics_r_bad_monthday">invalid days of the month</string>
+    <string name="ics_r_not_with">%1$s with a %2$s repeat</string>
+    <string name="ics_key_byday">weekdays</string>
+    <string name="ics_key_bymonthday">days of the month</string>
+    <string name="ics_key_bymonth">set months</string>
+    <string name="ics_key_bysetpos">a position choice</string>
+    <string name="ics_freq_hourly">hourly</string>
+    <string name="ics_freq_daily">daily</string>
+    <string name="ics_freq_weekly">weekly</string>
+    <string name="ics_freq_monthly">monthly</string>
+    <string name="ics_freq_yearly">yearly</string>
+    <string name="ics_r_hourly_all_day">an hourly repeat on an all-day date</string>
+    <string name="ics_r_every">every %1$s</string>
+    <string name="ics_r_every_hours">every %1$s while this app repeats every 1 to 23 hours</string>
+    <string name="ics_r_every_days">every %1$s while this app repeats every 2 to 365 days</string>
+    <string name="ics_r_every_on_days">every %1$s on set weekdays</string>
+    <string name="ics_r_other_month">a month other than the start\'s</string>
+    <string name="ics_r_setpos">a position in the month</string>
+    <string name="ics_r_month_days">days of the month %1$s while the start is on day %2$s</string>
+    <string name="ics_r_last_day">the last</string>
+    <string name="ics_r_from_end">%1$s from the end</string>
+    <string name="ics_r_minutely">a repeat by minutes</string>
+    <string name="ics_r_secondly">a repeat by seconds</string>
+    <string name="ics_r_freq_unknown">an unknown repeat type</string>
+    <string name="ics_r_exrule">an exception rule</string>
+    <string name="ics_r_rdate">extra dates</string>
+    <string name="ics_r_exdate">excluded dates</string>
     <string name="template_saved">Saved to “My templates”</string>
     <string name="history_cleared">Change history cleared</string>
     <string name="change_not_saved">The change was not saved. Check the free space on the phone and try again.</string>
@@ -982,6 +1061,50 @@
     <plurals name="bulk_changed_msg">
         <item quantity="one">%1$s reminder changed</item>
         <item quantity="other">%1$s reminders changed</item>
+    </plurals>
+    <plurals name="ics_w_too_many">
+        <item quantity="one">Only the first %1$s events and tasks were read; %2$s more was not imported.</item>
+        <item quantity="other">Only the first %1$s events and tasks were read; %2$s more were not imported.</item>
+    </plurals>
+    <plurals name="ics_w_all_day">
+        <item quantity="one">%1$s all-day item gets its reminder at %2$s on the day: %3$s.</item>
+        <item quantity="other">%1$s all-day items get their reminder at %2$s on the day: %3$s.</item>
+    </plurals>
+    <plurals name="ics_and_more">
+        <item quantity="one">and %1$s more</item>
+        <item quantity="other">and %1$s more</item>
+    </plurals>
+    <plurals name="ics_part_journal">
+        <item quantity="one">%1$s journal entry</item>
+        <item quantity="other">%1$s journal entries</item>
+    </plurals>
+    <plurals name="ics_part_freebusy">
+        <item quantity="one">%1$s free/busy list</item>
+        <item quantity="other">%1$s free/busy lists</item>
+    </plurals>
+    <plurals name="ics_part_other">
+        <item quantity="one">%1$s other part</item>
+        <item quantity="other">%1$s other parts</item>
+    </plurals>
+    <plurals name="ics_r_several">
+        <item quantity="one">%1$s repeat rule</item>
+        <item quantity="other">%1$s repeat rules</item>
+    </plurals>
+    <plurals name="ics_seconds">
+        <item quantity="one">%1$s second</item>
+        <item quantity="other">%1$s seconds</item>
+    </plurals>
+    <plurals name="ics_weeks">
+        <item quantity="one">%1$s week</item>
+        <item quantity="other">%1$s weeks</item>
+    </plurals>
+    <plurals name="ics_months">
+        <item quantity="one">%1$s month</item>
+        <item quantity="other">%1$s months</item>
+    </plurals>
+    <plurals name="ics_years">
+        <item quantity="one">%1$s year</item>
+        <item quantity="other">%1$s years</item>
     </plurals>
     <plurals name="set_tones_included">
         <item quantity="one">%1$s tone from your files is restored with it</item>

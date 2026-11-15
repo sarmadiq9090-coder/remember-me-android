@@ -487,9 +487,10 @@ private fun RefusedDialog(why: RestoreReader.Refusal, onRetry: (() -> Unit)?, on
     )
 }
 
-/** F-085: what will be added, what was left out and what changed (the importer's own lines); nothing is dropped silently. */
+/** F-085: what will be added, what was left out and what changed, in the app language ([IcsReportText]); nothing is dropped silently. */
 @Composable
 private fun IcsReportDialog(r: IcsImportResult, onImport: () -> Unit, onDismiss: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.set_ics_import)) },
@@ -498,11 +499,11 @@ private fun IcsReportDialog(r: IcsImportResult, onImport: () -> Unit, onDismiss:
                 Line(Ms.Event, if (r.inputs.isEmpty()) stringResource(R.string.set_ics_nothing) else pluralStringResource(R.plurals.set_ics_will_add, r.inputs.size, r.inputs.size.toString()))
                 if (r.skipped.isNotEmpty()) {
                     Line(Ms.Warning, pluralStringResource(R.plurals.set_ics_skipped, r.skipped.size, r.skipped.size.toString()), MaterialTheme.colorScheme.error)
-                    r.skipped.forEach { Text("• " + isolate(it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
+                    r.skipped.forEach { Text("• " + IcsReportText.line(context, it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
                 }
                 if (r.warnings.isNotEmpty()) {
                     Line(Ms.Info, pluralStringResource(R.plurals.set_ics_changed, r.warnings.size, r.warnings.size.toString()))
-                    r.warnings.forEach { Text("• " + isolate(it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
+                    r.warnings.forEach { Text("• " + IcsReportText.line(context, it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.xxl)) }
                 }
             }
         },
@@ -583,6 +584,3 @@ private fun DeleteConfirmDialog(onDelete: () -> Unit, onDismiss: () -> Unit) {
         },
     )
 }
-
-/** Unicode first-strong isolate around a Latin run inside Arabic text (the importer's lines are English). */
-private fun isolate(s: String) = Char(0x2068) + s + Char(0x2069)

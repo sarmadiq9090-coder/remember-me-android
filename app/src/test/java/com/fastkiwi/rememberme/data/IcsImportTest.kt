@@ -1,5 +1,6 @@
 package com.fastkiwi.rememberme.data
 
+import com.fastkiwi.rememberme.core.AlertExt
 import com.fastkiwi.rememberme.core.AppState
 import com.fastkiwi.rememberme.core.Category
 import com.fastkiwi.rememberme.core.Priority
@@ -43,6 +44,10 @@ class IcsImportTest {
         return out
     }
 
+    /** The report's lines in plain English (IcsNote.english), as the assertions read them. */
+    private val IcsImportResult.w: List<String> get() = warnings.map { it.english() }
+    private val IcsImportResult.s: List<String> get() = skipped.map { it.english() }
+
     private fun imported(text: String, zone: ZoneId = baghdad, at: Instant = now): Pair<IcsImportResult, List<Task>> {
         val r = IcsImport.read(text, zone, at)
         return r to IcsImport.save(AppState(), r.inputs, at, zone).second
@@ -75,8 +80,8 @@ class IcsImportTest {
             val text = Ics.export(s, zone, created)
             val r = IcsImport.read(text, zone, created)
             val what = "${input.title} in $zoneId"
-            assertEquals(what, emptyList<String>(), r.skipped)
-            assertEquals(what, emptyList<String>(), r.warnings)
+            assertEquals(what, emptyList<String>(), r.s)
+            assertEquals(what, emptyList<String>(), r.w)
             val back = IcsImport.save(AppState(), r.inputs, created, zone).second.single()
             assertEquals(what, t.title, back.title)
             assertEquals(what, t.body, back.body)
@@ -94,7 +99,7 @@ class IcsImportTest {
     @Test fun anUntimedReminderComesBackUntimed() {
         val (s, _) = Tasks.save(AppState(), TaskInput(title = "بلا وقت", body = "ملاحظة", category = Category.WORK), now, baghdad)
         val (r, tasks) = imported(Ics.export(s, baghdad, now))
-        assertEquals(emptyList<String>(), r.skipped + r.warnings)
+        assertEquals(emptyList<String>(), r.s + r.w)
         val t = tasks.single()
         assertEquals("بلا وقت", t.title)
         assertEquals("ملاحظة", t.body)
@@ -115,7 +120,7 @@ class IcsImportTest {
             val t = s.task(t0.id)!!
             assertTrue(t.rule.from != t.scheduleAt) // the clamped case
             val (r, tasks) = imported(Ics.export(s, baghdad, done), at = done)
-            assertEquals(emptyList<String>(), r.skipped + r.warnings)
+            assertEquals(emptyList<String>(), r.s + r.w)
             val back = tasks.single()
             assertEquals(t.dueAt, back.dueAt)
             assertEquals(t.rule.from, back.rule.from)
@@ -130,7 +135,7 @@ class IcsImportTest {
         assertEquals(Repeat.MONTHLY, t.repeat)
         assertEquals(at(baghdad, 2027, 3, 31, 9), t.dueAt)
         assertEquals(at(baghdad, 2027, 4, 30, 9), nextOccurrence(t.dueAt!!, t.repeat, t.dueAt!!, t.rule, baghdad))
-        assertTrue(r.warnings.toString(), r.warnings.single().let { it.contains("\"Rent\"") && it.contains("2027-02-28") })
+        assertTrue(r.w.toString(), r.w.single().let { it.contains("\"Rent\"") && it.contains("2027-02-28") })
     }
 
     @Test fun aPastRepeatResumesAtItsNextOccurrenceAndAPastOneTimeEventIsSkipped() {
@@ -145,9 +150,9 @@ class IcsImportTest {
         assertEquals(at(baghdad, 2020, 1, 5, 8), t.rule.from)
         assertTrue(t.dueAt!!.isAfter(now))
         assertEquals(t.dueAt, nextOccurrence(t.rule.from!!, Repeat.INTERVAL, now, t.rule, baghdad))
-        assertEquals(2, r.skipped.size)
-        assertTrue(r.skipped[0].startsWith("\"Old meeting\"") && r.skipped[0].contains("passed"))
-        assertTrue(r.skipped[1].startsWith("\"Right now\""))
+        assertEquals(2, r.s.size)
+        assertTrue(r.s[0].startsWith("\"Old meeting\"") && r.s[0].contains("passed"))
+        assertTrue(r.s[1].startsWith("\"Right now\""))
     }
 
     // ---------- other producers ----------
@@ -197,10 +202,10 @@ class IcsImportTest {
         val omar = tasks[2]
         assertEquals(Repeat.NONE, omar.repeat)
         assertEquals(Instant.parse("2026-12-10T19:00:00Z"), omar.dueAt)
-        assertTrue(r.skipped.single().startsWith("\"Old meeting\""))
-        assertTrue(r.warnings.any { it.startsWith("\"1:1 with Omar\"") && it.contains("EXDATE") && it.contains("one-time") })
-        assertTrue(r.warnings.any { it.startsWith("\"Team standup\"") && it.contains("America/New_York") && it.contains("hour") })
-        assertTrue(r.warnings.any { it.contains("all-day") && it.contains("\"Sara's birthday\"") && it.contains("09:00") })
+        assertTrue(r.s.single().startsWith("\"Old meeting\""))
+        assertTrue(r.w.any { it.startsWith("\"1:1 with Omar\"") && it.contains("EXDATE") && it.contains("one-time") })
+        assertTrue(r.w.any { it.startsWith("\"Team standup\"") && it.contains("America/New_York") && it.contains("hour") })
+        assertTrue(r.w.any { it.contains("all-day") && it.contains("\"Sara's birthday\"") && it.contains("09:00") })
     }
 
     @Test fun aVTimezoneWithAnUnknownNameIsUsed() {
@@ -218,7 +223,7 @@ class IcsImportTest {
             *event("RDATE late", "DTSTART;TZID=Custom RDATE:20271210T120000"),
         )
         val (r, tasks) = imported(text)
-        assertEquals(emptyList<String>(), r.skipped + r.warnings)
+        assertEquals(emptyList<String>(), r.s + r.w)
         assertEquals(
             listOf("2026-12-07T14:00:00Z", "2027-07-05T13:00:00Z", "2027-03-14T07:30:00Z", "2027-01-10T11:00:00Z", "2027-07-10T10:00:00Z", "2027-12-10T11:00:00Z").map(Instant::parse),
             tasks.map { it.dueAt },
@@ -260,9 +265,9 @@ class IcsImportTest {
         assertEquals(Category.WORK, berlin.category)
         assertEquals(Priority.HIGH, berlin.priority)
         assertEquals(Instant.parse("2027-01-01T11:00:00Z"), tasks[2].dueAt)
-        assertEquals(emptyList<String>(), r.skipped)
-        assertEquals(1, r.warnings.size)
-        assertTrue(r.warnings[0], r.warnings[0].startsWith("\"Berlin call\"") && r.warnings[0].contains("COUNT=10"))
+        assertEquals(emptyList<String>(), r.s)
+        assertEquals(1, r.w.size)
+        assertTrue(r.w[0], r.w[0].startsWith("\"Berlin call\"") && r.w[0].contains("COUNT=10"))
     }
 
     @Test fun windowsZoneNamesWithoutAVTimezone() {
@@ -279,7 +284,7 @@ class IcsImportTest {
             listOf("2026-12-01T06:00:00Z", "2026-12-01T06:00:00Z", "2026-12-01T05:00:00Z", "2026-12-01T07:00:00Z", "2026-12-01T06:00:00Z", "2026-12-01T14:00:00Z").map(Instant::parse),
             tasks.map { it.dueAt },
         )
-        assertTrue(r.warnings.toString(), r.warnings.single().contains("Fiji Standard Time") && r.warnings.single().contains("Asia/Baghdad"))
+        assertTrue(r.w.toString(), r.w.single().contains("Fiji Standard Time") && r.w.single().contains("Asia/Baghdad"))
     }
 
     @Test fun appleStyleWithFloatingTimes() {
@@ -304,9 +309,9 @@ class IcsImportTest {
         assertEquals(at(baghdad, 2026, 12, 3, 19), tasks[1].dueAt)
         assertEquals(at(baghdad, 2026, 12, 20, 9), tasks[2].dueAt)
         assertNull(tasks[3].dueAt)
-        assertTrue(r.skipped.single().startsWith("\"Done thing\""))
-        assertEquals(1, r.warnings.size)
-        assertTrue(r.warnings[0].contains("\"Buy gifts\"") && r.warnings[0].contains("09:00"))
+        assertTrue(r.s.single().startsWith("\"Done thing\""))
+        assertEquals(1, r.w.size)
+        assertTrue(r.w[0].contains("\"Buy gifts\"") && r.w[0].contains("09:00"))
         // A floating time follows the phone: the same file in Berlin is 08:30 Berlin time.
         val berlin = ZoneId.of("Europe/Berlin")
         assertEquals(localToInstant(LocalDateTime.of(2026, 12, 1, 8, 30), berlin), IcsImport.read(text, berlin, now).inputs[0].dueAt)
@@ -320,7 +325,7 @@ class IcsImportTest {
             *event("Day off", "DTSTART;VALUE=DATE:20261224"),
         )
         val (r, tasks) = imported(text)
-        assertEquals(emptyList<String>(), r.skipped)
+        assertEquals(emptyList<String>(), r.s)
         assertEquals(listOf(Repeat.YEARLY, Repeat.YEARLY, Repeat.YEARLY, Repeat.NONE), tasks.map { it.repeat })
         assertEquals(
             listOf(LocalDateTime.of(2027, 3, 12, 9, 0), LocalDateTime.of(2027, 2, 28, 9, 0), LocalDateTime.of(2026, 12, 1, 9, 0), LocalDateTime.of(2026, 12, 24, 9, 0)),
@@ -329,8 +334,8 @@ class IcsImportTest {
         // The leap-day birthday is back on the 29th in 2028.
         val leap = tasks[1]
         assertEquals(LocalDateTime.of(2028, 2, 29, 9, 0), nextOccurrence(leap.dueAt!!, Repeat.YEARLY, leap.dueAt!!, leap.rule, baghdad).atZone(baghdad).toLocalDateTime())
-        assertTrue(r.warnings.any { it.startsWith("\"Leap\"") && it.contains("28 February") })
-        assertTrue(r.warnings.any { it.startsWith("4 all-day") && it.contains("\"Mum\"") })
+        assertTrue(r.w.any { it.startsWith("\"Leap\"") && it.contains("28 February") })
+        assertTrue(r.w.any { it.startsWith("4 all-day") && it.contains("\"Mum\"") })
     }
 
     @Test fun theWindowsAppsExport() {
@@ -344,15 +349,15 @@ class IcsImportTest {
             "END:VCALENDAR",
         ).joinToString("\r\n")
         val (r, tasks) = imported(text)
-        assertEquals(emptyList<String>(), r.skipped + r.warnings)
+        assertEquals(emptyList<String>(), r.s + r.w)
         assertEquals(Repeat.MONTHLY, tasks[0].repeat)
         assertEquals(Instant.parse("2026-11-20T06:00:00Z"), tasks[0].dueAt)
         assertEquals(60, tasks[0].remindBefore)
         assertEquals(listOf(1, 3, 5), tasks[1].rule.days)
         // In a zone with summer time, a series defined in UTC drifts by an hour: said, not hidden.
         val berlin = IcsImport.read(text, ZoneId.of("Europe/Berlin"), now)
-        assertEquals(2, berlin.warnings.size)
-        assertTrue(berlin.warnings.all { it.contains("UTC") })
+        assertEquals(2, berlin.w.size)
+        assertTrue(berlin.w.all { it.contains("UTC") })
     }
 
     @Test fun exactEquivalentsFromOtherProducersMap() {
@@ -369,7 +374,7 @@ class IcsImportTest {
         )
         for ((rule, expected) in cases) {
             val (r, tasks) = imported(ics(*event("x", start, "RRULE:$rule")))
-            assertEquals(rule, emptyList<String>(), r.skipped + r.warnings)
+            assertEquals(rule, emptyList<String>(), r.s + r.w)
             val t = tasks.single()
             assertEquals(rule, expected.first, t.repeat)
             if (t.repeat == Repeat.INTERVAL) assertEquals(rule, expected.second, t.rule.everyDays)
@@ -377,12 +382,12 @@ class IcsImportTest {
         }
         // The last day of every month.
         val (r, tasks) = imported(ics(*event("end", "DTSTART;TZID=Asia/Baghdad:20270131T090000", "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1")))
-        assertEquals(emptyList<String>(), r.warnings)
+        assertEquals(emptyList<String>(), r.w)
         val t = tasks.single()
         assertEquals(listOf("2027-01-31", "2027-02-28", "2027-03-31", "2027-04-30"), occurrences(t, baghdad, 3).map { it.atZone(baghdad).toLocalDate().toString() })
         // A plain monthly rule on the 30th: the calendar skips February, this app does not; said.
         val (r2, _) = imported(ics(*event("30th", "DTSTART;TZID=Asia/Baghdad:20270130T090000", "RRULE:FREQ=MONTHLY")))
-        assertTrue(r2.warnings.single().let { it.startsWith("\"30th\"") && it.contains("last day") })
+        assertTrue(r2.w.single().let { it.startsWith("\"30th\"") && it.contains("last day") })
     }
 
     @Test fun weekdaysFollowThePhonesCalendarDay() {
@@ -430,22 +435,22 @@ class IcsImportTest {
         val all = rules.map { arrayOf("RRULE:${it.first}") to it.second } + extras
         val lines = all.withIndex().flatMap { (i, c) -> event("Rule $i", start, *c.first).toList() }
         val (r, tasks) = imported(ics(*lines.toTypedArray()))
-        assertEquals(emptyList<String>(), r.skipped)
+        assertEquals(emptyList<String>(), r.s)
         assertEquals(all.size, tasks.size)
         assertTrue(tasks.all { it.repeat == Repeat.NONE && it.dueAt == at(baghdad, 2027, 1, 4, 9) })
-        assertEquals(all.size, r.warnings.size)
+        assertEquals(all.size, r.w.size)
         for ((i, c) in all.withIndex()) {
-            val w = r.warnings[i]
+            val w = r.w[i]
             assertTrue("$i: $w", w.startsWith("\"Rule $i\":") && w.contains(c.second) && w.contains("one-time"))
         }
         // A past start with an unsupported rule is skipped, saying both.
         val (r2, t2) = imported(ics(*event("Past course", "DTSTART;TZID=Asia/Baghdad:20260104T090000", "RRULE:FREQ=WEEKLY;COUNT=40")))
         assertTrue(t2.isEmpty())
-        assertTrue(r2.skipped.single().let { it.startsWith("\"Past course\"") && it.contains("COUNT=40") && it.contains("passed") })
+        assertTrue(r2.s.single().let { it.startsWith("\"Past course\"") && it.contains("COUNT=40") && it.contains("passed") })
         // RDATE alone (no RRULE) keeps the first time and says so.
         val (r3, t3) = imported(ics(*event("Extra dates", start, "RDATE:20270201T090000Z")))
         assertEquals(1, t3.size)
-        assertTrue(r3.warnings.single().contains("RDATE"))
+        assertTrue(r3.w.single().contains("RDATE"))
     }
 
     @Test fun alarms() {
@@ -463,15 +468,53 @@ class IcsImportTest {
         val (r, tasks) = imported(text)
         assertEquals(listOf(5, 30, 1440, 60), tasks.take(4).map { it.remindBefore })
         assertEquals(0, tasks[4].remindBefore)
-        val many = r.warnings.filter { it.startsWith("\"Many\"") }
+        val many = r.w.filter { it.startsWith("\"Many\"") }
         assertTrue(many.toString(), many.any { it.contains("20 minutes before") })
         assertTrue(many.any { it.contains("after the start") })
         assertTrue(many.any { it.contains("end of the event") })
         assertTrue(many.any { it.contains("90 seconds") })
         assertTrue(many.any { it.contains("\"soon\"") })
         assertTrue(many.any { it.contains("without a TRIGGER") })
-        assertTrue(many.any { it.contains("nearest (5 minutes)") && it.contains("10 minutes") && it.contains("1 day") })
-        assertTrue(r.warnings.any { it.startsWith("\"Untimed\"") && it.contains("alarms") })
+        assertEquals(6, many.size) // the six alarms this app cannot keep; 5 minutes, 10 minutes and 1 day are all kept
+        assertEquals(listOf(1440, 10, 5), AlertExt.of(tasks[0]).alerts)
+        assertTrue(r.w.any { it.startsWith("\"Untimed\"") && it.contains("alarms") })
+        // The notes are data: the screen renders them from their values.
+        val kinds = r.warnings.filter { it.item?.title == "Many" }.map { (it as IcsNote.AlarmNotKept).alarm }
+        assertEquals(listOf(IcsAlarm.NotOffered(1_200), IcsAlarm.AfterStart(300), IcsAlarm.FromEnd("-PT5M"), IcsAlarm.NotOffered(90), IcsAlarm.BadTrigger("soon"), IcsAlarm.NoTrigger), kinds)
+    }
+
+    private fun alarm(trigger: String) = arrayOf("BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:$trigger", "END:VALARM")
+
+    /** F-046: up to 3 early alarms become the reminder's early alerts (the nearest in remindBefore, all in android.alerts). */
+    @Test fun twoAndThreeAlarmsBecomeEarlyAlerts() {
+        val due = "DTSTART:20270104T090000Z"
+        val text = ics(
+            *event("Two", due, *alarm("-PT10M"), *alarm("-PT1H")),
+            *event("Three", due, *alarm("-P1D"), *alarm("-PT15M"), *alarm("-PT1H"), *alarm("-PT1H")),
+            *event("One", due, *alarm("-PT30M")),
+            *event("Series", "DTSTART;TZID=Asia/Baghdad:20200105T080000", "RRULE:FREQ=DAILY", *alarm("-PT5M"), *alarm("-P1D")),
+        )
+        val (r, tasks) = imported(text)
+        assertEquals(emptyList<String>(), r.s + r.w)
+        assertEquals(listOf(10, 15, 30, 5), tasks.map { it.remindBefore })
+        assertEquals(listOf(listOf(60, 10), listOf(1440, 60, 15), emptyList(), listOf(1440, 5)), tasks.map { AlertExt.of(it).alerts })
+        assertEquals(listOf(10, 60), r.inputs[0].alerts)
+        assertNull(r.inputs[2].alerts)
+        // The series moved on to its next occurrence keeps its alerts.
+        assertTrue(tasks[3].dueAt!!.isAfter(now))
+    }
+
+    @Test fun aFourthEarlyAlarmIsNamedInAWarning() {
+        val text = ics(*event("Four", "DTSTART:20270104T090000Z", *alarm("-P1D"), *alarm("-PT5M"), *alarm("-PT1H"), *alarm("-PT15M"), *alarm("-PT30M")))
+        val (r, tasks) = imported(text)
+        val t = tasks.single()
+        assertEquals(5, t.remindBefore)
+        assertEquals(listOf(30, 15, 5), AlertExt.of(t).alerts)
+        val w = r.warnings.single() as IcsNote.TooManyAlarms
+        assertEquals("Four", w.item.title)
+        assertEquals(listOf(5, 15, 30), w.kept)
+        assertEquals(listOf(60, 1440), w.dropped)
+        assertTrue(w.english(), w.english().startsWith("\"Four\":") && w.english().contains("1 day"))
     }
 
     @Test fun textEscapingFoldingPriorityAndCategories() {
@@ -501,11 +544,11 @@ class IcsImportTest {
         assertEquals("First line", tasks[13].title)
         assertEquals(200, tasks[14].title.length)
         assertEquals(15, tasks.size)
-        assertEquals(3, r.skipped.size)
-        assertTrue(r.skipped[0].contains("no title"))
-        assertTrue(r.skipped[1].startsWith("\"duplicate\"") && r.skipped[1].contains("UID"))
-        assertTrue(r.skipped[2].startsWith("\"Cancelled one\""))
-        assertTrue(r.warnings.single().contains("200 characters"))
+        assertEquals(3, r.s.size)
+        assertTrue(r.s[0].contains("no title"))
+        assertTrue(r.s[1].startsWith("\"duplicate\"") && r.s[1].contains("UID"))
+        assertTrue(r.s[2].startsWith("\"Cancelled one\""))
+        assertTrue(r.w.single().contains("200 characters"))
     }
 
     @Test fun lineEndingsAndOddButReadableFiles() {
@@ -522,8 +565,8 @@ class IcsImportTest {
         )
         val r = IcsImport.read(two, baghdad, now)
         assertEquals(listOf("A", "Moved"), r.inputs.map { it.title })
-        assertTrue(r.warnings.any { it.startsWith("\"Moved\"") && it.contains("changed occurrence") })
-        assertTrue(r.warnings.any { it.contains("1 VJOURNAL") })
+        assertTrue(r.w.any { it.startsWith("\"Moved\"") && it.contains("changed occurrence") })
+        assertTrue(r.w.any { it.contains("1 VJOURNAL") })
     }
 
     @Test fun cutOffDamagedAndHugeFiles() {
@@ -531,8 +574,8 @@ class IcsImportTest {
         val cut = full.substring(0, full.indexOf("RRULE"))
         val r = IcsImport.read(cut, baghdad, now)
         assertEquals(listOf("First"), r.inputs.map { it.title })
-        assertTrue(r.skipped.single().let { it.startsWith("\"Second\"") && it.contains("incomplete") })
-        assertTrue(r.warnings.single().contains("ends early"))
+        assertTrue(r.s.single().let { it.startsWith("\"Second\"") && it.contains("incomplete") })
+        assertTrue(r.w.single().contains("ends early"))
 
         for (bad in listOf("", "hello", "BEGIN:VEVENT\r\nSUMMARY:x\r\nEND:VEVENT", "{\"version\":1}", "PK\u0003\u0004")) {
             val e = assertThrows(IcsImport.ImportException::class.java) { IcsImport.read(bad, baghdad, now) }
@@ -547,7 +590,7 @@ class IcsImportTest {
         val many = ics(*(0..5_001).flatMap { event("E$it", "DTSTART:20270104T090000Z").toList() }.toTypedArray())
         val rm = IcsImport.read(many, baghdad, now)
         assertEquals(IcsImport.MAX_ITEMS, rm.inputs.size)
-        assertTrue(rm.warnings.single().contains("5,000") && rm.warnings.single().contains("2 more"))
+        assertTrue(rm.w.single().contains("5,000") && rm.w.single().contains("2 more"))
     }
 
     @Test fun timeZoneEdgeCases() {
@@ -566,10 +609,10 @@ class IcsImportTest {
         assertEquals(Instant.parse("2026-12-31T23:59:59Z"), tasks[2].dueAt)
         assertNull(tasks[3].dueAt)
         assertEquals(listOf("Gap", "Unknown", "Leap second", "No start"), tasks.map { it.title })
-        assertTrue(r.skipped[0].startsWith("\"Bad date\"") && r.skipped[0].contains("could not be read"))
-        assertTrue(r.skipped[1].startsWith("\"Far\"") && r.skipped[1].contains("out of range"))
-        assertTrue(r.warnings.any { it.contains("Mars/Olympus_Mons") })
-        assertTrue(r.warnings.any { it.startsWith("\"No start\"") })
+        assertTrue(r.s[0].startsWith("\"Bad date\"") && r.s[0].contains("could not be read"))
+        assertTrue(r.s[1].startsWith("\"Far\"") && r.s[1].contains("out of range"))
+        assertTrue(r.w.any { it.contains("Mars/Olympus_Mons") })
+        assertTrue(r.w.any { it.startsWith("\"No start\"") })
     }
 
     // ---------- hostile input ----------
@@ -632,6 +675,8 @@ class IcsImportTest {
             try {
                 val r = IcsImport.read(input, zone, now)
                 IcsImport.save(AppState(), r.inputs, now, zone)
+                for (note in r.skipped + r.warnings) assertTrue(note.english().isNotEmpty())
+                assertTrue(r.inputs.all { i -> i.alerts?.let { a -> a.size in 2..3 && a.min() == i.remindBefore } ?: true })
                 accepted++
             } catch (_: IcsImport.ImportException) {
                 // documented
