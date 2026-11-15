@@ -285,7 +285,13 @@ private fun makerNameRes(key: String) = when (key) {
     else -> R.string.maker_vivo
 }
 
-/** The summary: error container with the plural count when an essential is missing, otherwise primary container. */
+/** Test tag of a summary-card line saying the sound will not be heard. */
+const val SOUND_WARNING_TAG = "health_sound_warning"
+
+/**
+ * The summary: error container with the plural count when an essential is missing, otherwise primary container;
+ * under the title, a warning line for each reason the sound will not be heard ([HealthModel.soundWarnings]).
+ */
 @Composable
 private fun SummaryCard(missing: Int, health: Health, schedule: ScheduleStatus, onCheck: () -> Unit) {
     val context = LocalContext.current
@@ -304,6 +310,18 @@ private fun SummaryCard(missing: Int, health: Health, schedule: ScheduleStatus, 
                     modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
                 )
                 if (bad) Text(stringResource(R.string.banner_health), style = MaterialTheme.typography.bodyMedium)
+                // The essential count stays honest, but the card also says when the sound will not be heard (U2-1).
+                HealthModel.soundWarnings(health).forEach { key ->
+                    Row(verticalAlignment = Alignment.Top, modifier = Modifier.tagged(SOUND_WARNING_TAG)) {
+                        Icon(Ms.Warning, null, tint = fg, modifier = Modifier.size(20.dp))
+                        Text(stringResource(when (key) {
+                            "notif_volume" -> R.string.bbfix_sum_notif_zero
+                            "alarm_volume" -> R.string.bbfix_sum_alarm_zero
+                            "channel" -> R.string.bbfix_sum_normal_muted
+                            else -> R.string.bbfix_sum_alarm_muted
+                        }), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = Dimens.s))
+                    }
+                }
                 val at = health.checkedAt.takeIf { it > 0 } ?: schedule.last?.at
                 Text(
                     if (at == null) stringResource(R.string.health_never_checked)

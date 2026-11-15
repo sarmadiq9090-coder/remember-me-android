@@ -615,7 +615,11 @@ class MainActivity : AppCompatActivity() {
                     },
                     onFix = ::healthFix,
                     onCancel = { TestAlarm.cancel(ctx); tick = System.currentTimeMillis() },
-                    onDone = { pop() }, onBack = { pop() })
+                    onDone = { pop() }, onBack = { pop() },
+                    // [bbfix] begin
+                    health = health ?: Health.check(this),
+                    // [bbfix] end
+                )
             }
             Screen.DndHelp -> (health ?: Health.check(this)).let { h -> DndHelpScreen(h.dndState, h.dndAlarmsAllowed, onBack = { pop() }) }
             Screen.CompatReport -> CompatReportScreen(report(state, now), onBack = { pop() })

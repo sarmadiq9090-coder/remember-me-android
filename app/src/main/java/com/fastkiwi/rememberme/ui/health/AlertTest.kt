@@ -119,10 +119,34 @@ private fun quietLine(c: Context, quiet: String, alarm: Boolean): String? = when
     else -> null
 }
 
+/** One reason the test's sound may not have been heard: its hint and the settings screen that fixes it. */
+data class SoundCause(val hint: Int, val target: String, val quiet: AlertPolicy.Quiet? = null)
+
+/**
+ * After «لا» to «هل سمعت الصوت؟» (black-box U2-4): what to check, most likely first, from what the test
+ * recorded when it fired ([TestAlarm.Record.quiet]) and what Health reads now ([h], null when unknown):
+ * the volume of the tested style at zero, the phone on silent or vibrate (a normal reminder), Do Not Disturb,
+ * the «تذكيرات عادية» / «منبّهات مهمة» channel muted. Empty when none applies.
+ */
+fun soundCauses(rec: TestAlarm.Record, h: Health?): List<SoundCause> = buildList {
+    val alarm = rec.alarm
+    val q = rec.quiet
+    if (h != null && (if (alarm) h.alarmVolume == 0 else h.notifVolume == 0))
+        add(SoundCause(if (alarm) R.string.bbfix_hint_alarm_zero else R.string.bbfix_hint_notif_zero, "sound"))
+    if (!alarm && (q == AlertPolicy.Quiet.RINGER_SILENT.name || q == AlertPolicy.Quiet.RINGER_VIBRATE.name ||
+            (q.isEmpty() && (h?.ringer == AlertPolicy.Ringer.SILENT || h?.ringer == AlertPolicy.Ringer.VIBRATE))))
+        add(SoundCause(R.string.bbfix_hint_ringer, "sound", if (q.startsWith("RINGER")) AlertPolicy.Quiet.valueOf(q) else null))
+    if (q == AlertPolicy.Quiet.DND.name || (h != null && TestResults.dndBlocks(rec, h)))
+        add(SoundCause(R.string.bbfix_hint_dnd, "dnd_help", if (q == AlertPolicy.Quiet.DND.name) AlertPolicy.Quiet.DND else null))
+    if (q == AlertPolicy.Quiet.CHANNEL_MUTED.name || (h != null && !(if (alarm) h.alarmChannelSound else h.channelSound)))
+        add(SoundCause(if (alarm) R.string.bbfix_hint_channel_alarm else R.string.bbfix_hint_channel_normal,
+            if (alarm) "alarm_channel" else "channel", if (q == AlertPolicy.Quiet.CHANNEL_MUTED.name) AlertPolicy.Quiet.CHANNEL_MUTED else null))
+}
+
 /** What one part shows: its text lines, an optional question and an optional fix. */
 private data class PartView(val title: String, val lines: List<String>, val question: String?, val fix: HealthAction?)
 
-private fun partView(c: Context, part: Part, r: Result, rec: TestAlarm.Record): PartView {
+private fun partView(c: Context, part: Part, r: Result, rec: TestAlarm.Record, h: Health?): PartView {
     val shown = TestResults.shown(part, r)
     val fired = rec.firedAt > 0
     val notArrived = c.getString(R.string.t_not_arrived)
@@ -149,6 +173,7 @@ private fun partView(c: Context, part: Part, r: Result, rec: TestAlarm.Record): 
             else -> notArrived
         }), null, if (shown == TestShown.FAIL && fired) HealthAction(ActionKind.ALLOW, "notifications") else null)
         Part.SOUND -> {
+            val causes = soundCauses(rec, h)
             val lines = buildList {
                 if (!fired) { add(notArrived); return@buildList }
                 val quiet = quietLine(c, rec.quiet, rec.alarm)
@@ -160,12 +185,16 @@ private fun partView(c: Context, part: Part, r: Result, rec: TestAlarm.Record): 
                 })))
                 answered(rec.sound)?.let(::add)
                 quiet?.let(::add)
+                // Not heard: what to check (the cause the quiet line above already says is not repeated).
+                if (shown == TestShown.FAIL && fired) {
+                    val hints = causes.filter { it.quiet == null || it.quiet.name != rec.quiet }.map { c.getString(it.hint) }
+                    if (hints.isNotEmpty()) addAll(hints) else if (quiet == null) add(c.getString(R.string.bbfix_hint_none))
+                }
             }
+            // The button opens the screen of the first cause: sound settings, the channel, or the DND help.
             val fix = when {
                 shown != TestShown.FAIL || !fired -> null
-                rec.quiet == AlertPolicy.Quiet.DND.name -> HealthAction(ActionKind.OPEN_SETTINGS, "dnd_help")
-                rec.quiet == AlertPolicy.Quiet.CHANNEL_MUTED.name -> HealthAction(ActionKind.OPEN_SETTINGS, if (rec.alarm) "alarm_channel" else "channel")
-                else -> HealthAction(ActionKind.OPEN_SETTINGS, "sound")
+                else -> HealthAction(ActionKind.OPEN_SETTINGS, causes.firstOrNull()?.target ?: "sound")
             }
             PartView(c.getString(R.string.part_sound), lines, if (shown == TestShown.ASK) c.getString(R.string.q_sound) else null, fix)
         }
@@ -272,6 +301,8 @@ fun AlarmTestScreen(
     record: TestAlarm.Record, results: Map<Part, Result>, nowMs: Long,
     onStart: (AlertPolicy.Style, TestAlarm.Delay) -> Unit, onAnswer: (Part, Boolean) -> Unit,
     onFix: (String) -> Unit, onCancel: () -> Unit, onDone: () -> Unit, onBack: () -> Unit,
+    /** What Health reads now, for the hints after «لا» (null: only what the test recorded). */
+    health: Health? = null,
 ) {
     val context = LocalContext.current
     val idle = record.startedAt == 0L || results.isEmpty()
@@ -323,7 +354,7 @@ fun AlarmTestScreen(
                 val parts = Part.entries.filter { it in results }
                 parts.forEachIndexed { i, part ->
                     val r = results.getValue(part)
-                    val v = partView(context, part, r, record)
+                    val v = partView(context, part, r, record, health)
                     TestResultRow(part, TestResults.shown(part, r), v.title, v.lines, v.question,
                         if (part == Part.SOUND || part == Part.VIBRATION) { yes -> onAnswer(part, yes) } else null,
                         v.fix, onFix, i, parts.size)
