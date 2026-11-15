@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -392,10 +390,10 @@ class MainActivity : AppCompatActivity() {
         val zone = Repo.zone()
         val ctx: Context = this
         val prefs = Repo.prefs(this)
-        BackHandler(enabled = stack.size > 1) { pop() }
-        val screen = stack.last()
-        // Keyed by the screen, so the editor's remembered fields never carry over to another reminder.
-        key(screen) { ScreenContent(screen, state, now, zone, ctx, prefs) }
+        // [qcfix] begin: G-07 screen transitions and predictive back (DESIGN-SPEC §3.5). Each screen is its own
+        // keyed content, so the editor's remembered fields never carry over to another reminder.
+        com.fastkiwi.rememberme.ui.ScreenStackHost(stack, onBack = { pop() }) { screen -> ScreenContent(screen, state, now, zone, ctx, prefs) }
+        // [qcfix] end
         // [quick] begin
         quickAdd?.let { req ->
             com.fastkiwi.rememberme.ui.quick.QuickAddHost(
@@ -487,7 +485,7 @@ class MainActivity : AppCompatActivity() {
             }
             is Screen.Edit -> {
                 val task = screen.id?.let { state.task(it) }
-                if (screen.id != null && task == null) { LaunchedEffect(screen) { pop() }; return }
+                if (screen.id != null && task == null) { LaunchedEffect(screen) { if (stack.lastOrNull() == screen) pop() }; return } // [qcfix] only while it is on top
                 EditScreen(
                     task = task, weekStart = Repo.weekStart(state), now = now,
                     onSave = { input ->
