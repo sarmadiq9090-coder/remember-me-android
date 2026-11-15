@@ -138,4 +138,17 @@ class HuntQuickAddTest {
         assertEquals("عيد ميلاد علي", QuickAdd.parse("عيد ميلاد علي الخميس 5 العصر", now, zone).title)
         assertEquals("اتصل بأمي", QuickAdd.parse("اتصل بأمي علي الساعة 5 العصر", now, zone).title)
     }
+
+    /** Black-box U2: a numeric date is understood; without a time the user picks one (nothing unseen is saved). */
+    @Test fun aNumericDateIsUnderstood() {
+        val r = QuickAdd.parse("Sara birthday 20/11", now, zone)
+        assertEquals("Sara birthday", r.title)
+        assertEquals(com.fastkiwi.rememberme.core.quickadd.Ask.TIME, r.ask)
+        assertEquals(java.time.LocalDate.of(2026, 11, 20), r.options.first().dueAt.atZone(zone).toLocalDate())
+        assertEquals(null, r.dueAt)
+        val t = QuickAdd.parse("موعد الطبيب ٢٠/١١ الساعة 5 مساء", now, zone)
+        assertEquals(java.time.LocalDateTime.of(2026, 11, 20, 17, 0), t.dueAt?.atZone(zone)?.toLocalDateTime())
+        // A date already passed this year is next year's.
+        assertEquals(2027, QuickAdd.parse("عيد 3/2", now, zone).options.first().dueAt.atZone(zone).year)
+    }
 }

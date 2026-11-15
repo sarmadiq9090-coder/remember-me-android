@@ -49,10 +49,14 @@ class QuickAddTest {
     }
 
     @Test fun outsideTheEnglishSubsetIsNoDate() {
-        for (text in listOf("call mom yesterday 5pm", "meeting last friday", "workout for 30 minutes", "dentist 5/12", "party next month", "call at 5pm EST", "lunch 12-1pm", "trip in 2 weeks")) {
+        for (text in listOf("call mom yesterday 5pm", "meeting last friday", "workout for 30 minutes", "party next month", "call at 5pm EST", "lunch 12-1pm", "trip in 2 weeks")) {
             val r = QuickAdd.parseStrict(text, monday, baghdad)
             assertFalse(text, r.understood)
         }
+        // Since 1.0.0 (black-box U2): a numeric date is read day/month and asks for the time.
+        val d = QuickAdd.parseStrict("dentist 5/12", monday, baghdad)
+        assertEquals(Ask.TIME, d.ask)
+        assertEquals(12, d.options.first().dueAt.atZone(baghdad).monthValue)
     }
 
     // ---------------------------------------------------------------------------------------------
