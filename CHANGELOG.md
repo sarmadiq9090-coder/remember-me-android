@@ -6,6 +6,24 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-15
+
+Fixes voice input, found on the owner's phone. Installs over 1.0.0, 0.1.1 and 0.1.0 and keeps all data.
+
+### Fixed
+
+- Voice input no longer leaves you at Google's «ميزة "البحث الصوتي" غير متاحة» dialog. The app asked for
+  Arabic (Iraq), a region that came only from the month-name setting; it now asks for the phone's own
+  language, then plain Arabic, then Arabic (Saudi Arabia), then the service's own language, keeps the one that
+  works and skips one that failed. The mic shows only when the phone has a speech service. After an error, a
+  cancel or no text, an Arabic message shows and the cursor returns to the field with the keyboard open.
+
+### Changed
+
+- Privacy: About, the first-use note, the privacy page and the guide say plainly that voice input goes
+  through the phone's speech service (usually Google's), which may work over the internet, and that the app
+  asks it to work offline when it can. No permission was added (still no microphone or internet permission).
+
 ## [1.0.0] - 2026-11-15
 
 One release with every feature the feature council approved (docs/FEATURES.md, 80 features). Installs over

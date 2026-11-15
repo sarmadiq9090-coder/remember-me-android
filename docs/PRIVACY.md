@@ -33,7 +33,9 @@ receives nothing, and it collects no statistics. There are no ads and no account
 Remember Me does not record sound and has no microphone permission. When you tap the voice button, Android opens
 your phone's own speech recognition service, which returns only the text to the app. That service belongs to your
 phone's maker or to Google and may send your voice to its company if it cannot work offline; Remember Me asks it to
-work offline when it can. The first use says this before anything starts.
+work offline, on the phone itself, when it can. So voice input may go over the internet on that service's side;
+everything else in the app never does. The first use, About and the privacy page say this. If the phone has no
+speech service the voice button is hidden (1.0.1).
 
 ## Copies and files
 

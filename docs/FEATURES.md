@@ -569,6 +569,11 @@ on; locked + hidden details → «لديك تذكير». No permission.
   template fills the editor; nothing is saved before «حفظ».
 - **F-048 voice:** `RecognizerIntent.ACTION_RECOGNIZE_SPEECH` with `EXTRA_PREFER_OFFLINE`; a `<queries>`
   entry for the intent (not a permission); no `RECORD_AUDIO`. Disclosure before first use (A10).
+  1.0.1 (`ui/quick/VoiceInput.kt`): the mic only when `SpeechRecognizer.isRecognitionAvailable` and the
+  intent resolves (`<queries>` for `RecognitionService` too); language chain phone locale → plain language →
+  ar-SA/en-US → none (never the month-name region); failed/empty results move on, text keeps the language;
+  error/cancel → Arabic message, field focused, keyboard shown. `createOnDeviceSpeechRecognizer` was not used:
+  it needs `RECORD_AUDIO`, which the app does not hold.
 - **F-049 share:** `ACTION_SEND` `text/plain` on a dedicated exported activity; text capped at 2,000
   chars; always through the Quick Add preview.
 - **F-050 prayer-relative:** own Kotlin implementation of the standard solar-position formulas (no

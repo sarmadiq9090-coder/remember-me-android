@@ -33,7 +33,7 @@ import java.time.ZoneId
 import java.util.TimeZone
 
 /**
- * The update from 0.1.0 (versionCode 1) and 0.1.1 (versionCode 2) to 1.0.0: the data, the phone's settings and
+ * The update from 0.1.0 (versionCode 1), 0.1.1 (versionCode 2) and 1.0.0 (versionCode 3) to this version: the data, the phone's settings and
  * the "already announced" log carry over, a safety copy is kept first, the old-style notifications are replaced
  * by one per reminder, and nothing rings a second time.
  */
@@ -110,6 +110,8 @@ class UpgradeTest {
         assertTrue(shadowOf(am).scheduledAlarms.any { it.type == AlarmManager.RTC_WAKEUP })
         assertEquals(BuildConfig.VERSION_CODE, Repo.prefs(app).lastVersion)
     }
+
+    @Test fun from100() = check(3)
 
     @Test fun from011() = check(2)
 
