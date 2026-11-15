@@ -1,4 +1,6 @@
-This is a proposal. It grants no licence. Remember Me for Android is proprietary until the owner approves publication.
+**Carried out on 2026-11-15** (owner «انشر», brain D-079): the root [LICENSE](../LICENSE), [NOTICE](../NOTICE) and
+[REUSE.toml](../REUSE.toml) are now the licence; the audit is [PUBLISH-AUDIT.md](PUBLISH-AUDIT.md). This page is kept as
+the record of the proposal; where the drafts below differ from the root files, the root files apply.
 
 # Open-source proposal: Remember Me for Android (D-079)
 
@@ -27,7 +29,7 @@ third-party components).
 
 ```
 Remember Me for Android («ذكرني»)
-Copyright 2026 FastKiwi (Sarmad)
+Copyright 2026 FastKiwi
 
 This product includes software developed by The Android Open Source Project and JetBrains
 (AndroidX, Jetpack Compose, Kotlin, kotlinx), under the Apache License 2.0, and the Noto Sans
@@ -46,7 +48,7 @@ version = 1
 path = ["app/**", "tools/**", "docs/**", "design/mockups/*.html", "design/mockups/kit.*", "design/tools/**",
         "*.md", "*.kts", "*.properties", "env.sh", "build.sh", ".gitignore", ".gitattributes", "اقرأني.txt"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 FastKiwi (Sarmad)"
+SPDX-FileCopyrightText = "2026 FastKiwi"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
@@ -58,7 +60,7 @@ SPDX-License-Identifier = "OFL-1.1"
 [[annotations]]
 path = ["screenshots/**", "design/shots/**", "app/src/main/res/drawable/**", "app/src/main/res/mipmap-anydpi-v26/**"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 FastKiwi (Sarmad)"
+SPDX-FileCopyrightText = "2026 FastKiwi"
 SPDX-License-Identifier = "Apache-2.0"
 ```
 

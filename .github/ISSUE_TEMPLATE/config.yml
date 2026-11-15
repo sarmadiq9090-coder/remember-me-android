@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "ثغرة أمنية — Security vulnerability"
+    url: https://github.com/sarmadiq9090-coder/remember-me-android/security/advisories/new
+    about: "أبلغ عنها بشكل خاص، لا في مشكلة عامة — Report privately, not in a public issue."
+  - name: "ذكرني لويندوز — Remember Me for Windows"
+    url: https://apps.microsoft.com/detail/9NGB1F7T7JGN
+    about: "تطبيق ويندوز منفصل وله دعمه الخاص؛ هذه الصفحة لتطبيق أندرويد فقط — The Windows app is separate; this repository is the Android app only."

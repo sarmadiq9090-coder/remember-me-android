@@ -195,9 +195,11 @@ them: [RESEARCH.md](RESEARCH.md).
 - [STANDARDS.md](STANDARDS.md) lists each standard as met, partial or gap. It is honest about what
   needs a real phone.
 
-## D-014 Licence
-- Closed source under D-051: no open-source licence file. Third-party notices are kept in
-  [THIRD_PARTY.md](THIRD_PARTY.md) and `LICENSES/`.
+## D-014 Licence (superseded 2026-11-15 by brain D-079, owner «انشر»)
+- ~~Closed source under D-051: no open-source licence file.~~ **Superseded:** the app is open source under
+  Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE), [REUSE.toml](REUSE.toml)) after the blocking audit in
+  [docs/PUBLISH-AUDIT.md](docs/PUBLISH-AUDIT.md). Third-party notices stay in [THIRD_PARTY.md](THIRD_PARTY.md) and
+  `LICENSES/`. The Windows app stays proprietary (D-051).
 
 ## D-020 One release 1.0.0 with every approved feature (brain D-079 amendment, 2026-11-15)
 - **Decision (owner via the manager)**: «اريد فقط اصدار واحد فيه كل ميزات». One 1.0.0 (versionCode 3, same key)
