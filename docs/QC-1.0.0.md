@@ -321,3 +321,30 @@ per-app language, channels, the short foreground service, DND, permissions, back
 UAX #9, motion and QC screenshots are partial; the document itself is stale (G-13).
 
 QC tests added (`app/src/test/java/com/fastkiwi/rememberme/qc/`): `QcGapsTest` and `QcBidiTest`: 8 runs, 5 pass (exact permission set at API 26/33/36; ten snooze taps = one snooze; the alert test leaves `data.json` byte-identical) and **3 fail on purpose, proving gaps**: `f082_…` (G-01), `f102_…` (snackbar «أُنجز «Meeting 9»» has no isolation, G-02), `texts_…` («3 تذكير», "1 reminders", G-15).
+
+
+## المعالجة بعد التقرير (2026-11-15) — Resolution
+
+كل بنود Q2 عولجت في `wip/1.0-base`، ولكل منها اختبار:
+
+| البند | المعالجة |
+|---|---|
+| G-01 | نسخة ما قبل التحديث بمفتاح رقم البناء **واسم الإصدار** (`Repo.kt`، `QcGapsTest`) |
+| G-02 | عزل نص المستخدم داخل الجمل (`L10n.isolate`) في كل المواضع (`QcBidiTest`، `QcFixUiTest`) |
+| G-03 | اليوم والأسبوع وأرقام خطوات «عدم الإزعاج» بخط 200 % (`QcFixUiTest`) |
+| G-04 | العنوان أولًا بخط كبير، و«تم» ظاهرة كاملة (`BlackBoxFixesUiTest`) |
+| G-05 | صور QC لكل الشاشات والأوراق: 277 صورة، عربي/إنجليزي، فاتح/داكن، 200 % بالعربية والإنجليزية، والجهاز اللوحي |
+| G-06 | اهتزاز تأكيد خفيف يحترم إعداد الهاتف على «تم»/«أجّل»/«حفظ» |
+| G-07 | انتقالات المحور المشترك، وتلاشٍ مع «تقليل الحركة»، والرجوع التنبّئي (`ScreenStackHost`) |
+| G-08 | الدليلان يشملان كل الميزات |
+| G-09 | تحضير النغمة غير متزامن مع حد 3 ثوانٍ لكل مصدر ثم البديل (`RingServiceTest`) |
+| G-10 | lint: لا ملاحظات (debug وrelease) |
+| G-11 | اختبارات المحرك والتنبيه على API 26 و29 و31 و33 و34 و36 |
+| G-12 | `dist.sh` يتحقق من بصمة الشهادة نفسها |
+| G-13/G-14 | STANDARDS وCHANGELOG وREADME وCOMPATIBILITY واقرأني محدّثة لـ1.0.0 |
+| G-15 | جمع عربي صحيح في رسالة الاستعادة |
+| G-16 | لا شريط فوق رأس التقويم |
+| G-17 | «عند الموعد» تظهر «دائمًا» لا مفتاحًا معطّلًا |
+| G-18 | فشل واحد في أداة الاختبار (عدسة النص في Robolectric، بلا كود من التطبيق)؛ موثّق |
+
+الميزات: 75 مُستوفاة، و5 تحتاج هاتف المالك (F-016، F-018، F-019، F-026، F-027).
