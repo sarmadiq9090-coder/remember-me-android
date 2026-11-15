@@ -341,13 +341,15 @@ private fun PreviewCard(state: QuickAddState) {
 @Composable
 private fun TitleLine(title: String) {
     if (title.isEmpty()) return
+    // F-102: the title keeps its own direction inside «العنوان: …».
+    val shown = L10n.isolate(LocalContext.current, title)
     Text(buildAnnotatedString {
-        val full = stringResource(R.string.qa_title_is, title)
-        val at = full.indexOf(title)
+        val full = stringResource(R.string.qa_title_is, shown)
+        val at = full.indexOf(shown)
         if (at < 0) append(full) else {
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) { append(full.substring(0, at)) }
-            withStyle(SpanStyle(fontWeight = FontWeight.Medium)) { append(title) }
-            append(full.substring(at + title.length))
+            withStyle(SpanStyle(fontWeight = FontWeight.Medium)) { append(shown) }
+            append(full.substring(at + shown.length))
         }
     }, style = MaterialTheme.typography.bodyLarge, maxLines = 3, modifier = Modifier.padding(end = Dimens.m))
 }

@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -44,6 +45,7 @@ import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.Organize
 import com.fastkiwi.rememberme.ui.ButtonPair
 import com.fastkiwi.rememberme.ui.Dimens
+import com.fastkiwi.rememberme.ui.L10n
 import com.fastkiwi.rememberme.ui.Ms
 import com.fastkiwi.rememberme.ui.SheetShape
 
@@ -80,7 +82,7 @@ fun TagsSheet(tags: List<String>, lists: List<String>, inUse: List<String>, onDo
                         FilterChip(
                             selected = true, onClick = { chosen = chosen - t }, label = { Text(t) },
                             leadingIcon = { Icon(Ms.Tag, null, Modifier.size(18.dp)) },
-                            trailingIcon = { Icon(Ms.Close, stringResource(R.string.tag_remove, t), Modifier.size(18.dp)) },
+                            trailingIcon = { Icon(Ms.Close, stringResource(R.string.tag_remove, L10n.isolate(LocalContext.current, t)), Modifier.size(18.dp)) },
                         )
                     }
                 }

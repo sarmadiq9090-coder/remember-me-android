@@ -562,7 +562,7 @@ fun TrashScreen(state: AppState, now: Instant, onRestore: (Task) -> Unit, onPurg
     if (confirmEmpty) ConfirmDialog(stringResource(R.string.empty_trash), stringResource(R.string.empty_trash_confirm), stringResource(R.string.delete_forever),
         onEmpty, { confirmEmpty = false }, destructive = true)
     confirmPurge?.let { t ->
-        ConfirmDialog(stringResource(R.string.delete_forever), stringResource(R.string.delete_forever_confirm, t.title), stringResource(R.string.delete_forever),
+        ConfirmDialog(stringResource(R.string.delete_forever), stringResource(R.string.delete_forever_confirm, L10n.isolate(context, t.title)), stringResource(R.string.delete_forever),
             { onPurge(t) }, { confirmPurge = null }, destructive = true)
     }
 }

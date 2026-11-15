@@ -36,6 +36,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import com.fastkiwi.rememberme.R
 import com.fastkiwi.rememberme.core.Organize
 import com.fastkiwi.rememberme.ui.Dimens
+import com.fastkiwi.rememberme.ui.L10n
 import com.fastkiwi.rememberme.ui.GroupItem
 import com.fastkiwi.rememberme.ui.Ms
 import com.fastkiwi.rememberme.ui.SwitchRow
@@ -171,7 +173,7 @@ private fun StepRow(
                 Checkbox(checked = step.done, onCheckedChange = null, modifier = Modifier.padding(Dimens.m))
                 Text(step.text, style = textStyle, modifier = Modifier.weight(1f).padding(end = Dimens.s, top = Dimens.s, bottom = Dimens.s))
             }
-            TooltipIconButton(Ms.Edit, stringResource(R.string.bbfix_step_edit, step.text), { editing = true; askFocus = true })
+            TooltipIconButton(Ms.Edit, stringResource(R.string.bbfix_step_edit, L10n.isolate(LocalContext.current, step.text)), { editing = true; askFocus = true })
         } else {
             Box(Modifier.size(Dimens.touch).then(tick), contentAlignment = Alignment.Center) {
                 Checkbox(checked = step.done, onCheckedChange = null)
