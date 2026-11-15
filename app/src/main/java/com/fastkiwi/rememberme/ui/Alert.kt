@@ -196,7 +196,8 @@ private fun SnoozeGrid(presets: List<DockChoice>, onPreset: (Int) -> Unit, onPic
 /**
  * The reminder screen (DESIGN-SPEC §5.8): the hero (style disc and tag, the time in displayLarge, on time
  * or late, «وصل متأخرًا …» when the alert itself came late (F-025), the title, repeat and priority, the note,
- * the steps) scrolls; the dock never does. Pointer taps are ignored for [guardMs] after a reminder appears.
+ * the steps) scrolls; the dock never does. At font scale ≥ 1.5 the title moves to the top of the hero, so it is
+ * readable without scrolling however tall the dock is. Pointer taps are ignored for [guardMs] after a reminder appears.
  * It stays until every due reminder is dealt with. [hidden]: lock-screen privacy, the title is not shown.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -241,8 +242,16 @@ fun AlertScreen(
     val hint = if (task.snoozeCount >= 3) stringResource(R.string.snooze_hint3) else null
     Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxSize().semantics { paneTitle = title }.then(rememberTapGuard(task.id, guardMs))) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            // On a short window at large text the grid moves into the hero, so «تم» always fits.
-            val gridInDock = !(LocalDensity.current.fontScale >= 1.5f && maxHeight < 640.dp)
+            val bigText = LocalDensity.current.fontScale >= 1.5f
+            // On a short window at large text the grid moves into the hero, so «تم» always fits and the hero
+            // keeps room for the title (black-box U1-2: at 200 % the title was cut to 7 dp under the dock).
+            val gridInDock = !(bigText && maxHeight < 800.dp)
+            val titleText: @Composable () -> Unit = {
+                Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
+                    modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite })
+                if (ringing) Text(stringResource(R.string.volume_silence_hint), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            }
             Column(Modifier.fillMaxSize()) {
                 // Top row: the queue at the start; edit and «لاحقًا» at the end.
                 Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = Dimens.l, vertical = Dimens.s), verticalAlignment = Alignment.CenterVertically) {
@@ -264,6 +273,8 @@ fun AlertScreen(
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Dimens.m),
                 ) {
                     Spacer(Modifier.size(Dimens.l))
+                    // At large text the title leads the hero: it is the one thing that must always be readable.
+                    if (bigText) titleText()
                     Box(Modifier.size(64.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape), contentAlignment = Alignment.Center) {
                         Icon(if (alarm) Ms.Alarm else Ms.NotificationsActive, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
                     }
@@ -285,10 +296,7 @@ fun AlertScreen(
                         ))
                         Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
-                    Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
-                        modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite })
-                    if (ringing) Text(stringResource(R.string.volume_silence_hint), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                    if (!bigText) titleText()
                     if (!hidden) {
                         TaskMeta(task, center = true)
                         if (task.body.isNotBlank()) Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
