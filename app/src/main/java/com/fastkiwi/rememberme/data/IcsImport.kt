@@ -580,16 +580,30 @@ object IcsImport {
             } else {
                 val list = ArrayList<IcsRulePart>()
                 if (rrules.size > 1) list += IcsRulePart.SeveralRules(rrules.size)
-                for (k in listOf("EXRULE", "RDATE", "EXDATE")) if (c.first(k) != null) list += IcsRulePart.Extra(k)
+                // Remember Me's own export: a series whose current time is not one the rule gives (a reminder on
+                // chosen weekdays that starts on another day) has DTSTART at its first rule time and the current
+                // time as one RDATE before it. That one RDATE is the reminder's time, not an extra date.
+                val rdates = c.all("RDATE")
+                val earlyRdate: Instant? = if (rdates.size == 1 && c.first("EXRULE") == null && c.first("EXDATE") == null &&
+                    !rdates[0].value.contains(',')) {
+                    when (val rw = parseWhen(rdates[0])) {
+                        is When.Utc -> rw.at
+                        is When.Local -> toInstant(rw.time, if (rw.tzid != null) resolve(rw.tzid) else rules)
+                        else -> null
+                    }?.takeIf { it.isBefore(dueAt) }
+                } else null
+                for (k in listOf("EXRULE", "RDATE", "EXDATE")) if (c.first(k) != null && !(k == "RDATE" && earlyRdate != null)) list += IcsRulePart.Extra(k)
                 val (map, why) = mapRule(rrules[0].value, local!!, isAllDay)
                 list += why
                 problems = list
                 if (map != null && list.isEmpty()) {
+                    val ruleStart = dueAt
+                    if (earlyRdate != null) dueAt = earlyRdate
                     repeat = map.repeat
                     everyDays = map.everyDays
                     everyHours = map.everyHours
                     // BYDAY is in the event's own zone; the app counts weekdays in this phone's zone.
-                    val shift = ChronoUnit.DAYS.between(local.toLocalDate(), dueAt.atZone(zone).toLocalDate()).toInt()
+                    val shift = ChronoUnit.DAYS.between(local.toLocalDate(), ruleStart.atZone(zone).toLocalDate()).toInt()
                     days = map.days.map { Math.floorMod(it + shift, 7) }.distinct().sorted()
                     map.note?.let { warnings += it(label) }
                     // BYMONTHDAY=-1 means day 31 for a month; a yearly series' month may be shorter (February: 29).
