@@ -279,7 +279,7 @@ fun QuickAddSheet(
             if (state.text.isNotBlank()) PreviewCard(state)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.s)) {
                 // 1.0.3: «الموعد», first in reading order.
-                DueChip(state, onOpen = { dueDialog = "date" })
+                DueChip(state, onOpen = { L10n.latinDigitsDefault(); dueDialog = "date" })
                 AssistChip(onClick = onTemplate, label = { Text(stringResource(R.string.qa_template)) }, modifier = Modifier.heightIn(min = Dimens.touch),
                     leadingIcon = { Icon(Ms.DashboardCustomize, null, Modifier.size(18.dp)) })
                 CategoryChip(state.category) { state.category = it }
@@ -316,7 +316,6 @@ fun QuickAddSheet(
         }
     }
     if (dueDialog != null) {
-        remember { L10n.latinDigitsDefault() }
         val base = (state.dueAt ?: state.suggestedAt()).atZone(state.zone)
         when (dueDialog) {
             "date" -> LatinDigits {

@@ -35,8 +35,8 @@ object L10n {
     }
 
     /**
-     * Material 3's date and time pickers write their numbers with the JVM's default locale, not the app's: keep
-     * that default on Western digits (only the digit system changes; 1.0.3, the «الموعد» chip's pickers).
+     * Material 3's time picker writes its numbers with the JVM's default locale, not the app's: keep that default
+     * on Western digits (only the digit system changes; 1.0.3, the «الموعد» chip's pickers).
      */
     fun latinDigitsDefault() {
         val d = Locale.getDefault()
