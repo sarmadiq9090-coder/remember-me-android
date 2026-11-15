@@ -22,7 +22,7 @@ data class EditorSettings(
     val historyOn: Boolean = false,
     val autoCompleteSteps: Boolean = false,
     /** always | important | off */
-    val fullScreenMode: String = "always",
+    val fullScreenMode: String = "important",
     val pinDefault: Boolean = true,
     val vibrateDefault: Boolean = true,
     val speakDefault: Boolean = false,

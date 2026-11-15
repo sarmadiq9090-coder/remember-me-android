@@ -53,7 +53,8 @@ class Prefs(context: Context) {
 
     /** «شاشة التذكير الكاملة»: always (default, 0.1 behaviour), important, off. */
     var fullScreenMode: String
-        get() = p.getString("fullScreenMode", "always")?.takeIf { it in setOf("always", "important", "off") } ?: "always"
+        // 1.0.5: "important" (the default) or "off"; 1.0.4's "always" reads as "important".
+        get() = if (p.getString("fullScreenMode", "important") == "off") "off" else "important"
         set(v) = p.edit { putString("fullScreenMode", v) }
 
     /** «تثبيت التذكير على شاشة القفل»: on by default. */

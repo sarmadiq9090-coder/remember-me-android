@@ -6,6 +6,19 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-11-15
+
+The owner: «الشاشه الكاملة للتنبيهات المهمة فقط».
+
+### Changed
+
+- The full-screen alert over the lock screen is for important reminders only: «منبّه مهم», or importance «مهم».
+  A normal reminder is a heads-up notification with its sound. Settings «الشاشة الكاملة» is now a switch that
+  says so («للتنبيهات المهمة فقط…») and turns it off for important reminders too; there is no option for every
+  reminder, and a reminder's own «اعرض الشاشة الكاملة» is gone (it can still ask for «إشعار فقط»). After the
+  update from 1.0.4, «دائمًا» reads as «للتنبيهات المهمة فقط», so existing normal reminders stop opening the full
+  screen; important ones keep it. The alert test asks about the full screen only for «منبّه مهم».
+
 ## [1.0.4] - 2026-11-15
 
 The owner on 1.0.3's sheet: «الازرار يجب ان تكون افضل ومرتبه اكثر اجعلها تبدو احترافيه».

@@ -131,7 +131,7 @@ private data class PhoneValues(
 }
 
 /** The keys whose row opens a single-choice (or picker) dialog of Settings itself. */
-private val DIALOG_KEYS = setOf("language", "theme", "months", "week", "again", "important", "fullscreen", "ring", "vibration", "lock",
+private val DIALOG_KEYS = setOf("language", "theme", "months", "week", "again", "important", "ring", "vibration", "lock",
     "hijri_adjust", "prayer_method", "prayer_asr", "summary_time", "history_clear", "safety")
 
 /**
@@ -192,7 +192,6 @@ fun SettingsScreen(
     }
     val styles = listOf("alarm" to stringResource(R.string.set_style_alarm), "normal" to stringResource(R.string.set_style_normal))
     val styleHints = mapOf("alarm" to stringResource(R.string.set_style_alarm_hint), "normal" to stringResource(R.string.set_style_normal_hint))
-    val fullScreens = listOf("always" to stringResource(R.string.set_fs_always), "important" to stringResource(R.string.set_fs_important), "off" to stringResource(R.string.set_fs_off))
     val rings = listOf(30, 60, 120).map { it.toString() to L10n.duration(context, it / 60L).let { d -> if (it == 30) stringResource(R.string.set_ring_30) else d } }
     val vibrations = listOf("short" to stringResource(R.string.set_vib_short), "normal" to stringResource(R.string.set_vib_normal), "long" to stringResource(R.string.set_vib_long), "off" to stringResource(R.string.set_vib_off))
     val locks = listOf("show" to stringResource(R.string.set_lock_show), "hide" to stringResource(R.string.set_lock_hide))
@@ -221,7 +220,8 @@ fun SettingsScreen(
         "tone_normal" to tone(v.normalTone, false),
         "tone_alarm" to tone(v.importantTone, true),
         "important" to (styles.first { it.first == v.importantStyle }.second + stringResource(R.string.list_separator) + styleHints.getValue(v.importantStyle)),
-        "fullscreen" to fullScreens.first { it.first == v.fullScreen }.second,
+        // 1.0.5: a switch; on means «للتنبيهات المهمة فقط» (there is no mode for every reminder).
+        "fullscreen" to stringResource(if (v.fullScreen == "off") R.string.set_fs_off_hint else R.string.set_fs_important_hint),
         "ring" to rings.first { it.first == v.ringSeconds.toString() }.second,
         "snooze" to com.fastkiwi.rememberme.ui.settings.SnoozeOptions.summary(context, m.presets),
         "again" to again.first { it.first == m.remindAgain.toString() }.second,
@@ -370,7 +370,7 @@ fun SettingsScreen(
                 { row("tone_normal", stringResource(R.string.set_default_tone_normal)) },
                 { row("tone_alarm", stringResource(R.string.set_default_tone_alarm)) },
                 { row("important", stringResource(R.string.set_important_reminders)) },
-                { row("fullscreen", stringResource(R.string.set_full_screen)) },
+                { switch("fullscreen", stringResource(R.string.set_full_screen), v.fullScreen != "off") { prefs.fullScreenMode = if (it) "important" else "off"; changed() } },
                 { row("ring", stringResource(R.string.set_ring_length)) },
                 { row("snooze", stringResource(R.string.set_snooze_presets)) },
                 { row("again", stringResource(R.string.remind_again)) },
@@ -459,8 +459,6 @@ fun SettingsScreen(
             it.toInt().takeIf { n -> n in com.fastkiwi.rememberme.core.Planner.REMIND_AGAIN }?.let { n -> cb.onSetting("remindAgain", kotlinx.serialization.json.JsonPrimitive(n)) }
         }, { dialog = null })
         "important" -> ChoiceDialog(stringResource(R.string.set_important_reminders), styles, v.importantStyle, { sp.importantStyle = it; com.fastkiwi.rememberme.core.AlertPolicy.highIsAlarm = it != "normal"; changed() }, { dialog = null }, supporting = styleHints)
-        "fullscreen" -> com.fastkiwi.rememberme.ui.settings.ChoiceWithNote(stringResource(R.string.set_full_screen), fullScreens, v.fullScreen, { prefs.fullScreenMode = it; changed() }, { dialog = null },
-            note = stringResource(R.string.set_fs_fallback_note))
         "ring" -> com.fastkiwi.rememberme.ui.settings.ChoiceWithNote(stringResource(R.string.set_ring_length), rings, v.ringSeconds.toString(), { prefs.ringSeconds = it.toInt(); changed() }, { dialog = null },
             note = stringResource(R.string.set_ring_note))
         "vibration" -> ChoiceDialog(stringResource(R.string.set_vibration), vibrations, vibrationCode, {

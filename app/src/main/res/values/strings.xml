@@ -324,9 +324,8 @@
     <string name="fs_follow">حسب الإعداد العام</string>
     <string name="fs_follow_is">حسب الإعداد العام (%1$s)</string>
     <string name="fs_always">دائمًا</string>
-    <string name="fs_important">للتذكيرات المهمة فقط</string>
+    <string name="fs_important">للتنبيهات المهمة فقط</string>
     <string name="fs_off">مطفأة، إشعار عادي فقط</string>
-    <string name="fs_show">اعرض الشاشة الكاملة</string>
     <string name="fs_notify_only">إشعار فقط</string>
     <string name="fs_summary_follow">الشاشة الكاملة حسب الإعداد</string>
     <string name="pin">تثبيت التذكير على شاشة القفل</string>
@@ -775,10 +774,8 @@
     <string name="set_style_alarm_hint">يرنّ حتى والهاتف صامت</string>
     <string name="set_style_normal_hint">إشعار بصوت الإشعارات</string>
     <string name="set_full_screen">الشاشة الكاملة</string>
-    <string name="set_fs_always">دائمًا</string>
-    <string name="set_fs_important">للتذكيرات المهمة فقط</string>
-    <string name="set_fs_off">مطفأة، إشعار عادي فقط</string>
-    <string name="set_fs_fallback_note">إن لم يسمح أندرويد بعرضها، يصلك إشعار عادي.</string>
+    <string name="set_fs_important_hint">للتنبيهات المهمة فقط: «منبّه مهم» أو أهمية «مهم»، فوق شاشة القفل. التذكير العادي إشعار منبثق بصوته.</string>
+    <string name="set_fs_off_hint">مطفأة: إشعار منبثق فقط، حتى للتنبيهات المهمة.</string>
     <string name="set_ring_length">مدة رنين المنبّه المهم</string>
     <string name="set_ring_30">30 ثانية</string>
     <string name="set_ring_note">بعدها يتوقف الصوت ويبقى التذكير ظاهرًا، ويعود حسب «إعادة التنبيه بالصوت».</string>

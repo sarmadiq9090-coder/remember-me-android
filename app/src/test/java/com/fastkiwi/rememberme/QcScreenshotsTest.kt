@@ -368,6 +368,26 @@ class QcScreenshotsTest {
         }
     }
 
+    /** 1.0.5: Settings with the «الشاشة الكاملة» switch (for important alerts only), on and off (QC limited to it). */
+    private fun fullScreenSetting(prefix: String, en: Boolean) {
+        if (en) Repo.prefs(app).language = "en"
+        ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
+            go(Screen.Settings)
+            val row = rule.onNode(hasText(if (en) "Full screen" else "الشاشة الكاملة") and hasClickAction(), useUnmergedTree = false)
+            row.performScrollTo()
+            shot("$prefix-50-settings-fullscreen-on")
+            row.performClick()
+            rule.waitForIdle()
+            shot("$prefix-51-settings-fullscreen-off")
+        }
+    }
+
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi") fun fullScreenSettingArabicLight() = fullScreenSetting("ar-light", false)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi") fun fullScreenSettingArabicDark() = fullScreenSetting("ar-dark", false)
+    @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi") fun fullScreenSettingEnglishLight() = fullScreenSetting("en-light", true)
+    @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi")
+    fun fullScreenSettingArabicLargeText() { RuntimeEnvironment.setFontScale(2f); try { fullScreenSetting("ar-200", false) } finally { RuntimeEnvironment.setFontScale(1f) } }
+
     @Test @Config(qualifiers = "ar-w412dp-h915dp-notnight-xxhdpi") fun dueSheetArabicLight() = dueSheet("ar-light", false)
     @Test @Config(qualifiers = "ar-w412dp-h915dp-night-xxhdpi") fun dueSheetArabicDark() = dueSheet("ar-dark", false)
     @Test @Config(qualifiers = "en-w412dp-h915dp-notnight-xxhdpi") fun dueSheetEnglishLight() = dueSheet("en-light", true)

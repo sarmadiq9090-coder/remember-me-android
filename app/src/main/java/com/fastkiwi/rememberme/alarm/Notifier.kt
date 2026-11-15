@@ -128,9 +128,8 @@ object Notifier {
     }
 
     private fun fullScreenMode(context: Context) = when (Repo.prefs(context).fullScreenMode) {
-        "important" -> AlertPolicy.FullScreenMode.IMPORTANT
         "off" -> AlertPolicy.FullScreenMode.OFF
-        else -> AlertPolicy.FullScreenMode.ALWAYS
+        else -> AlertPolicy.FullScreenMode.IMPORTANT
     }
 
     /** The decision for a reminder now (also used by Health and the alert test). */
@@ -296,7 +295,8 @@ object Notifier {
             .addAction(R.drawable.ic_check, c.getString(R.string.done), done)
             .addAction(R.drawable.ic_snooze, snoozeLabel(c, now),
                 PendingIntent.getBroadcast(context, 303, Intent(context, ActionReceiver::class.java).setAction(ActionReceiver.TEST_DONE), flags()))
-        if (canFullScreen(context) && Repo.prefs(context).fullScreenMode != "off") b.setFullScreenIntent(screen, true)
+        // 1.0.5: the full screen only for «منبّه مهم» (a normal reminder is a heads-up notification).
+        if (alarm && canFullScreen(context) && Repo.prefs(context).fullScreenMode != "off") b.setFullScreenIntent(screen, true)
         val n = b.build()
         try { NotificationManagerCompat.from(context).notify(TEST_ID, n) } catch (_: SecurityException) { return }
         val prefs = Repo.prefs(context)

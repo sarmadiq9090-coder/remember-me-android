@@ -127,7 +127,7 @@ object TestAlarm {
             AlertPolicy.decide(
                 Task(id = "test", title = "", priority = if (style == AlertPolicy.Style.ALARM) Priority.HIGH else Priority.NORMAL, createdAt = now, updatedAt = now),
                 Notifier.ringer(c), Notifier.dnd(c), Repo.sound(Repo.state(c)), Notifier.styleChannelAudible(c, style),
-                prefs.vibrateDefault, AlertPolicy.FullScreenMode.ALWAYS, prefs.pinDefault,
+                prefs.vibrateDefault, AlertPolicy.FullScreenMode.IMPORTANT, prefs.pinDefault,
             )
         }.getOrNull()
         p(c).edit {
@@ -208,7 +208,9 @@ object TestAlarm {
             !fired -> if (late) Result.FAILED else Result.WAITING
             else -> Result.ASK
         }
+        // 1.0.5: a normal reminder never opens the full screen, so its test has no «الشاشة الكاملة» part.
+        val withScreen = r.style != AlertPolicy.Style.NORMAL.name
         return linkedMapOf(Part.ALARM to alarm, Part.NOTIFICATION to notification, Part.SOUND to sound,
-            Part.VIBRATION to vibration, Part.SCREEN to screen, Part.BUTTONS to buttons)
+            Part.VIBRATION to vibration).apply { if (withScreen) put(Part.SCREEN, screen) }.apply { put(Part.BUTTONS, buttons) }
     }
 }

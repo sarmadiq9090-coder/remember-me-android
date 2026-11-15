@@ -41,7 +41,9 @@ internet, no statistics.
   phone's settings (Settings → Reminder health → "Important alarms and Do Not Disturb" explains how).
 - Tone: the phone's tone, 3 Remember Me tones, an audio file of yours (copied into the app, 5 MB at most), or
   Silent (vibrate only). If a tone is missing the next one is used: a reminder is never silent by accident.
-- Full screen: always, important reminders only, or off. Lock screen: show or hide details ("You have a
+- Full screen over the lock screen is for important alerts only («Important alarm» or importance «High»); a
+  normal reminder is a pop-up notification with its sound. The Full screen switch turns it off for those too;
+  there is no option for every reminder. Lock screen: show or hide details ("You have a
   reminder" with Done and Snooze).
 
 ## 5. Home

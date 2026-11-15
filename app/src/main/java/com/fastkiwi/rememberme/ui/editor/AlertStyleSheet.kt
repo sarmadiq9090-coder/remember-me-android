@@ -38,13 +38,9 @@ import com.fastkiwi.rememberme.ui.L10n
 import com.fastkiwi.rememberme.ui.Ms
 import com.fastkiwi.rememberme.ui.SheetShape
 
-/** The phone's full-screen mode as words: «دائمًا» / «للتذكيرات المهمة فقط» / «مطفأة، إشعار عادي فقط». */
+/** The phone's full-screen setting as words: «للتنبيهات المهمة فقط» / «مطفأة، إشعار عادي فقط» (1.0.5: no «دائمًا»). */
 @Composable
-fun fullScreenModeName(mode: String): String = stringResource(when (mode) {
-    "important" -> R.string.fs_important
-    "off" -> R.string.fs_off
-    else -> R.string.fs_always
-})
+fun fullScreenModeName(mode: String): String = stringResource(if (mode == "off") R.string.fs_off else R.string.fs_important)
 
 /**
  * What «منبّه مهم» does, in words that stay true: it rings for the ring length chosen in Settings (30 seconds,
@@ -94,8 +90,9 @@ fun AlertStyleSheet(
                 }
                 EditorHeader(stringResource(R.string.full_screen))
                 Column(Modifier.padding(horizontal = Dimens.s).selectableGroup()) {
-                    RadioRow(stringResource(R.string.fs_follow_is, fullScreenModeName(globalMode)), fs == null) { fs = null }
-                    RadioRow(stringResource(R.string.fs_show), fs == "on") { fs = "on" }
+                    // 1.0.5: the full screen is for important reminders only, so there is no «اعرض الشاشة الكاملة» here;
+                    // a reminder can only follow the setting or ask for a notification only.
+                    RadioRow(stringResource(R.string.fs_follow_is, fullScreenModeName(globalMode)), fs != "off") { fs = null }
                     RadioRow(stringResource(R.string.fs_notify_only), fs == "off") { fs = "off" }
                 }
             }

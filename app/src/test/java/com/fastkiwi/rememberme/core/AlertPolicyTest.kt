@@ -21,7 +21,7 @@ class AlertPolicyTest {
         Task(id = "t", title = "x", priority = priority, createdAt = at, updatedAt = at).let { if (ext != null) it.withExt(ext) else it }
 
     private fun decide(t: Task, ringer: Ringer = Ringer.NORMAL, dnd: Dnd = Dnd.OFF, soundOn: Boolean = true, audible: Boolean = true,
-                       vibrate: Boolean = true, fs: FullScreenMode = FullScreenMode.ALWAYS, pin: Boolean = true) =
+                       vibrate: Boolean = true, fs: FullScreenMode = FullScreenMode.IMPORTANT, pin: Boolean = true) =
         AlertPolicy.decide(t, ringer, dnd, soundOn, audible, vibrate, fs, pin)
 
     @Test fun styleFollowsPriorityUnlessChosen() {
@@ -73,13 +73,18 @@ class AlertPolicyTest {
         assertFalse(decide(task(Priority.HIGH, AlertExt(vibrate = false))).vibrate)
     }
 
-    @Test fun fullScreenModeAndPerReminderOverride() {
-        assertTrue(decide(task(), fs = FullScreenMode.ALWAYS).fullScreen)
-        assertFalse(decide(task(), fs = FullScreenMode.IMPORTANT).fullScreen)
-        assertTrue(decide(task(Priority.HIGH), fs = FullScreenMode.IMPORTANT).fullScreen)
-        assertTrue(decide(task(ext = AlertExt(style = "alarm")), fs = FullScreenMode.IMPORTANT).fullScreen)
+    /** 1.0.5: «الشاشه الكاملة للتنبيهات المهمة فقط»; the switch turns it off for them too; nothing turns it on for a normal one. */
+    @Test fun fullScreenOnlyForImportantReminders() {
+        assertFalse(decide(task()).fullScreen)
+        assertFalse(decide(task(Priority.MEDIUM)).fullScreen)
+        assertTrue(decide(task(Priority.HIGH)).fullScreen)
+        assertTrue(decide(task(ext = AlertExt(style = "alarm"))).fullScreen)
+        // High importance kept as a normal alert (its own choice) is still important.
+        assertTrue(decide(task(Priority.HIGH, AlertExt(style = "normal"))).fullScreen)
         assertFalse(decide(task(Priority.HIGH), fs = FullScreenMode.OFF).fullScreen)
-        assertTrue(decide(task(ext = AlertExt(fullScreen = "on")), fs = FullScreenMode.OFF).fullScreen)
+        assertFalse(decide(task(ext = AlertExt(style = "alarm", fullScreen = "on")), fs = FullScreenMode.OFF).fullScreen)
+        // A normal reminder's own "on" (1.0.4) no longer opens it.
+        assertFalse(decide(task(ext = AlertExt(fullScreen = "on"))).fullScreen)
         assertFalse(decide(task(Priority.HIGH, AlertExt(fullScreen = "off"))).fullScreen)
     }
 

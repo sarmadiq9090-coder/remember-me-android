@@ -324,9 +324,8 @@
     <string name="fs_follow">As in settings</string>
     <string name="fs_follow_is">As in settings (%1$s)</string>
     <string name="fs_always">Always</string>
-    <string name="fs_important">Important reminders only</string>
+    <string name="fs_important">Important alerts only</string>
     <string name="fs_off">Off, a normal notification only</string>
-    <string name="fs_show">Show full screen</string>
     <string name="fs_notify_only">Notification only</string>
     <string name="fs_summary_follow">Full screen as in settings</string>
     <string name="pin">Pin the reminder on the lock screen</string>
@@ -775,10 +774,8 @@
     <string name="set_style_alarm_hint">Rings even when the phone is silent</string>
     <string name="set_style_normal_hint">A notification at notification volume</string>
     <string name="set_full_screen">Full screen</string>
-    <string name="set_fs_always">Always</string>
-    <string name="set_fs_important">Important reminders only</string>
-    <string name="set_fs_off">Off, a normal notification only</string>
-    <string name="set_fs_fallback_note">If Android does not allow it, you get a normal notification.</string>
+    <string name="set_fs_important_hint">Important alerts only: «Important alarm» or importance «High», over the lock screen. A normal reminder is a pop-up notification with its sound.</string>
+    <string name="set_fs_off_hint">Off: a pop-up notification only, even for important alerts.</string>
     <string name="set_ring_length">Important alarm ring length</string>
     <string name="set_ring_30">30 seconds</string>
     <string name="set_ring_note">Then the sound stops, the reminder stays, and it sounds again as set in Sound again.</string>
