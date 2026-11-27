@@ -251,8 +251,10 @@ class MainActivity : AppCompatActivity() {
     fun importFrom(open: () -> java.io.InputStream): String = readImport(open).fold({ applyImport(it) }, { it.message ?: getString(R.string.import_failed) })
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        L10n.apply(this)
+        val adoptedLanguage = L10n.apply(this, adoptSystem = true)
         super.onCreate(savedInstanceState)
+        // A language picked in Android's per-app Settings: notifications and the alarm engine follow it too.
+        if (adoptedLanguage) { Notifier.channels(this); Engine.syncAsync(this) }
         // [editor] begin
         com.fastkiwi.rememberme.data.EditorPrefs.install(this)
         // [editor] end

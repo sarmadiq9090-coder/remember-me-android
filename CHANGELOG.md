@@ -6,6 +6,14 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Fixed
+
+- Mixed languages on a phone set to English (Android 13 and later): the screens came up in English while
+  notifications, their buttons and the times were Arabic, because the app's language was set before its first
+  window existed and Android ignored it. The app language now reaches Android on the first start, so everything is
+  Arabic until English is picked. A language picked in Android's own per-app language settings is now adopted by
+  the app too, so notifications follow it.
+
 ## [1.0.6] - 2026-11-27
 
 ### Added
