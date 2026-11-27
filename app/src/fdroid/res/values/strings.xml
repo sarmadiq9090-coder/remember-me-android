@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F-Droid build (flavor `fdroid`): no self-updater and no internet permission, so these privacy texts override
+     main's (which say the app contacts GitHub for updates). English in values-en/. -->
+<resources>
+    <string name="about_privacy">كل بياناتك على هاتفك فقط. لا يتصل ذكرني بالإنترنت أبدًا، ولا يُرسل أي تذكير أو بيانات عنك، ولا يجمع أي إحصاءات.</string>
+    <string name="offline">يعمل دون إنترنت</string>
+    <string name="set_privacy_intro">كل بياناتك على هاتفك فقط. لا يتصل ذكرني بالإنترنت أبدًا (ليس له إذن الإنترنت)، ولا يُرسل أي تذكير أو بيانات عنك، ولا يجمع أي إحصاءات.</string>
+    <string name="set_never_internet">لا يتصل بالإنترنت ولا يرسل أي تذكير أو بيانات عنك</string>
+</resources>
