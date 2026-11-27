@@ -18,7 +18,7 @@ torture/run.sh --seed 42  # replay every random test with seed 42
 `run.sh` sources `/e/fast kiwi pro neq/rm-wt-env.sh`, runs
 
 ```sh
-gradle --no-daemon --console=plain --max-workers=2 :app:testDebugUnitTest --tests 'com.fastkiwi.rememberme.torture.*' --rerun
+gradle --no-daemon --console=plain --max-workers=2 :app:testFullDebugUnitTest --tests 'com.fastkiwi.rememberme.torture.*' --rerun
 ```
 
 with `TORTURE=1` (and `TORTURE_HEAVY=1` unless `--light`), then writes `torture/reports/summary-<time>.txt`
@@ -30,7 +30,7 @@ Switches (environment variables, inherited by Gradle's test JVM; `-Dtorture=true
 
 | Variable | Effect |
 |---|---|
-| `TORTURE=1` | Runs the torture tests. Without it every torture test is skipped, so the ordinary `testDebugUnitTest` is not slowed or blocked by them. |
+| `TORTURE=1` | Runs the torture tests. Without it every torture test is skipped, so the ordinary `testFullDebugUnitTest` / `testFdroidDebugUnitTest` is not slowed or blocked by them. |
 | `TORTURE_HEAVY=1` | The heavy parts: 10,000 reminders through the engine on three SDKs, and larger random counts (see each suite). Implies `TORTURE=1`. |
 | `TORTURE_SEED=<n>` | The seed of every random test. Each test prints its seed (`[torture] <name> seed=<n>`); the default seeds are fixed, so runs are reproducible. |
 | `REMEMBER_ME_DIR` | The Windows app's checkout for the parity test (default: `../Remember-Me` next to the worktree). |
@@ -130,4 +130,4 @@ All classes are in `app/src/test/java/com/fastkiwi/rememberme/torture/` (the `to
 
 `torture/reports/` holds the summaries and perf lines of runs (`summary-*.txt`, `perf-*.txt`, `stress-*.txt`,
 `time-*.txt`, `parity-*.txt`, `ics-*.txt`, `quickadd-*.txt`). `torture/tools/summarize.cjs` rebuilds a summary
-from `app/build/test-results/testDebugUnitTest`.
+from `app/build/test-results/testFullDebugUnitTest`.

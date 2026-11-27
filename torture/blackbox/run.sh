@@ -26,6 +26,9 @@ fi
 
 source "/e/fast kiwi pro neq/rm-wt-env.sh"
 
+# BB_FLAVOR: the build to drive, full (default, with the updater) or fdroid.
+case "${BB_FLAVOR:-full}" in full) TASK=testFullDebugUnitTest ;; fdroid) TASK=testFdroidDebugUnitTest ;; *) echo "BB_FLAVOR must be full or fdroid" >&2; exit 2 ;; esac
+
 if command -v cygpath >/dev/null 2>&1; then WIN_SESSION="$(cygpath -w "$SESSION")"; else WIN_SESSION="$SESSION"; fi
 export BB_SESSION="$WIN_SESSION"
 mkdir -p "$BB_REPO/torture/blackbox"
@@ -34,11 +37,11 @@ printf '%s\n' "$WIN_SESSION" > "$MARK"
 trap 'rm -f "$MARK"' EXIT
 
 echo "Session: $SESSION"
-echo "App checkout: $BB_REPO"
+echo "App checkout: $BB_REPO (build: ${BB_FLAVOR:-full})"
 LOG="$SESSION/gradle.log"
 rm -rf "$SESSION/out"
 # A run that hangs is stopped after BB_TIMEOUT seconds (default 30 minutes); the report so far is kept.
-( cd "$BB_REPO" && timeout "${BB_TIMEOUT:-1800}" gradle --no-daemon --console=plain --max-workers=2 :app:testDebugUnitTest \
+( cd "$BB_REPO" && timeout "${BB_TIMEOUT:-1800}" gradle --no-daemon --console=plain --max-workers=2 :app:$TASK \
     --tests 'com.fastkiwi.rememberme.torture.blackbox.BlackBoxDriver*' --rerun ) > "$LOG" 2>&1
 STATUS=$?
 
@@ -58,6 +61,6 @@ if [ $STATUS -eq 124 ]; then
   echo "THE RUN WAS STOPPED after ${BB_TIMEOUT:-1800} s (it hung). The report above ends where it stopped."
 elif [ $STATUS -ne 0 ]; then
   echo
-  echo "(Gradle exit code $STATUS; see $LOG and $BB_REPO/app/build/reports/tests/testDebugUnitTest/index.html)"
+  echo "(Gradle exit code $STATUS; see $LOG and $BB_REPO/app/build/reports/tests/$TASK/index.html)"
 fi
 exit $STATUS
