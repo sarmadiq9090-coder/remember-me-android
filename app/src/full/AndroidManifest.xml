@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 1.0.5 (D-081, as Kiwi Scan's D-080): the internet only to check for and download the app's own updates
+         from GitHub (update/UpdateClient.kt: HTTPS, GitHub hosts only; res/xml/network_security_config.xml).
+         No reminder or data about the person is ever sent. ACCESS_NETWORK_STATE tells Wi-Fi from mobile data
+         («Wi-Fi فقط»); REQUEST_INSTALL_PACKAGES lets Android's installer ask the person to install the update.
+         1.0.6: these live only in the `full` flavor; the `fdroid` flavor has no self-updater and none of them. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application android:networkSecurityConfig="@xml/network_security_config">
+        <!-- 1.0.5: PackageInstaller's status for an update (Android's own install confirmation). Not exported. -->
+        <receiver
+            android:name=".update.UpdateInstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.fastkiwi.rememberme.update.INSTALL_STATUS" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

@@ -92,7 +92,7 @@ open source (Apache-2.0), with no account, ads or analytics. Not on Google Play.
 Android 8.0 or later (API 26+). Every permission and why: [docs/PRIVACY.md](docs/PRIVACY.md).
 POST_NOTIFICATIONS, USE_EXACT_ALARM (SCHEDULE_EXACT_ALARM on Android 12 only), USE_FULL_SCREEN_INTENT,
 RECEIVE_BOOT_COMPLETED, VIBRATE, REQUEST_IGNORE_BATTERY_OPTIMIZATIONS and FOREGROUND_SERVICE (a short service that
-plays the tone). Since 1.0.5, for the update check only: INTERNET, ACCESS_NETWORK_STATE and REQUEST_INSTALL_PACKAGES.
+plays the tone). Since 1.0.5, for the update check only (not in the F-Droid build): INTERNET, ACCESS_NETWORK_STATE and REQUEST_INSTALL_PACKAGES.
 
 ### Privacy
 - Your reminders stay on your phone. No account, ads, tracking or analytics.
@@ -111,6 +111,15 @@ Remember Me for Android is not published on Google Play. Download `RememberMe-X.
 3. Tap Install, then Open. If Play Protect warns you, tap "More details" then "Install anyway" (it warns because
    the app is not from the store).
 4. On first launch, allow notifications and open "Reminder health" to see what your phone needs.
+
+### F-Droid build (no internet at all)
+Besides the normal APK, each release carries `RememberMe-X.Y.Z-fdroid.apk` (build flavor `fdroid`): the same app
+with **no self-updater** and **without** the INTERNET, ACCESS_NETWORK_STATE and REQUEST_INSTALL_PACKAGES
+permissions, for F-Droid-style stores that provide updates themselves. Both builds have the same application id
+(`com.fastkiwi.rememberme`) and the GitHub files are signed with the same key. Android only lets one build update
+another when the signatures match, so an F-Droid-store build (signed by that store's own key) cannot be installed over
+this one, or the reverse, without uninstalling first: export a backup before you switch.
+Store metadata for F-Droid and IzzyOnDroid is in `fastlane/metadata/android/en-US/`.
 
 ### Updates
 - **In the app (since 1.0.5):** it checks its GitHub releases. An update is installed only if it is newer, its
@@ -143,9 +152,10 @@ Requirements: JDK 21 (Temurin), Android SDK platform 36 and build-tools 36.0.0.
 ```sh
 git clone https://github.com/sarmadiq9090-coder/remember-me-android.git
 cd remember-me-android
-./gradlew :app:testDebugUnitTest     # JUnit, Robolectric and Compose UI tests (also writes screenshots/)
-./gradlew :app:lintRelease           # must report "No issues found."
-./gradlew :app:assembleRelease       # unsigned APK unless keystore/keystore.properties exists
+./gradlew :app:testFullDebugUnitTest :app:testFdroidDebugUnitTest   # JUnit, Robolectric and Compose UI tests (also writes screenshots/)
+./gradlew :app:lintFullRelease :app:lintFdroidRelease   # must report "No issues found."
+./gradlew :app:assembleFullRelease    # GitHub build with the self-updater (unsigned unless keystore/keystore.properties exists)
+./gradlew :app:assembleFdroidRelease  # F-Droid build: no self-updater, no network permissions
 ./gradlew :app:releaseSbom           # dist/RememberMe-<version>.cdx.json (CycloneDX)
 ```
 

@@ -57,6 +57,7 @@ class UpdateUiTest {
     }
 
     @Test fun noticeOnceThenTheSettingsAndTheCheckInAbout() {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", com.fastkiwi.rememberme.BuildConfig.UPDATER_ENABLED)
         ActivityScenario.launch(MainActivity::class.java).use { sc ->
             // First start: the notice, word for word, before anything is checked.
             rule.waitUntil(5_000) { rule.onAllNodesWithText(NOTICE).fetchSemanticsNodes().isNotEmpty() }

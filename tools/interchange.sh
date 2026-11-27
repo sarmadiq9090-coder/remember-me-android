@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/.."
 source ./env.sh 2>/dev/null || source "/e/fast kiwi pro neq/rm-wt-env.sh"
-gradle --no-daemon --console=plain -q :app:testDebugUnitTest --tests 'com.fastkiwi.rememberme.data.InterchangeTest.phase1*'
+gradle --no-daemon --console=plain -q :app:testFullDebugUnitTest --tests 'com.fastkiwi.rememberme.data.InterchangeTest.phase1*'
 node tools/windows-roundtrip.cjs
-gradle --no-daemon --console=plain -q :app:testDebugUnitTest --tests 'com.fastkiwi.rememberme.data.InterchangeTest.phase2*'
-grep -q 'skipped="0"' app/build/test-results/testDebugUnitTest/TEST-com.fastkiwi.rememberme.data.InterchangeTest.xml && echo "INTERCHANGE OK"
+gradle --no-daemon --console=plain -q :app:testFullDebugUnitTest --tests 'com.fastkiwi.rememberme.data.InterchangeTest.phase2*'
+grep -q 'skipped="0"' app/build/test-results/testFullDebugUnitTest/TEST-com.fastkiwi.rememberme.data.InterchangeTest.xml && echo "INTERCHANGE OK"

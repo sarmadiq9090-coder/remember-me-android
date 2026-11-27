@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
         flows.onRestored = { safety = Repo.store(this).safetyCopies() }
         if (savedInstanceState == null) flows.checkWhatsNew()
         // Also after a restore: the 7-day rule decides; leftovers are cleaned only when nothing is in progress.
-        updates.onAppOpened()
+        if (BuildConfig.UPDATER_ENABLED) updates.onAppOpened()
         // [settings] end
         val prefs = Repo.prefs(this)
         prefs.firstRun
@@ -284,8 +284,10 @@ class MainActivity : AppCompatActivity() {
             AppTheme(Repo.theme(state)) {
                 androidx.compose.runtime.CompositionLocalProvider(com.fastkiwi.rememberme.ui.LocalReducedMotion provides reduced) { Root(state) }
                 // 1.0.5 (D-081): the one-time notice before the first automatic update check, and «التحديث جاهز للتثبيت».
-                com.fastkiwi.rememberme.ui.settings.UpdateNoticeDialog(updates) { push(Screen.Settings) }
-                com.fastkiwi.rememberme.ui.settings.UpdateConfirmDialog(updates)
+                if (BuildConfig.UPDATER_ENABLED) {
+                    com.fastkiwi.rememberme.ui.settings.UpdateNoticeDialog(updates) { push(Screen.Settings) }
+                    com.fastkiwi.rememberme.ui.settings.UpdateConfirmDialog(updates)
+                }
             }
             LaunchedEffect(Unit) {
                 // The lists show "late by" and move items between tabs as time passes.
@@ -309,7 +311,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         // Android's install confirmation may be opened directly only while the app is in front.
         com.fastkiwi.rememberme.update.UpdateInstallEvents.foreground = true
-        updates.refreshInstallStatus()
+        if (BuildConfig.UPDATER_ENABLED) updates.refreshInstallStatus()
     }
 
     override fun onStop() {
@@ -675,7 +677,7 @@ class MainActivity : AppCompatActivity() {
                 onPurge = { t -> act { s -> Tasks.purge(s, t.id) } },
                 onEmpty = { act { s -> Tasks.purgeTrash(s, Instant.now(), all = true) } },
                 onBack = { pop() })
-            Screen.About -> AboutScreen(onBack = { pop() }, updates = updates, onFeedback = { push(Screen.Feedback) })
+            Screen.About -> AboutScreen(onBack = { pop() }, updates = if (BuildConfig.UPDATER_ENABLED) updates else null, onFeedback = { push(Screen.Feedback) })
             Screen.Feedback -> com.fastkiwi.rememberme.ui.settings.FeedbackScreen { pop() }
             // [quick] begin
             Screen.Templates -> com.fastkiwi.rememberme.ui.quick.TemplatesRoute(
