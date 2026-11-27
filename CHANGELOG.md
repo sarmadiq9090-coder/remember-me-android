@@ -6,6 +6,28 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-11-27
+
+### Added
+
+- F-Droid build: a second product flavor `fdroid` (`RememberMe-X.Y.Z-fdroid.apk`) with no self-updater. It has no
+  INTERNET, ACCESS_NETWORK_STATE or REQUEST_INSTALL_PACKAGES permission, hides the update settings and the
+  «تحقق من التحديثات» button, and has the same application id and signing key as the normal (`full`) build. CI builds,
+  tests and checks the permissions of both flavors.
+- Fastlane store metadata (`fastlane/metadata/android/en-US`) for F-Droid and IzzyOnDroid: title, descriptions, changelog,
+  English screenshots and icon.
+
+### Fixed
+
+- `UpdaterTest.noNetworkMeansNoRequestAndAClearError` failed on Linux CI: the test server could still accept one
+  connection just after `close()`. The server now drops it and `close()` waits for its accept loop to end.
+
+### Changed
+
+- Gradle task names: `assembleRelease` is now `assembleFullRelease` / `assembleFdroidRelease`, `testDebugUnitTest` is
+  `testFullDebugUnitTest` / `testFdroidDebugUnitTest`. `tools/dist.sh` and `tools/release-assets.sh` also handle the
+  F-Droid APK, which goes into `SHA256SUMS.txt`.
+
 ## [1.0.5] - 2026-11-15
 
 The owner: «الشاشه الكاملة للتنبيهات المهمة فقط» and «اضف زر التحديث و ابلغ عن مقترح او مشكله مثل سكان كيوي» (D-081).

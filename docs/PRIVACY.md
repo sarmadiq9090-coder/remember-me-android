@@ -24,6 +24,10 @@ ads and no accounts.
 | `ACCESS_NETWORK_STATE` | To tell Wi-Fi from mobile data, so an update downloads over Wi-Fi only if you chose «Wi-Fi فقط» (on by default). |
 | `REQUEST_INSTALL_PACKAGES` | So Android's own installer asks you to install a verified update (newer, SHA-256 equal to the published `SHA256SUMS.txt`, signed with the same key). Nothing is installed without your tap. |
 
+The last three rows exist only in the `full` build (the GitHub release `RememberMe-X.Y.Z.apk`). The `fdroid` build
+(`RememberMe-X.Y.Z-fdroid.apk`, flavor `fdroid`) has no self-updater and does **not** declare `INTERNET`,
+`ACCESS_NETWORK_STATE` or `REQUEST_INSTALL_PACKAGES`: it cannot connect to any network.
+
 ## What we never do
 
 - Nothing about you or your reminders goes online. The only connection is to GitHub, for the app's own updates.

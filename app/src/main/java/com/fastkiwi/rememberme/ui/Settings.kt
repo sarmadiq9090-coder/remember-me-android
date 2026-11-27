@@ -265,6 +265,7 @@ fun SettingsScreen(
         if (!prayerShown) addAll(listOf("prayer_method", "prayer_asr", "prayer_city"))
         if (v.summary < 0) add("summary_time")
         if (safety.isEmpty()) add("safety")
+        if (!BuildConfig.UPDATER_ENABLED) addAll(listOf("update_auto", "update_wifi"))
         if (flows == null) addAll(listOf("export", "auto_backup", "encrypt", "backup_tones", "restore", "ics_import", "ics_export", "delete_all"))
     }
 
@@ -450,11 +451,13 @@ fun SettingsScreen(
                 if (flows != null) add { row("delete_all", stringResource(R.string.set_delete_all), error = true) }
             })
             // 1.0.5 (D-081): the two update settings, both on by default.
-            SectionHeader(stringResource(R.string.updates_title))
-            Group(listOf(
+            if (BuildConfig.UPDATER_ENABLED) {
+                SectionHeader(stringResource(R.string.updates_title))
+                Group(listOf(
                 { switch("update_auto", stringResource(R.string.update_auto), updAuto) { updAuto = it; updatePrefs.autoUpdateCheck = it } },
                 { switch("update_wifi", stringResource(R.string.update_wifi_only), updWifi) { updWifi = it; updatePrefs.updateWifiOnly = it } },
-            ))
+                ))
+            }
             SectionHeader(stringResource(R.string.section_about))
             Group(listOf(
                 { row("privacy", stringResource(R.string.set_privacy)) },

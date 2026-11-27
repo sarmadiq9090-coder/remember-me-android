@@ -16,10 +16,15 @@ class MiniHttpServer(private val stallMs: Long = 3_000, private val handler: (pa
     val port: Int get() = socket.localPort
     @Volatile private var open = true
 
+    private val acceptor: Thread
+
     init {
-        thread(isDaemon = true, name = "mini-http") {
+        acceptor = thread(isDaemon = true, name = "mini-http") {
             while (open) {
                 val s = runCatching { socket.accept() }.getOrNull() ?: break
+                // On Linux a connection can still be accepted in the instant after close() (the blocked accept
+                // returns normally): a closed server must never answer, so it is dropped here.
+                if (!open) { runCatching { s.close() }; break }
                 thread(isDaemon = true) { runCatching { serve(s) }; runCatching { s.close() } }
             }
         }
@@ -60,5 +65,7 @@ class MiniHttpServer(private val stallMs: Long = 3_000, private val handler: (pa
     override fun close() {
         open = false
         runCatching { socket.close() }
+        // Wait for the accept loop to end, so "closed" is true once close() returns.
+        if (Thread.currentThread() !== acceptor) runCatching { acceptor.join(2_000) }
     }
 }

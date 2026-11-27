@@ -24,10 +24,23 @@ android {
         applicationId = "com.fastkiwi.rememberme"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.5"
+        versionCode = 9
+        versionName = "1.0.6"
         // Arabic is the default (values/), English in values-en/.
         androidResources.localeFilters += listOf("ar", "en")
+    }
+
+    // `full` is the GitHub build with the self-updater (the default); `fdroid` has no self-updater and no network permission.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("full") {
+            dimension = "distribution"
+            buildConfigField("boolean", "UPDATER_ENABLED", "true")
+        }
+        create("fdroid") {
+            dimension = "distribution"
+            buildConfigField("boolean", "UPDATER_ENABLED", "false")
+        }
     }
 
     signingConfigs {
@@ -136,7 +149,7 @@ dependencies {
 // written to dist/RememberMe-<version>.cdx.json.
 // ---------------------------------------------------------------------------
 tasks.named<org.cyclonedx.gradle.CyclonedxDirectTask>("cyclonedxDirectBom") {
-    includeConfigs.set(listOf("releaseRuntimeClasspath"))
+    includeConfigs.set(listOf("fullReleaseRuntimeClasspath"))
     projectType.set(org.cyclonedx.model.Component.Type.APPLICATION)
     componentGroup.set("com.fastkiwi")
     componentName.set("remember-me-android")

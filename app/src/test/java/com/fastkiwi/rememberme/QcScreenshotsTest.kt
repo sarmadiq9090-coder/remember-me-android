@@ -188,6 +188,7 @@ class QcScreenshotsTest {
     }
 
     private fun tour(prefix: String, en: Boolean) {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", BuildConfig.UPDATER_ENABLED)
         if (en) Repo.prefs(app).language = "en"
         sample(en)
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
@@ -345,6 +346,7 @@ class QcScreenshotsTest {
      * keyboard up, the date and time pickers, and a picked moment.
      */
     private fun dueSheet(prefix: String, en: Boolean) {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", BuildConfig.UPDATER_ENABLED)
         if (en) Repo.prefs(app).language = "en"
         val qa = com.fastkiwi.rememberme.ui.quick.QuickEntry::quickAddIntent
         ActivityScenario.launch<MainActivity>(qa(app, null)).also { scenario = it }.use {
@@ -370,6 +372,7 @@ class QcScreenshotsTest {
 
     /** 1.0.5: Settings with the «الشاشة الكاملة» switch (for important alerts only), on and off (QC limited to it). */
     private fun fullScreenSetting(prefix: String, en: Boolean) {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", BuildConfig.UPDATER_ENABLED)
         if (en) Repo.prefs(app).language = "en"
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             go(Screen.Settings)
@@ -390,6 +393,7 @@ class QcScreenshotsTest {
 
     /** 1.0.5 (D-081): «حول ذكرني» with its update part, Settings «التحديثات», and «أبلغنا عن مشكلة أو اقتراح» (QC limited to them). */
     private fun updatesAndFeedback(prefix: String, en: Boolean) {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", BuildConfig.UPDATER_ENABLED)
         if (en) Repo.prefs(app).language = "en"
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
             go(Screen.About)
@@ -422,6 +426,7 @@ class QcScreenshotsTest {
 
     /** G-05: the tablet layout (840 dp and wider): the list and the chosen reminder's details side by side. */
     private fun tablet(prefix: String, en: Boolean) {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", BuildConfig.UPDATER_ENABLED)
         if (en) Repo.prefs(app).language = "en"
         sample(en)
         ActivityScenario.launch(MainActivity::class.java).also { scenario = it }.use {
