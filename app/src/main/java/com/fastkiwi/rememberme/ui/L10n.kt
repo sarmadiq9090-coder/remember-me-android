@@ -1,7 +1,10 @@
 package com.fastkiwi.rememberme.ui
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
 import android.text.format.DateFormat
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
@@ -49,12 +52,36 @@ object L10n {
         return locale(prefs.language, Repo.arabicMonths(Repo.state(context)))
     }
 
-    /** Applies the app language (per-app locale; Android's own Settings shows the same choice). */
-    fun apply(context: Context) {
+    /**
+     * Applies the app language (per-app locale; Android's own Settings shows the same choice).
+     *
+     * On Android 13+ it goes straight to LocaleManager: AppCompatDelegate.setApplicationLocales does nothing there
+     * until an activity has created its delegate, so the call made before super.onCreate was lost on every cold
+     * start, and on a phone in English the screens came up in English while notifications and times, which
+     * follow the app's own setting, were Arabic (1.0.7).
+     *
+     * With [adoptSystem] (an activity starting), a language picked in Android's own per-app language Settings
+     * becomes the app's setting, so everything follows it. Returns true when it adopted such a change.
+     */
+    fun apply(context: Context, adoptSystem: Boolean = false): Boolean {
+        if (Build.VERSION.SDK_INT >= 33) {
+            val lm = context.getSystemService(LocaleManager::class.java) ?: return false
+            val prefs = Repo.prefs(context)
+            val now = lm.applicationLocales
+            var adopted = false
+            if (adoptSystem && !now.isEmpty) {
+                val chosen = if (now[0].language == "en") "en" else "ar"
+                if (chosen != prefs.language) { prefs.language = chosen; adopted = true }
+            }
+            val tags = current(context).toLanguageTag()
+            if (now.toLanguageTags() != tags) lm.applicationLocales = LocaleList.forLanguageTags(tags)
+            return adopted
+        }
         val tags = current(context).toLanguageTag()
         if (AppCompatDelegate.getApplicationLocales().toLanguageTags() != tags) {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tags))
         }
+        return false
     }
 
     /** A context in the app language, for notifications and widgets built outside an activity. */
