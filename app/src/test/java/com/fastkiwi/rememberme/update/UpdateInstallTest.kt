@@ -129,6 +129,7 @@ class UpdateInstallTest {
 
     @Test
     fun theBannerAppearsOnTheScreenWithTheOwnersWords() {
+        org.junit.Assume.assumeTrue("update UI exists only in the full flavor", com.fastkiwi.rememberme.BuildConfig.UPDATER_ENABLED)
         val confirm = Intent("android.intent.action.VIEW")
         UpdateInstallEvents.foreground = false
         report(PackageInstaller.STATUS_PENDING_USER_ACTION, confirm)

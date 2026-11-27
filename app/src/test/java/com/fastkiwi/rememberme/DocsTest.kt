@@ -27,15 +27,17 @@ class DocsTest {
     }
 
     @Test fun everyManifestPermissionIsExplainedInTheAppAndTheDoc() {
-        val manifest = File("src/main/AndroidManifest.xml").readText()
+        // The main manifest plus the flavor's own (the `full` flavor adds the update permissions; `fdroid` adds none).
+        val manifest = File("src/main/AndroidManifest.xml").readText() +
+            (if (BuildConfig.UPDATER_ENABLED) File("src/full/AndroidManifest.xml").readText() else "")
         val permissions = Regex("<uses-permission\\s+android:name=\"([^\"]+)\"").findAll(manifest).map { it.groupValues[1] }.toSet()
         assertTrue(permissions.isNotEmpty())
         assertEquals(permissions, PrivacyText.PERMISSIONS.map { it.first }.toSet())
         val privacy = doc("PRIVACY.md")
         for (p in permissions) assertTrue(p, privacy.contains("`" + p.substringAfterLast('.') + "`"))
-        // 1.0.5 (D-081): the internet for updates only, and only to GitHub over HTTPS.
-        assertTrue("android.permission.INTERNET" in permissions)
-        val net = File("src/main/res/xml/network_security_config.xml").readText()
+        // 1.0.5 (D-081): the internet for updates only, and only to GitHub over HTTPS (full flavor; fdroid has no internet).
+        assertEquals(BuildConfig.UPDATER_ENABLED, "android.permission.INTERNET" in permissions)
+        val net = File("src/full/res/xml/network_security_config.xml").readText()
         assertTrue(net.contains("cleartextTrafficPermitted=\"false\""))
         val domains = Regex("<domain[^>]*>([^<]+)</domain>").findAll(net).map { it.groupValues[1] }.toSet()
         assertEquals(com.fastkiwi.rememberme.update.UpdateClient.GITHUB_HOSTS, domains)

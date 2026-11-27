@@ -319,6 +319,9 @@ fun CityPickerScreen(current: String, onPick: (String) -> Unit, onBack: () -> Un
  * discloses. The same text is in docs/PRIVACY.md; a test checks that every manifest permission has a line here.
  */
 object PrivacyText {
+    /** Declared only in the `full` flavor (src/full/AndroidManifest.xml); the F-Droid build has none of them. */
+    private val UPDATER_PERMISSIONS = setOf("android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "android.permission.REQUEST_INSTALL_PACKAGES")
+
     /** Manifest permission → its explanation (title, why). */
     val PERMISSIONS: List<Triple<String, Int, Int>> = listOf(
         Triple("android.permission.POST_NOTIFICATIONS", R.string.set_perm_notifications, R.string.set_perm_notifications_why),
@@ -333,7 +336,7 @@ object PrivacyText {
         Triple("android.permission.INTERNET", R.string.set_perm_internet, R.string.set_perm_internet_why),
         Triple("android.permission.ACCESS_NETWORK_STATE", R.string.set_perm_network, R.string.set_perm_network_why),
         Triple("android.permission.REQUEST_INSTALL_PACKAGES", R.string.set_perm_install, R.string.set_perm_install_why),
-    )
+    ).filter { com.fastkiwi.rememberme.BuildConfig.UPDATER_ENABLED || it.first !in UPDATER_PERMISSIONS }
 }
 
 @Composable

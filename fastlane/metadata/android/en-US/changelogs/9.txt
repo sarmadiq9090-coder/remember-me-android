@@ -1,0 +1,2 @@
+- New F-Droid build without a self-updater and without any internet permission.
+- Fastlane store metadata (description, screenshots, icon).

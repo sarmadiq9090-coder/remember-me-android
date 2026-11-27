@@ -1,0 +1,27 @@
+Reminders that stay until you deal with them. Arabic first, with English. Free and open source (Apache-2.0), with no account, no ads and no analytics.
+
+<b>Alerts that are not lost</b>
+• A pinned notification with Done, Snooze 10 minutes, Snooze until... and Undo.
+• A full-screen reminder over the lock screen for important alerts only.
+• "Normal reminder" or "important alarm" (alarm volume, rings in silent mode), a tone per reminder, up to 3 early alerts.
+
+<b>Quick Add</b>
+• Type "meeting tomorrow at 5" and the date and time are understood, with a preview before saving.
+• Templates, voice input, share from other apps, a Quick Settings tile and a home-screen widget.
+• Times relative to prayer times, and Hijri dates.
+
+<b>Organising</b>
+• One list (Overdue, Today, Upcoming, Done) with swipe, bulk selection and search.
+• Lists, tags, steps per reminder, and agenda, day, week and month views.
+
+<b>Trust</b>
+• "Reminder health" checks everything on your phone that could delay an alert and offers one fix per problem, with "Test the alert now".
+
+<b>Your data stays yours</b>
+• Your reminders stay on your phone. Encrypted backups, a weekly automatic copy, calendar (.ics) import and export.
+• The same data file as Remember Me for Windows, so reminders can move between phone and PC.
+
+<b>Privacy</b>
+This F-Droid build has no self-updater and no internet permission at all: it cannot connect to any network. It has no INTERNET, ACCESS_NETWORK_STATE or REQUEST_INSTALL_PACKAGES permission. Updates come through F-Droid.
+
+Requires Android 8.0 or later. Source code and issues: https://github.com/sarmadiq9090-coder/remember-me-android

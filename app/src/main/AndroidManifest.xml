@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- No INTERNET permission: nothing ever leaves the phone (D-001). -->
+    <!-- No INTERNET permission in the main manifest: nothing ever leaves the phone (D-001). The `full` flavor adds the
+         update-check permissions in src/full/AndroidManifest.xml; the `fdroid` flavor has none. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Exact alarms (D-004): USE_EXACT_ALARM on Android 13+, SCHEDULE_EXACT_ALARM on 12 and 12L. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
@@ -14,13 +15,6 @@
     <!-- Plays the reminder's tone for at most 2 minutes, then stops by itself (FEATURES.md F-016).
          A short service needs no type-specific permission. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- 1.0.5 (D-081, as Kiwi Scan's D-080): the internet only to check for and download the app's own updates
-         from GitHub (update/UpdateClient.kt: HTTPS, GitHub hosts only; res/xml/network_security_config.xml).
-         No reminder or data about the person is ever sent. ACCESS_NETWORK_STATE tells Wi-Fi from mobile data
-         («Wi-Fi فقط»); REQUEST_INSTALL_PACKAGES lets Android's installer ask the person to install the update. -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- [quick] begin -->
     <!-- Voice input (F-048) asks the phone's speech service; a query entry, not a permission (no RECORD_AUDIO). -->
@@ -48,7 +42,6 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.RememberMe"
         tools:targetApi="36">
@@ -161,14 +154,6 @@
             android:exported="false">
             <meta-data android:name="autoStoreLocales" android:value="true" />
         </service>
-        <!-- 1.0.5: PackageInstaller's status for an update (Android's own install confirmation). Not exported. -->
-        <receiver
-            android:name=".update.UpdateInstallReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.fastkiwi.rememberme.update.INSTALL_STATUS" />
-            </intent-filter>
-        </receiver>
 
     </application>
 </manifest>
