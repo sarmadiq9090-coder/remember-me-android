@@ -20,12 +20,14 @@ while [ $# -gt 0 ]; do
   esac
 done
 cd "$ROOT"
+# TORTURE_FLAVOR: full (default) or fdroid.
+case "${TORTURE_FLAVOR:-full}" in full) TASK=testFullDebugUnitTest ;; fdroid) TASK=testFdroidDebugUnitTest ;; *) echo "TORTURE_FLAVOR must be full or fdroid" >&2; exit 2 ;; esac
 STAMP="$(date +%Y-%m-%d-%H%M)"
 mkdir -p torture/reports app/build/torture
 LOG="app/build/torture/gradle-$STAMP.log"
 echo "torture: heavy=${TORTURE_HEAVY:-0} seed=${TORTURE_SEED:-default} tests=$PATTERN (log $LOG)"
 # --rerun: the switches are environment variables, which Gradle's up-to-date check does not see.
-timeout 7200 gradle --no-daemon --console=plain --max-workers=2 :app:testDebugUnitTest --tests "$PATTERN" --rerun > "$LOG" 2>&1
+timeout 7200 gradle --no-daemon --console=plain --max-workers=2 :app:$TASK --tests "$PATTERN" --rerun > "$LOG" 2>&1
 CODE=$?
 SUMMARY="torture/reports/summary-$STAMP.txt"
 {
@@ -33,8 +35,8 @@ SUMMARY="torture/reports/summary-$STAMP.txt"
   echo "commit $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"
   echo
 } > "$SUMMARY"
-node torture/tools/summarize.cjs app/build/test-results/testDebugUnitTest >> "$SUMMARY"
-grep -h "^\[torture\]" app/build/test-results/testDebugUnitTest/TEST-com.fastkiwi.rememberme.torture.*.xml 2>/dev/null | sort -u | head -200 > "app/build/torture/printed-$STAMP.txt"
+node torture/tools/summarize.cjs app/build/test-results/$TASK >> "$SUMMARY"
+grep -h "^\[torture\]" app/build/test-results/$TASK/TEST-com.fastkiwi.rememberme.torture.*.xml 2>/dev/null | sort -u | head -200 > "app/build/torture/printed-$STAMP.txt"
 cat "$SUMMARY"
 grep -E "^e: |What went wrong" -A3 "$LOG" | head -20
 exit $CODE
