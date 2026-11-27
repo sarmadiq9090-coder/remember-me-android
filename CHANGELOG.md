@@ -19,6 +19,9 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ### Fixed
 
+- F-Droid build: «حول ذكرني» and «الخصوصية» still said the app connects to GitHub for updates (and that this can be
+  turned off in Settings). The `fdroid` flavor now has its own texts: it never connects to the internet
+  (`FlavorStringsTest`).
 - `UpdaterTest.noNetworkMeansNoRequestAndAClearError` failed on Linux CI: the test server could still accept one
   connection just after `close()`. The server now drops it and `close()` waits for its accept loop to end.
 
