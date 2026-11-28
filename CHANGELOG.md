@@ -6,6 +6,8 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-11-28
+
 ### Fixed
 
 - Mixed languages on a phone set to English (Android 13 and later): the screens came up in English while
