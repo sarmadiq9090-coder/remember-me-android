@@ -1,0 +1,2 @@
+- Fixed mixed languages on a phone set to English (Android 13 and later): notifications, their buttons and times now follow the app's language from the first start.
+- A language picked in Android's per-app language settings is now used by the app too.
